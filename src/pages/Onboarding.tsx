@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
-import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2, User, Ruler, Weight, Target, Dumbbell, MessageCircle, ChevronRight, ChevronLeft, Sparkles } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -22,19 +21,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Form,
   FormControl,
   FormDescription,
@@ -43,6 +29,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { DateOfBirthPicker } from "@/components/DateOfBirthPicker";
+import { cn } from "@/lib/utils";
 
 const onboardingSchema = z
   .object({
@@ -149,6 +137,31 @@ const vitaMessages: Record<number, { title: string; text: string }> = {
   },
 };
 
+const stepTitles: Record<number, string> = {
+  1: "Boas-vindas",
+  2: "Dados básicos",
+  3: "Objetivos",
+  4: "Estilo de vida",
+  5: "WhatsApp",
+};
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+  exit: { opacity: 0, x: -20 },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
+
 const Onboarding = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -185,7 +198,6 @@ const Onboarding = () => {
       const uid = session?.user?.id ?? null;
       const email = session?.user?.email ?? null;
 
-      // Master admin nunca deve acessar o onboarding
       if (email && email.toLowerCase() === "admin@dev.local") {
         navigate("/admin");
         return;
@@ -205,7 +217,6 @@ const Onboarding = () => {
         const uid = session?.user?.id ?? null;
         const email = session?.user?.email ?? null;
 
-        // Master admin nunca deve acessar o onboarding
         if (email && email.toLowerCase() === "admin@dev.local") {
           navigate("/admin");
           return;
@@ -319,7 +330,7 @@ const Onboarding = () => {
 
   if (initializing) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-animated">
         <div className="flex items-center gap-3 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
           <span>Carregando sua jornada...</span>
@@ -329,677 +340,664 @@ const Onboarding = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden">
-      <div
-        className="absolute inset-0 -z-10 opacity-30"
-        style={{ background: "var(--gradient-hero)" }}
-      />
-
-      <div className="w-full max-w-3xl space-y-6">
-        {/* Progress bar */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>
-              Etapa {step} de {totalSteps}
+    <div className="min-h-screen flex flex-col bg-gradient-animated">
+      {/* Fixed header with progress */}
+      <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-border/50">
+        <div className="w-full max-w-2xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              {stepTitles[step]}
             </span>
-            <span>{Math.round(stepPercentage)}%</span>
+            <span className="text-xs font-medium text-primary">
+              {step}/{totalSteps}
+            </span>
           </div>
-          <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+          <div className="progress-premium">
             <div
-              className="h-full rounded-full bg-primary transition-all"
+              className="progress-premium-fill"
               style={{ width: `${stepPercentage}%` }}
             />
           </div>
         </div>
+      </header>
 
-        <div className="grid gap-6 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-stretch">
-          {/* Wizard card */}
-          <Card className="glass">
-            <CardHeader>
-              <CardTitle>
-                {step === 1 && "Boas-vindas"}
-                {step === 2 && "Dados básicos"}
-                {step === 3 && "Objetivos"}
-                {step === 4 && "Estilo de vida"}
-                {step === 5 && "WhatsApp (opcional)"}
-              </CardTitle>
-              <CardDescription>
-                {step === 1 &&
-                  "Vamos iniciar sua jornada com a Vita ao seu lado."}
-                {step === 2 &&
-                  "Esses dados nos ajudam a calibrar seus planos."}
-                {step === 3 &&
-                  "Defina metas claras para que possamos te guiar."}
-                {step === 4 &&
-                  "Seu plano precisa funcionar na sua rotina real."}
-                {step === 5 &&
-                  "Se quiser, eu também posso te acompanhar pelo WhatsApp."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-6"
-                >
-                  {step === 1 && (
-                    <div className="space-y-6">
-                      <p className="text-base text-muted-foreground">
-                        Olá! Eu sou o Vita, seu nutricionista pessoal de saúde 👋
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Vou fazer algumas perguntas para criar o plano perfeito
-                        para você.
-                      </p>
-                      <div className="flex justify-end">
-                        <Button type="button" onClick={goNext}>
-                          Vamos lá!
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {step === 2 && (
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <FormField
-                        control={form.control}
-                        name="full_name"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel>Nome completo</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Como você se apresenta?"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="date_of_birth"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormLabel>Data de nascimento</FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant="outline"
-                                    className="justify-start text-left font-normal"
-                                  >
-                                    {field.value ? (
-                                      format(field.value, "dd/MM/yyyy")
-                                    ) : (
-                                      <span>Selecione</span>
-                                    )}
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                className="w-auto p-0"
-                                align="start"
-                              >
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) =>
-                                    date > new Date() ||
-                                    date < new Date("1900-01-01")
-                                  }
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="biological_sex"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Sexo biológico</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="masculino">
-                                  Masculino
-                                </SelectItem>
-                                <SelectItem value="feminino">
-                                  Feminino
-                                </SelectItem>
-                                <SelectItem value="outro">Outro</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="height_cm"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Altura</FormLabel>
-                            <FormControl>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="number"
-                                  inputMode="decimal"
-                                  step="0.5"
-                                  {...field}
-                                  onChange={(e) =>
-                                    field.onChange(
-                                      e.target.value
-                                        ? Number(e.target.value)
-                                        : undefined
-                                    )
-                                  }
-                                />
-                                <span className="text-sm text-muted-foreground">
-                                  cm
-                                </span>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="weight_kg"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Peso atual</FormLabel>
-                            <FormControl>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="number"
-                                  inputMode="decimal"
-                                  step="0.1"
-                                  {...field}
-                                  onChange={(e) =>
-                                    field.onChange(
-                                      e.target.value
-                                        ? Number(e.target.value)
-                                        : undefined
-                                    )
-                                  }
-                                />
-                                <span className="text-sm text-muted-foreground">
-                                  kg
-                                </span>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  )}
-
-                  {step === 3 && (
-                    <div className="space-y-6">
-                      <FormField
-                        control={form.control}
-                        name="goals"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Seus objetivos principais</FormLabel>
-                            <div className="grid gap-2 md:grid-cols-2">
-                              {[
-                                ["perder_gordura", "Perder gordura corporal"],
-                                ["ganhar_massa", "Ganhar massa muscular"],
-                                [
-                                  "controlar_glicose",
-                                  "Controlar glicose/diabetes",
-                                ],
-                                [
-                                  "reduzir_estresse",
-                                  "Reduzir estresse e cortisol",
-                                ],
-                                ["melhorar_sono", "Melhorar sono"],
-                                ["aumentar_energia", "Aumentar energia"],
-                              ].map(([value, label]) => {
-                                const checked = field.value?.includes(
-                                  value as string
-                                );
-                                return (
-                                  <label
-                                    key={value}
-                                    className="flex items-start gap-2 rounded-lg border bg-background/60 px-3 py-2 text-sm cursor-pointer hover:bg-accent/40 transition-colors"
-                                  >
-                                    <Checkbox
-                                      checked={checked}
-                                      onCheckedChange={(next) => {
-                                        if (next) {
-                                          field.onChange([
-                                            ...(field.value || []),
-                                            value,
-                                          ]);
-                                        } else {
-                                          field.onChange(
-                                            (field.value || []).filter(
-                                              (v) => v !== value
-                                            )
-                                          );
-                                        }
-                                      }}
-                                    />
-                                    <span>{label}</span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="target_weight_kg"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              Meta de peso (opcional)
-                            </FormLabel>
-                            <FormDescription>
-                              Quero chegar em...
-                            </FormDescription>
-                            <FormControl>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="number"
-                                  inputMode="decimal"
-                                  step="0.1"
-                                  {...field}
-                                  onChange={(e) =>
-                                    field.onChange(
-                                      e.target.value
-                                        ? Number(e.target.value)
-                                        : undefined
-                                    )
-                                  }
-                                />
-                                <span className="text-sm text-muted-foreground">
-                                  kg
-                                </span>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="target_timeframe"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Prazo desejado</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="1_mes">1 mês</SelectItem>
-                                <SelectItem value="3_meses">3 meses</SelectItem>
-                                <SelectItem value="6_meses">6 meses</SelectItem>
-                                <SelectItem value="1_ano">1 ano</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  )}
-
-                  {step === 4 && (
-                    <div className="space-y-6">
-                      <FormField
-                        control={form.control}
-                        name="activity_level"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nível de atividade física</FormLabel>
-                            <FormControl>
-                              <RadioGroup
-                                value={field.value}
-                                onValueChange={field.onChange}
-                                className="grid gap-3 md:grid-cols-2"
-                              >
-                                <label className="flex cursor-pointer flex-col gap-1 rounded-lg border bg-background/60 p-3 text-sm hover:bg-accent/40 transition-colors">
-                                  <div className="flex items-center gap-2">
-                                    <RadioGroupItem
-                                      value="sedentario"
-                                      id="sedentario"
-                                    />
-                                    <span className="font-medium">
-                                      Sedentário
-                                    </span>
-                                  </div>
-                                  <span className="text-xs text-muted-foreground">
-                                    Pouco ou nenhum exercício
-                                  </span>
-                                </label>
-
-                                <label className="flex cursor-pointer flex-col gap-1 rounded-lg border bg-background/60 p-3 text-sm hover:bg-accent/40 transition-colors">
-                                  <div className="flex items-center gap-2">
-                                    <RadioGroupItem value="leve" id="leve" />
-                                    <span className="font-medium">Leve</span>
-                                  </div>
-                                  <span className="text-xs text-muted-foreground">
-                                    1–3x por semana
-                                  </span>
-                                </label>
-
-                                <label className="flex cursor-pointer flex-col gap-1 rounded-lg border bg-background/60 p-3 text-sm hover:bg-accent/40 transition-colors">
-                                  <div className="flex items-center gap-2">
-                                    <RadioGroupItem
-                                      value="moderado"
-                                      id="moderado"
-                                    />
-                                    <span className="font-medium">
-                                      Moderado
-                                    </span>
-                                  </div>
-                                  <span className="text-xs text-muted-foreground">
-                                    3–5x por semana
-                                  </span>
-                                </label>
-
-                                <label className="flex cursor-pointer flex-col gap-1 rounded-lg border bg-background/60 p-3 text-sm hover:bg-accent/40 transition-colors">
-                                  <div className="flex items-center gap-2">
-                                    <RadioGroupItem
-                                      value="intenso"
-                                      id="intenso"
-                                    />
-                                    <span className="font-medium">
-                                      Intenso
-                                    </span>
-                                  </div>
-                                  <span className="text-xs text-muted-foreground">
-                                    6–7x por semana
-                                  </span>
-                                </label>
-                              </RadioGroup>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="training_preference"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Preferência de treino</FormLabel>
-                            <div className="grid gap-2 md:grid-cols-2">
-                              {[
-                                [
-                                  "casa_sem_equip",
-                                  "Em casa (sem equipamento)",
-                                ],
-                                [
-                                  "casa_com_equip",
-                                  "Em casa (com equipamentos básicos)",
-                                ],
-                                ["academia", "Academia completa"],
-                              ].map(([value, label]) => {
-                                const current = (field.value || []) as string[];
-                                const checked = current.includes(value as string);
-                                return (
-                                  <label
-                                    key={value}
-                                    className="flex items-start gap-2 rounded-lg border bg-background/60 px-3 py-2 text-sm cursor-pointer hover:bg-accent/40 transition-colors"
-                                  >
-                                    <Checkbox
-                                      checked={checked}
-                                      onCheckedChange={(next) => {
-                                        const base = (field.value || []) as string[];
-                                        if (next) {
-                                          field.onChange([...base, value]);
-                                        } else {
-                                          field.onChange(base.filter((v) => v !== value));
-                                        }
-                                      }}
-                                    />
-                                    <span>{label}</span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="dietary_restrictions"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Restrições alimentares</FormLabel>
-                            <div className="grid gap-2 md:grid-cols-2">
-                              {[
-                                ["nenhuma", "Nenhuma"],
-                                ["vegetariano", "Vegetariano"],
-                                ["vegano", "Vegano"],
-                                [
-                                  "intolerante_lactose",
-                                  "Intolerante à lactose",
-                                ],
-                                [
-                                  "intolerante_gluten",
-                                  "Intolerante ao glúten",
-                                ],
-                                ["diabetes", "Diabetes"],
-                                ["outro", "Outro"],
-                              ].map(([value, label]) => {
-                                const checked = field.value?.includes(
-                                  value as string
-                                );
-                                return (
-                                  <label
-                                    key={value}
-                                    className="flex items-start gap-2 rounded-lg border bg-background/60 px-3 py-2 text-sm cursor-pointer hover:bg-accent/40 transition-colors"
-                                  >
-                                    <Checkbox
-                                      checked={checked}
-                                      onCheckedChange={(next) => {
-                                        if (next) {
-                                          if (value === "nenhuma") {
-                                            field.onChange(["nenhuma"]);
-                                          } else {
-                                            field.onChange([
-                                              ...(field.value || []).filter(
-                                                (v) => v !== "nenhuma"
-                                              ),
-                                              value,
-                                            ]);
-                                          }
-                                        } else {
-                                          field.onChange(
-                                            (field.value || []).filter(
-                                              (v) => v !== value
-                                            )
-                                          );
-                                        }
-                                      }}
-                                    />
-                                    <span>{label}</span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {form.watch("dietary_restrictions").includes("outro") && (
-                        <FormField
-                          control={form.control}
-                          name="dietary_other"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Descreva sua restrição</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="Ex: alergia a frutos do mar"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      )}
-                    </div>
-                  )}
-
-                  {step === 5 && (
-                    <div className="space-y-6">
-                      <p className="text-sm text-muted-foreground">
-                        Quer receber dicas, lembretes e check-ins rápidos pelo
-                        WhatsApp?
-                      </p>
-
-                      <FormField
-                        control={form.control}
-                        name="whatsapp_phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Número de WhatsApp</FormLabel>
-                            <FormDescription>
-                              Formato brasileiro, com DDD. Ex: (11) 98765-4321
-                            </FormDescription>
-                            <FormControl>
-                              <Input
-                                placeholder="(11) 98765-4321"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="whatsapp_opt_in"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-start gap-3 rounded-lg border bg-background/60 p-3">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel className="text-sm">
-                                Aceito receber mensagens
-                              </FormLabel>
-                              <FormDescription>
-                                Você pode cancelar a qualquer momento nas
-                                configurações.
-                              </FormDescription>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  )}
-
-                  {/* Navigation buttons */}
-                  <div className="flex items-center justify-between pt-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={step === 1 || loadingSubmit}
-                      onClick={goBack}
-                    >
-                      Voltar
-                    </Button>
-
-                    {step < totalSteps && (
-                      <Button
-                        type="button"
-                        onClick={goNext}
-                        disabled={loadingSubmit}
-                      >
-                        Próximo
-                      </Button>
-                    )}
-
-                    {step === totalSteps && (
-                      <Button type="submit" disabled={loadingSubmit}>
-                        {loadingSubmit ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Criando seu plano...
-                          </>
-                        ) : (
-                          "Finalizar e Criar Meu Plano"
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-
-          {/* Vita side card */}
+      {/* Main content - scrollable */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="w-full max-w-2xl mx-auto px-4 py-6 pb-32">
+          {/* Vita message card - always on top for mobile */}
           <motion.div
-            key={step}
-            initial={{ opacity: 0, y: 10 }}
+            key={`vita-${step}`}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="h-full"
+            className="mb-6"
           >
-            <Card className="glass h-full flex flex-col justify-between overflow-hidden">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
-                    <span className="absolute inline-flex h-8 w-8 rounded-full bg-primary opacity-40 animate-pulse" />
-                    <span className="relative inline-flex h-4 w-4 rounded-full bg-primary" />
-                  </span>
-                  Vita
-                </CardTitle>
-                <CardDescription className="space-y-1">
-                  <p className="font-medium">
-                    {vitaMessages[step].title}
-                  </p>
-                  <p>{vitaMessages[step].text}</p>
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <div className="glass-premium-vita rounded-2xl p-4 flex items-start gap-4">
+              {/* Vita orb */}
+              <div className="relative flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                  <div className="absolute w-12 h-12 rounded-full bg-primary/30 animate-pulse" />
+                  <div className="relative w-6 h-6 rounded-full bg-gradient-to-br from-primary to-secondary" />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-foreground text-sm">
+                  {vitaMessages[step].title}
+                </p>
+                <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">
+                  {vitaMessages[step].text}
+                </p>
+              </div>
+            </div>
           </motion.div>
+
+          {/* Form card */}
+          <div className="glass-premium rounded-2xl p-5 sm:p-6">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={step}
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    transition={{ duration: 0.3 }}
+                  >
+                    {/* Step 1: Welcome */}
+                    {step === 1 && (
+                      <motion.div variants={itemVariants} className="space-y-6 text-center py-6">
+                        <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                          <Sparkles className="w-10 h-10 text-primary" />
+                        </div>
+                        <div className="space-y-2">
+                          <h2 className="text-xl font-bold text-foreground">
+                            Bem-vindo ao Dietafy
+                          </h2>
+                          <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+                            Em poucos minutos, vou criar um plano personalizado baseado nos seus objetivos e rotina.
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Step 2: Basic data */}
+                    {step === 2 && (
+                      <div className="space-y-5">
+                        <motion.div variants={itemVariants}>
+                          <FormField
+                            control={form.control}
+                            name="full_name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                                  <User className="w-4 h-4 text-primary" />
+                                  Nome completo
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Como você se chama?"
+                                    className="h-12 bg-background/80 border-border/50 focus:border-primary/50"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </motion.div>
+
+                        <motion.div variants={itemVariants}>
+                          <FormField
+                            control={form.control}
+                            name="date_of_birth"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium">
+                                  Data de nascimento
+                                </FormLabel>
+                                <FormControl>
+                                  <DateOfBirthPicker
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </motion.div>
+
+                        <motion.div variants={itemVariants}>
+                          <FormField
+                            control={form.control}
+                            name="biological_sex"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium">
+                                  Sexo biológico
+                                </FormLabel>
+                                <div className="grid grid-cols-3 gap-2">
+                                  {[
+                                    { value: "masculino", label: "Masculino" },
+                                    { value: "feminino", label: "Feminino" },
+                                    { value: "outro", label: "Outro" },
+                                  ].map((option) => (
+                                    <button
+                                      key={option.value}
+                                      type="button"
+                                      onClick={() => field.onChange(option.value)}
+                                      className={cn(
+                                        "option-card flex items-center justify-center py-3 text-sm font-medium",
+                                        field.value === option.value && "selected"
+                                      )}
+                                    >
+                                      {option.label}
+                                    </button>
+                                  ))}
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </motion.div>
+
+                        <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="height_cm"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                                  <Ruler className="w-4 h-4 text-primary" />
+                                  Altura
+                                </FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input
+                                      type="number"
+                                      inputMode="numeric"
+                                      placeholder="170"
+                                      className="h-12 bg-background/80 border-border/50 pr-10"
+                                      {...field}
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          e.target.value ? Number(e.target.value) : undefined
+                                        )
+                                      }
+                                    />
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                                      cm
+                                    </span>
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="weight_kg"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                                  <Weight className="w-4 h-4 text-primary" />
+                                  Peso atual
+                                </FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input
+                                      type="number"
+                                      inputMode="decimal"
+                                      step="0.1"
+                                      placeholder="70"
+                                      className="h-12 bg-background/80 border-border/50 pr-10"
+                                      {...field}
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          e.target.value ? Number(e.target.value) : undefined
+                                        )
+                                      }
+                                    />
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                                      kg
+                                    </span>
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </motion.div>
+                      </div>
+                    )}
+
+                    {/* Step 3: Goals */}
+                    {step === 3 && (
+                      <div className="space-y-5">
+                        <motion.div variants={itemVariants}>
+                          <FormField
+                            control={form.control}
+                            name="goals"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                                  <Target className="w-4 h-4 text-primary" />
+                                  Seus objetivos principais
+                                </FormLabel>
+                                <div className="grid gap-2">
+                                  {[
+                                    { value: "perder_gordura", label: "Perder gordura corporal", emoji: "🔥" },
+                                    { value: "ganhar_massa", label: "Ganhar massa muscular", emoji: "💪" },
+                                    { value: "controlar_glicose", label: "Controlar glicose/diabetes", emoji: "📊" },
+                                    { value: "reduzir_estresse", label: "Reduzir estresse e cortisol", emoji: "🧘" },
+                                    { value: "melhorar_sono", label: "Melhorar sono", emoji: "😴" },
+                                    { value: "aumentar_energia", label: "Aumentar energia", emoji: "⚡" },
+                                  ].map((option) => {
+                                    const checked = field.value?.includes(option.value);
+                                    return (
+                                      <button
+                                        key={option.value}
+                                        type="button"
+                                        onClick={() => {
+                                          if (checked) {
+                                            field.onChange(field.value.filter((v) => v !== option.value));
+                                          } else {
+                                            field.onChange([...field.value, option.value]);
+                                          }
+                                        }}
+                                        className={cn(
+                                          "option-card flex items-center gap-3 text-left",
+                                          checked && "selected"
+                                        )}
+                                      >
+                                        <span className="text-lg">{option.emoji}</span>
+                                        <span className="text-sm font-medium">{option.label}</span>
+                                        {checked && (
+                                          <div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                                            <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                          </div>
+                                        )}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </motion.div>
+
+                        <motion.div variants={itemVariants}>
+                          <FormField
+                            control={form.control}
+                            name="target_weight_kg"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium">
+                                  Meta de peso (opcional)
+                                </FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input
+                                      type="number"
+                                      inputMode="decimal"
+                                      step="0.1"
+                                      placeholder="Quero chegar em..."
+                                      className="h-12 bg-background/80 border-border/50 pr-10"
+                                      {...field}
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          e.target.value ? Number(e.target.value) : undefined
+                                        )
+                                      }
+                                    />
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                                      kg
+                                    </span>
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </motion.div>
+
+                        <motion.div variants={itemVariants}>
+                          <FormField
+                            control={form.control}
+                            name="target_timeframe"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium">Prazo desejado</FormLabel>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {[
+                                    { value: "1_mes", label: "1 mês" },
+                                    { value: "3_meses", label: "3 meses" },
+                                    { value: "6_meses", label: "6 meses" },
+                                    { value: "1_ano", label: "1 ano" },
+                                  ].map((option) => (
+                                    <button
+                                      key={option.value}
+                                      type="button"
+                                      onClick={() => field.onChange(option.value)}
+                                      className={cn(
+                                        "option-card flex items-center justify-center py-3 text-sm font-medium",
+                                        field.value === option.value && "selected"
+                                      )}
+                                    >
+                                      {option.label}
+                                    </button>
+                                  ))}
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </motion.div>
+                      </div>
+                    )}
+
+                    {/* Step 4: Lifestyle */}
+                    {step === 4 && (
+                      <div className="space-y-5">
+                        <motion.div variants={itemVariants}>
+                          <FormField
+                            control={form.control}
+                            name="activity_level"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                                  <Dumbbell className="w-4 h-4 text-primary" />
+                                  Nível de atividade física
+                                </FormLabel>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {[
+                                    { value: "sedentario", label: "Sedentário", desc: "Pouco ou nenhum" },
+                                    { value: "leve", label: "Leve", desc: "1-3x/semana" },
+                                    { value: "moderado", label: "Moderado", desc: "3-5x/semana" },
+                                    { value: "intenso", label: "Intenso", desc: "6-7x/semana" },
+                                  ].map((option) => (
+                                    <button
+                                      key={option.value}
+                                      type="button"
+                                      onClick={() => field.onChange(option.value)}
+                                      className={cn(
+                                        "option-card flex flex-col items-start py-3",
+                                        field.value === option.value && "selected"
+                                      )}
+                                    >
+                                      <span className="text-sm font-medium">{option.label}</span>
+                                      <span className="text-xs text-muted-foreground">{option.desc}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </motion.div>
+
+                        <motion.div variants={itemVariants}>
+                          <FormField
+                            control={form.control}
+                            name="training_preference"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium">Preferência de treino</FormLabel>
+                                <div className="grid gap-2">
+                                  {[
+                                    { value: "casa_sem_equip", label: "Em casa (sem equipamento)", emoji: "🏠" },
+                                    { value: "casa_com_equip", label: "Em casa (com equipamentos)", emoji: "🏋️" },
+                                    { value: "academia", label: "Academia completa", emoji: "💪" },
+                                  ].map((option) => {
+                                    const current = (field.value || []) as string[];
+                                    const checked = current.includes(option.value);
+                                    return (
+                                      <button
+                                        key={option.value}
+                                        type="button"
+                                        onClick={() => {
+                                          if (checked) {
+                                            field.onChange(current.filter((v) => v !== option.value));
+                                          } else {
+                                            field.onChange([...current, option.value]);
+                                          }
+                                        }}
+                                        className={cn(
+                                          "option-card flex items-center gap-3",
+                                          checked && "selected"
+                                        )}
+                                      >
+                                        <span className="text-lg">{option.emoji}</span>
+                                        <span className="text-sm font-medium">{option.label}</span>
+                                        {checked && (
+                                          <div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                                            <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                          </div>
+                                        )}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </motion.div>
+
+                        <motion.div variants={itemVariants}>
+                          <FormField
+                            control={form.control}
+                            name="dietary_restrictions"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium">Restrições alimentares</FormLabel>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {[
+                                    { value: "nenhuma", label: "Nenhuma" },
+                                    { value: "vegetariano", label: "Vegetariano" },
+                                    { value: "vegano", label: "Vegano" },
+                                    { value: "intolerante_lactose", label: "Sem lactose" },
+                                    { value: "intolerante_gluten", label: "Sem glúten" },
+                                    { value: "diabetes", label: "Diabetes" },
+                                    { value: "outro", label: "Outro" },
+                                  ].map((option) => {
+                                    const checked = field.value?.includes(option.value);
+                                    return (
+                                      <button
+                                        key={option.value}
+                                        type="button"
+                                        onClick={() => {
+                                          if (option.value === "nenhuma") {
+                                            field.onChange(["nenhuma"]);
+                                          } else if (checked) {
+                                            field.onChange(field.value.filter((v) => v !== option.value));
+                                          } else {
+                                            field.onChange([
+                                              ...field.value.filter((v) => v !== "nenhuma"),
+                                              option.value,
+                                            ]);
+                                          }
+                                        }}
+                                        className={cn(
+                                          "option-card flex items-center justify-center py-2.5 text-sm font-medium",
+                                          checked && "selected"
+                                        )}
+                                      >
+                                        {option.label}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </motion.div>
+
+                        {form.watch("dietary_restrictions").includes("outro") && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                          >
+                            <FormField
+                              control={form.control}
+                              name="dietary_other"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-sm font-medium">Descreva sua restrição</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Ex: alergia a frutos do mar"
+                                      className="h-12 bg-background/80 border-border/50"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </motion.div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Step 5: WhatsApp */}
+                    {step === 5 && (
+                      <div className="space-y-5">
+                        <motion.div variants={itemVariants}>
+                          <div className="text-center mb-4">
+                            <div className="w-16 h-16 mx-auto rounded-full bg-green-500/20 flex items-center justify-center mb-3">
+                              <MessageCircle className="w-8 h-8 text-green-500" />
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Receba dicas, lembretes e check-ins diretamente no seu WhatsApp.
+                            </p>
+                          </div>
+                        </motion.div>
+
+                        <motion.div variants={itemVariants}>
+                          <FormField
+                            control={form.control}
+                            name="whatsapp_phone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium">Número de WhatsApp</FormLabel>
+                                <FormDescription className="text-xs">
+                                  Formato brasileiro, com DDD
+                                </FormDescription>
+                                <FormControl>
+                                  <Input
+                                    placeholder="(11) 98765-4321"
+                                    className="h-12 bg-background/80 border-border/50"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </motion.div>
+
+                        <motion.div variants={itemVariants}>
+                          <FormField
+                            control={form.control}
+                            name="whatsapp_opt_in"
+                            render={({ field }) => (
+                              <FormItem className={cn(
+                                "option-card flex items-start gap-3",
+                                field.value && "selected"
+                              )}>
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    className="mt-0.5"
+                                  />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                  <FormLabel className="text-sm font-medium cursor-pointer">
+                                    Aceito receber mensagens
+                                  </FormLabel>
+                                  <FormDescription className="text-xs">
+                                    Você pode cancelar a qualquer momento.
+                                  </FormDescription>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                        </motion.div>
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </form>
+            </Form>
+          </div>
+        </div>
+      </main>
+
+      {/* Fixed bottom navigation */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-t border-border/50 safe-area-inset-bottom">
+        <div className="w-full max-w-2xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3">
+            {step > 1 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                disabled={loadingSubmit}
+                onClick={goBack}
+                className="flex-1 h-12 bg-background/80 border-border/50"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Voltar
+              </Button>
+            )}
+
+            {step < totalSteps ? (
+              <Button
+                type="button"
+                size="lg"
+                onClick={goNext}
+                disabled={loadingSubmit}
+                className={cn(
+                  "flex-1 h-12 bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-lg",
+                  step === 1 && "w-full"
+                )}
+              >
+                {step === 1 ? "Vamos lá!" : "Próximo"}
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                size="lg"
+                disabled={loadingSubmit}
+                onClick={form.handleSubmit(onSubmit)}
+                className="flex-1 h-12 bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-lg"
+              >
+                {loadingSubmit ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Criando...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Criar Meu Plano
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>
