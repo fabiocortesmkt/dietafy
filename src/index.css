@@ -158,6 +158,71 @@ All colors MUST be HSL.
     box-shadow: var(--shadow-card);
   }
 
+  /* Premium glass for onboarding */
+  .glass-premium {
+    background: hsl(var(--card) / 0.85);
+    backdrop-filter: blur(20px) saturate(1.2);
+    border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: 
+      0 25px 50px -12px hsl(var(--foreground) / 0.15),
+      0 0 0 1px hsl(var(--primary) / 0.05),
+      inset 0 1px 0 hsl(var(--background) / 0.5);
+  }
+
+  .glass-premium-vita {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.08),
+      hsl(var(--secondary) / 0.05)
+    );
+    backdrop-filter: blur(24px) saturate(1.3);
+    border: 1px solid hsl(var(--primary) / 0.2);
+    box-shadow: 
+      0 20px 40px -15px hsl(var(--primary) / 0.2),
+      inset 0 1px 0 hsl(var(--primary) / 0.1);
+  }
+
+  /* Option card for onboarding */
+  .option-card {
+    @apply relative rounded-xl border bg-background/60 px-4 py-3 cursor-pointer transition-all duration-200;
+    border-color: hsl(var(--border) / 0.6);
+  }
+
+  .option-card:hover {
+    @apply border-primary/40;
+    background: hsl(var(--primary) / 0.05);
+    transform: translateY(-1px);
+  }
+
+  .option-card.selected {
+    @apply border-primary bg-primary/10;
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3), 0 4px 12px -4px hsl(var(--primary) / 0.2);
+  }
+
+  /* Premium progress bar */
+  .progress-premium {
+    @apply relative h-2 w-full rounded-full overflow-hidden;
+    background: hsl(var(--muted) / 0.5);
+  }
+
+  .progress-premium-fill {
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+    background: var(--gradient-primary);
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.4);
+  }
+
+  /* Animated gradient background */
+  .bg-gradient-animated {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.03) 0%,
+      hsl(var(--secondary) / 0.05) 50%,
+      hsl(var(--primary) / 0.03) 100%
+    );
+    background-size: 200% 200%;
+    animation: gradient-shift 8s ease-in-out infinite;
+  }
+
   .hover-lift {
     transition: transform 0.18s ease-out, box-shadow 0.18s ease-out, border-color 0.18s ease-out;
   }
@@ -176,6 +241,15 @@ All colors MUST be HSL.
     transform: translateY(-1px) scale(1.01);
     box-shadow: 0 16px 40px -18px hsl(var(--foreground) / 0.4);
     border-color: hsl(var(--primary) / 0.5);
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
   }
 }
 
