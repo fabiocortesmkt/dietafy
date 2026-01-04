@@ -95,6 +95,27 @@ serve(async (req) => {
     const body = await req.json();
     const { action } = body;
 
+    // Função auxiliar para registrar log de auditoria
+    const logAuditAction = async (
+      actionName: string,
+      targetUserId?: string,
+      targetEmail?: string,
+      details?: Record<string, unknown>
+    ) => {
+      try {
+        await supabaseAdmin.from("admin_audit_logs").insert({
+          admin_user_id: callerUser.id,
+          admin_email: callerUser.email || "unknown",
+          action: actionName,
+          target_user_id: targetUserId || null,
+          target_email: targetEmail || null,
+          details: details || null,
+        });
+      } catch (err) {
+        console.error("Erro ao registrar log de auditoria:", err);
+      }
+    };
+
     switch (action) {
       case "list": {
         const { data: usersData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
@@ -190,6 +211,13 @@ serve(async (req) => {
               role: role,
             }, { onConflict: "user_id,role" });
           }
+
+          // Log de auditoria
+          await logAuditAction("create", authData.user.id, email, {
+            full_name,
+            plan_type: plan_type || "free",
+            role: role || "user",
+          });
         }
 
         return new Response(
@@ -199,7 +227,7 @@ serve(async (req) => {
       }
 
       case "delete": {
-        const { userId } = body;
+        const { userId, targetEmail } = body;
 
         if (!userId) {
           return new Response(
@@ -225,6 +253,9 @@ serve(async (req) => {
           );
         }
 
+        // Log de auditoria
+        await logAuditAction("delete", userId, targetEmail);
+
         return new Response(
           JSON.stringify({ success: true }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -232,7 +263,7 @@ serve(async (req) => {
       }
 
       case "update_email": {
-        const { userId, newEmail } = body;
+        const { userId, newEmail, targetEmail } = body;
 
         if (!userId || !newEmail) {
           return new Response(
@@ -253,6 +284,9 @@ serve(async (req) => {
           );
         }
 
+        // Log de auditoria
+        await logAuditAction("update_email", userId, targetEmail, { new_email: newEmail });
+
         return new Response(
           JSON.stringify({ success: true }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -260,7 +294,7 @@ serve(async (req) => {
       }
 
       case "update_password": {
-        const { userId, newPassword } = body;
+        const { userId, newPassword, targetEmail } = body;
 
         if (!userId || !newPassword) {
           return new Response(
@@ -280,6 +314,9 @@ serve(async (req) => {
           );
         }
 
+        // Log de auditoria
+        await logAuditAction("update_password", userId, targetEmail);
+
         return new Response(
           JSON.stringify({ success: true }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -287,7 +324,7 @@ serve(async (req) => {
       }
 
       case "reset_password": {
-        const { userId } = body;
+        const { userId, targetEmail } = body;
 
         if (!userId) {
           return new Response(
@@ -310,6 +347,9 @@ serve(async (req) => {
           );
         }
 
+        // Log de auditoria
+        await logAuditAction("reset_password", userId, targetEmail);
+
         return new Response(
           JSON.stringify({ success: true, tempPassword }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -317,7 +357,7 @@ serve(async (req) => {
       }
 
       case "update_plan": {
-        const { userId, planType } = body;
+        const { userId, planType, targetEmail } = body;
 
         if (!userId || !planType) {
           return new Response(
@@ -342,6 +382,9 @@ serve(async (req) => {
           );
         }
 
+        // Log de auditoria
+        await logAuditAction("update_plan", userId, targetEmail, { new_plan: planType });
+
         return new Response(
           JSON.stringify({ success: true }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -349,7 +392,7 @@ serve(async (req) => {
       }
 
       case "update_role": {
-        const { userId, role, remove } = body;
+        const { userId, role, remove, targetEmail } = body;
 
         if (!userId || !role) {
           return new Response(
@@ -383,6 +426,9 @@ serve(async (req) => {
             );
           }
         }
+
+        // Log de auditoria
+        await logAuditAction("update_role", userId, targetEmail, { role, remove: !!remove });
 
         return new Response(
           JSON.stringify({ success: true }),

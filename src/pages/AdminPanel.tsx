@@ -6,10 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Users, CreditCard, TrendingUp, Activity, MessageSquare, Utensils, Dumbbell, AlertTriangle, LayoutDashboard, UserCog } from "lucide-react";
+import { Loader2, Users, CreditCard, TrendingUp, Activity, MessageSquare, Utensils, Dumbbell, AlertTriangle, LayoutDashboard, UserCog, Shield } from "lucide-react";
 import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { toast } from "sonner";
 import { UserManagement } from "@/components/admin/UserManagement";
+import { AuditLogs } from "@/components/admin/AuditLogs";
 
 interface DashboardStats {
   totalUsers: number;
@@ -341,6 +342,10 @@ export default function AdminPanel() {
               <UserCog className="h-4 w-4" />
               Gestão de Usuários
             </TabsTrigger>
+            <TabsTrigger value="audit" className="gap-2">
+              <Shield className="h-4 w-4" />
+              Auditoria
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">
@@ -585,6 +590,10 @@ export default function AdminPanel() {
 
           <TabsContent value="users">
             <UserManagement />
+          </TabsContent>
+
+          <TabsContent value="audit">
+            <AuditLogs />
           </TabsContent>
         </Tabs>
       </div>
