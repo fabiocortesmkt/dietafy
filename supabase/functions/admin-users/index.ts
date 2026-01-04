@@ -130,10 +130,10 @@ serve(async (req) => {
         // Buscar perfis e roles
         const userIds = usersData.users.map((u) => u.id);
         
-        const { data: profiles } = await supabaseAdmin
-          .from("user_profiles")
-          .select("user_id, full_name, plan_type, created_at, onboarding_completed")
-          .in("user_id", userIds);
+      const { data: profiles } = await supabaseAdmin
+        .from("user_profiles")
+        .select("user_id, full_name, plan_type, created_at, onboarding_completed, whatsapp_phone")
+        .in("user_id", userIds);
 
         const { data: roles } = await supabaseAdmin
           .from("user_roles")
@@ -154,6 +154,7 @@ serve(async (req) => {
             plan_type: profile?.plan_type || "free",
             onboarding_completed: profile?.onboarding_completed || false,
             roles: userRoles,
+            whatsapp_phone: profile?.whatsapp_phone || null,
           };
         });
 
