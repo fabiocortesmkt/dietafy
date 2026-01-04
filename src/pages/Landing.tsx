@@ -185,14 +185,14 @@ const Landing = () => {
               className="relative w-full max-w-md rounded-3xl border border-border/40 bg-gradient-to-br from-card/98 via-background/95 to-card/90 shadow-[0_22px_70px_-30px_hsl(var(--primary)/0.75)] flex flex-col items-center justify-center py-8 md:py-10 px-6 gap-8"
             >
               {/* Top demo labels */}
-              <div className="flex w-full flex-col items-center justify-between gap-2 sm:flex-row sm:items-center text-[0.65rem] sm:text-xs md:text-sm text-muted-foreground">
-              <div className="flex items-center gap-1 sm:gap-2">
-                <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-primary animate-pulse" />
-                <span className="font-semibold tracking-[0.22em] uppercase text-[0.7rem] sm:text-[0.8rem] md:text-sm">
-                  <span className="text-gradient">DEMONSTRAÇÃO AO VIVO DO VITA NUTRI IA</span>
-                </span>
-              </div>
-                <span className="mt-0.5 sm:mt-0 font-medium px-2 py-0.5 rounded-full bg-muted/60 text-[0.6rem] sm:text-[0.7rem] md:text-xs text-muted-foreground">
+              <div className="flex w-full flex-col items-center justify-center gap-3 text-center">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                  <span className="font-bold tracking-[0.15em] uppercase text-sm sm:text-base md:text-lg">
+                    <span className="text-gradient">DEMONSTRAÇÃO AO VIVO DO VITA NUTRI IA</span>
+                  </span>
+                </div>
+                <span className="font-medium px-3 py-1 rounded-full bg-muted/60 text-xs sm:text-sm text-muted-foreground">
                   Voz natural em português
                 </span>
               </div>
