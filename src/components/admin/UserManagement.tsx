@@ -114,11 +114,11 @@ export function UserManagement() {
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
+  const handleDeleteUser = async (userId: string, userEmail: string) => {
     setActionLoading(userId);
     try {
       const { data, error } = await supabase.functions.invoke("admin-users", {
-        body: { action: "delete", userId },
+        body: { action: "delete", userId, targetEmail: userEmail },
       });
 
       if (error) throw error;
@@ -135,11 +135,11 @@ export function UserManagement() {
     }
   };
 
-  const handleUpdateEmail = async (userId: string, email: string) => {
+  const handleUpdateEmail = async (userId: string, email: string, oldEmail: string) => {
     setActionLoading(userId);
     try {
       const { data, error } = await supabase.functions.invoke("admin-users", {
-        body: { action: "update_email", userId, newEmail: email },
+        body: { action: "update_email", userId, newEmail: email, targetEmail: oldEmail },
       });
 
       if (error) throw error;
@@ -157,11 +157,11 @@ export function UserManagement() {
     }
   };
 
-  const handleUpdatePassword = async (userId: string, password: string) => {
+  const handleUpdatePassword = async (userId: string, password: string, userEmail: string) => {
     setActionLoading(userId);
     try {
       const { data, error } = await supabase.functions.invoke("admin-users", {
-        body: { action: "update_password", userId, newPassword: password },
+        body: { action: "update_password", userId, newPassword: password, targetEmail: userEmail },
       });
 
       if (error) throw error;
@@ -178,11 +178,11 @@ export function UserManagement() {
     }
   };
 
-  const handleResetPassword = async (userId: string) => {
+  const handleResetPassword = async (userId: string, userEmail: string) => {
     setActionLoading(userId);
     try {
       const { data, error } = await supabase.functions.invoke("admin-users", {
-        body: { action: "reset_password", userId },
+        body: { action: "reset_password", userId, targetEmail: userEmail },
       });
 
       if (error) throw error;
@@ -199,11 +199,11 @@ export function UserManagement() {
     }
   };
 
-  const handleUpdatePlan = async (userId: string, planType: string) => {
+  const handleUpdatePlan = async (userId: string, planType: string, userEmail: string) => {
     setActionLoading(userId);
     try {
       const { data, error } = await supabase.functions.invoke("admin-users", {
-        body: { action: "update_plan", userId, planType },
+        body: { action: "update_plan", userId, planType, targetEmail: userEmail },
       });
 
       if (error) throw error;
@@ -219,11 +219,11 @@ export function UserManagement() {
     }
   };
 
-  const handleUpdateRole = async (userId: string, role: string, remove: boolean = false) => {
+  const handleUpdateRole = async (userId: string, role: string, remove: boolean = false, userEmail: string = "") => {
     setActionLoading(userId);
     try {
       const { data, error } = await supabase.functions.invoke("admin-users", {
-        body: { action: "update_role", userId, role, remove },
+        body: { action: "update_role", userId, role, remove, targetEmail: userEmail },
       });
 
       if (error) throw error;
@@ -595,7 +595,7 @@ export function UserManagement() {
                     {/* Plan selector */}
                     <Select
                       value={user.plan_type}
-                      onValueChange={(v) => handleUpdatePlan(user.id, v)}
+                      onValueChange={(v) => handleUpdatePlan(user.id, v, user.email)}
                       disabled={actionLoading === user.id}
                     >
                       <SelectTrigger className="w-[110px] h-8">
@@ -657,7 +657,7 @@ export function UserManagement() {
                               Cancelar
                             </Button>
                             <Button
-                              onClick={() => handleUpdateEmail(user.id, newUserEmail)}
+                              onClick={() => handleUpdateEmail(user.id, newUserEmail, user.email)}
                               disabled={actionLoading === user.id}
                             >
                               {actionLoading === user.id && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
@@ -719,7 +719,7 @@ export function UserManagement() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleResetPassword(user.id)}
+                                onClick={() => handleResetPassword(user.id, user.email)}
                                 disabled={actionLoading === user.id}
                               >
                                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -732,7 +732,7 @@ export function UserManagement() {
                               Cancelar
                             </Button>
                             <Button
-                              onClick={() => handleUpdatePassword(user.id, newUserPassword)}
+                              onClick={() => handleUpdatePassword(user.id, newUserPassword, user.email)}
                               disabled={actionLoading === user.id || !newUserPassword}
                             >
                               {actionLoading === user.id && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
@@ -748,7 +748,7 @@ export function UserManagement() {
                         size="icon"
                         className="h-8 w-8"
                         onClick={() =>
-                          handleUpdateRole(user.id, "admin", user.roles.includes("admin"))
+                          handleUpdateRole(user.id, "admin", user.roles.includes("admin"), user.email)
                         }
                         disabled={actionLoading === user.id}
                       >
@@ -786,7 +786,7 @@ export function UserManagement() {
                             </Button>
                             <Button
                               variant="destructive"
-                              onClick={() => handleDeleteUser(user.id)}
+                              onClick={() => handleDeleteUser(user.id, user.email)}
                               disabled={actionLoading === user.id}
                             >
                               {actionLoading === user.id && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
