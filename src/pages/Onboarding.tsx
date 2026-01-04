@@ -563,7 +563,7 @@ const Onboarding = () => {
                     {step === 1 && (
                       <motion.div variants={itemVariants} className="space-y-6 text-center py-6">
                         <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                          <Sparkles className="w-10 h-10 text-primary" />
+                          <span className="text-4xl">🍉</span>
                         </div>
                         <div className="space-y-2">
                           <h2 className="text-xl font-bold text-foreground">
