@@ -5,9 +5,11 @@ import { AuthenticatedLayout } from "@/components/layouts/AuthenticatedLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Users, CreditCard, TrendingUp, Activity, MessageSquare, Utensils, Dumbbell, AlertTriangle } from "lucide-react";
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Users, CreditCard, TrendingUp, Activity, MessageSquare, Utensils, Dumbbell, AlertTriangle, LayoutDashboard, UserCog } from "lucide-react";
+import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { toast } from "sonner";
+import { UserManagement } from "@/components/admin/UserManagement";
 
 interface DashboardStats {
   totalUsers: number;
@@ -314,7 +316,7 @@ export default function AdminPanel() {
 
   return (
     <AuthenticatedLayout>
-      <div className="flex-1 px-4 md:px-8 py-6 md:py-8 space-y-6">
+      <div className="flex-1 px-4 md:px-8 py-6 md:py-8 space-y-6 overflow-y-auto">
         {/* Header */}
         <div className="space-y-2">
           <Badge className="uppercase tracking-wide text-[10px] bg-primary/10 text-primary border border-primary/30">
@@ -327,6 +329,21 @@ export default function AdminPanel() {
             Visão completa e em tempo real de todos os usuários, métricas de engajamento e crescimento da plataforma.
           </p>
         </div>
+
+        {/* Tabs */}
+        <Tabs defaultValue="dashboard" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="dashboard" className="gap-2">
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="users" className="gap-2">
+              <UserCog className="h-4 w-4" />
+              Gestão de Usuários
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="dashboard" className="space-y-6">
 
         {adminHealth && (!adminHealth.hasAdminRole || !adminHealth.isPremiumPlan) && (
           <Card className="border-destructive/40 bg-destructive/5">
@@ -564,6 +581,12 @@ export default function AdminPanel() {
             </Card>
           </>
         )}
+          </TabsContent>
+
+          <TabsContent value="users">
+            <UserManagement />
+          </TabsContent>
+        </Tabs>
       </div>
     </AuthenticatedLayout>
   );
