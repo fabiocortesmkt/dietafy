@@ -7,8 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { Loader2, UserPlus, Trash2, Key, Mail, Crown, Shield, RefreshCw, Search, Eye, EyeOff, Filter, X, CheckCircle, XCircle, Calendar } from "lucide-react";
+import { Loader2, UserPlus, Trash2, Key, Mail, Crown, Shield, RefreshCw, Search, Eye, EyeOff, Filter, X, CheckCircle, XCircle, Calendar, MessageCircle } from "lucide-react";
 
 interface User {
   id: string;
@@ -19,6 +20,7 @@ interface User {
   created_at: string;
   last_sign_in_at: string | null;
   onboarding_completed: boolean;
+  whatsapp_phone: string | null;
 }
 
 export function UserManagement() {
@@ -584,9 +586,9 @@ export function UserManagement() {
                     </div>
                     <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                     <p className="text-xs text-muted-foreground">
-                      Criado: {new Date(user.created_at).toLocaleDateString("pt-BR")}
+                      Criado: {new Date(user.created_at).toLocaleString("pt-BR")}
                       {user.last_sign_in_at && (
-                        <> • Último login: {new Date(user.last_sign_in_at).toLocaleDateString("pt-BR")}</>
+                        <> • Último login: {new Date(user.last_sign_in_at).toLocaleString("pt-BR")}</>
                       )}
                     </p>
                   </div>
@@ -612,46 +614,67 @@ export function UserManagement() {
                     </Select>
 
                     {/* Actions */}
+                    <TooltipProvider>
                     <div className="flex gap-1">
+                      {/* WhatsApp button */}
+                      {user.whatsapp_phone && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                              onClick={() => window.open(`https://wa.me/${user.whatsapp_phone?.replace(/\D/g, '')}`, '_blank')}
+                            >
+                              <MessageCircle className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom">WhatsApp: {user.whatsapp_phone}</TooltipContent>
+                        </Tooltip>
+                      )}
                       {/* Email dialog */}
-                      <Dialog
-                        open={emailDialogUser?.id === user.id}
-                        onOpenChange={(open) => {
-                          if (!open) {
-                            setEmailDialogUser(null);
-                            setNewUserEmail("");
-                          }
-                        }}
-                      >
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => {
-                              setEmailDialogUser(user);
-                              setNewUserEmail(user.email);
-                            }}
-                          >
-                            <Mail className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Alterar Email</DialogTitle>
-                            <DialogDescription>
-                              Alterar email de {user.full_name}
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="py-4">
-                            <Label>Novo Email</Label>
-                            <Input
-                              type="email"
-                              value={newUserEmail}
-                              onChange={(e) => setNewUserEmail(e.target.value)}
-                              className="mt-2"
-                            />
-                          </div>
+                      <Tooltip>
+                        <Dialog
+                          open={emailDialogUser?.id === user.id}
+                          onOpenChange={(open) => {
+                            if (!open) {
+                              setEmailDialogUser(null);
+                              setNewUserEmail("");
+                            }
+                          }}
+                        >
+                          <TooltipTrigger asChild>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => {
+                                  setEmailDialogUser(user);
+                                  setNewUserEmail(user.email);
+                                }}
+                              >
+                                <Mail className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom">Alterar email</TooltipContent>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Alterar Email</DialogTitle>
+                              <DialogDescription>
+                                Alterar email de {user.full_name}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="py-4">
+                              <Label>Novo Email</Label>
+                              <Input
+                                type="email"
+                                value={newUserEmail}
+                                onChange={(e) => setNewUserEmail(e.target.value)}
+                                className="mt-2"
+                              />
+                            </div>
                           <DialogFooter>
                             <Button variant="outline" onClick={() => setEmailDialogUser(null)}>
                               Cancelar
@@ -661,141 +684,159 @@ export function UserManagement() {
                               disabled={actionLoading === user.id}
                             >
                               {actionLoading === user.id && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                              Salvar
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </Tooltip>
 
                       {/* Password dialog */}
-                      <Dialog
-                        open={passwordDialogUser?.id === user.id}
-                        onOpenChange={(open) => {
-                          if (!open) {
-                            setPasswordDialogUser(null);
-                            setNewUserPassword("");
-                          }
-                        }}
-                      >
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => setPasswordDialogUser(user)}
-                          >
-                            <Key className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Alterar Senha</DialogTitle>
-                            <DialogDescription>
-                              Definir nova senha para {user.full_name}
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="py-4 space-y-4">
-                            <div>
-                              <Label>Nova Senha</Label>
-                              <div className="relative mt-2">
-                                <Input
-                                  type={showPassword ? "text" : "password"}
-                                  value={newUserPassword}
-                                  onChange={(e) => setNewUserPassword(e.target.value)}
-                                  placeholder="Digite a nova senha"
-                                />
+                      <Tooltip>
+                        <Dialog
+                          open={passwordDialogUser?.id === user.id}
+                          onOpenChange={(open) => {
+                            if (!open) {
+                              setPasswordDialogUser(null);
+                              setNewUserPassword("");
+                            }
+                          }}
+                        >
+                          <TooltipTrigger asChild>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => setPasswordDialogUser(user)}
+                              >
+                                <Key className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom">Alterar senha</TooltipContent>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Alterar Senha</DialogTitle>
+                              <DialogDescription>
+                                Definir nova senha para {user.full_name}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="py-4 space-y-4">
+                              <div>
+                                <Label>Nova Senha</Label>
+                                <div className="relative mt-2">
+                                  <Input
+                                    type={showPassword ? "text" : "password"}
+                                    value={newUserPassword}
+                                    onChange={(e) => setNewUserPassword(e.target.value)}
+                                    placeholder="Digite a nova senha"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute right-0 top-0 h-full px-3"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                  >
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                  </Button>
+                                </div>
+                              </div>
+                              <div className="flex justify-center">
                                 <Button
-                                  type="button"
-                                  variant="ghost"
+                                  variant="outline"
                                   size="sm"
-                                  className="absolute right-0 top-0 h-full px-3"
-                                  onClick={() => setShowPassword(!showPassword)}
+                                  onClick={() => handleResetPassword(user.id, user.email)}
+                                  disabled={actionLoading === user.id}
                                 >
-                                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                  <RefreshCw className="h-4 w-4 mr-2" />
+                                  Gerar senha temporária
                                 </Button>
                               </div>
                             </div>
-                            <div className="flex justify-center">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleResetPassword(user.id, user.email)}
-                                disabled={actionLoading === user.id}
-                              >
-                                <RefreshCw className="h-4 w-4 mr-2" />
-                                Gerar senha temporária
+                            <DialogFooter>
+                              <Button variant="outline" onClick={() => setPasswordDialogUser(null)}>
+                                Cancelar
                               </Button>
-                            </div>
-                          </div>
-                          <DialogFooter>
-                            <Button variant="outline" onClick={() => setPasswordDialogUser(null)}>
-                              Cancelar
-                            </Button>
-                            <Button
-                              onClick={() => handleUpdatePassword(user.id, newUserPassword, user.email)}
-                              disabled={actionLoading === user.id || !newUserPassword}
-                            >
-                              {actionLoading === user.id && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                              Salvar Senha
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
+                              <Button
+                                onClick={() => handleUpdatePassword(user.id, newUserPassword, user.email)}
+                                disabled={actionLoading === user.id || !newUserPassword}
+                              >
+                                {actionLoading === user.id && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                                Salvar Senha
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </Tooltip>
 
                       {/* Toggle admin role */}
-                      <Button
-                        variant={user.roles.includes("admin") ? "default" : "outline"}
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() =>
-                          handleUpdateRole(user.id, "admin", user.roles.includes("admin"), user.email)
-                        }
-                        disabled={actionLoading === user.id}
-                      >
-                        <Shield className="h-4 w-4" />
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant={user.roles.includes("admin") ? "default" : "outline"}
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() =>
+                              handleUpdateRole(user.id, "admin", user.roles.includes("admin"), user.email)
+                            }
+                            disabled={actionLoading === user.id}
+                          >
+                            <Shield className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">
+                          {user.roles.includes("admin") ? "Remover admin" : "Adicionar admin"}
+                        </TooltipContent>
+                      </Tooltip>
 
                       {/* Delete dialog */}
-                      <Dialog
-                        open={deleteDialogUser?.id === user.id}
-                        onOpenChange={(open) => {
-                          if (!open) setDeleteDialogUser(null);
-                        }}
-                      >
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                            onClick={() => setDeleteDialogUser(user)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Confirmar Exclusão</DialogTitle>
-                            <DialogDescription>
-                              Tem certeza que deseja excluir o usuário <strong>{user.full_name}</strong> ({user.email})?
-                              Esta ação não pode ser desfeita.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <DialogFooter>
-                            <Button variant="outline" onClick={() => setDeleteDialogUser(null)}>
-                              Cancelar
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              onClick={() => handleDeleteUser(user.id, user.email)}
-                              disabled={actionLoading === user.id}
-                            >
-                              {actionLoading === user.id && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                              Excluir Usuário
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
+                      <Tooltip>
+                        <Dialog
+                          open={deleteDialogUser?.id === user.id}
+                          onOpenChange={(open) => {
+                            if (!open) setDeleteDialogUser(null);
+                          }}
+                        >
+                          <TooltipTrigger asChild>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                onClick={() => setDeleteDialogUser(user)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom">Excluir usuário</TooltipContent>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Confirmar Exclusão</DialogTitle>
+                              <DialogDescription>
+                                Tem certeza que deseja excluir o usuário <strong>{user.full_name}</strong> ({user.email})?
+                                Esta ação não pode ser desfeita.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                              <Button variant="outline" onClick={() => setDeleteDialogUser(null)}>
+                                Cancelar
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                onClick={() => handleDeleteUser(user.id, user.email)}
+                                disabled={actionLoading === user.id}
+                              >
+                                {actionLoading === user.id && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                                Excluir Usuário
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </Tooltip>
                     </div>
+                    </TooltipProvider>
                   </div>
                 </div>
               ))
