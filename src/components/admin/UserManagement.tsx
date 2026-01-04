@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, UserPlus, Trash2, Key, Mail, Crown, Shield, RefreshCw, Search, Eye, EyeOff } from "lucide-react";
+import { Loader2, UserPlus, Trash2, Key, Mail, Crown, Shield, RefreshCw, Search, Eye, EyeOff, Filter, X, CheckCircle, XCircle, Calendar } from "lucide-react";
 
 interface User {
   id: string;
@@ -26,6 +26,13 @@ export function UserManagement() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Filters
+  const [filterPlan, setFilterPlan] = useState<"all" | "free" | "premium">("all");
+  const [filterOnboarding, setFilterOnboarding] = useState<"all" | "completed" | "pending">("all");
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
 
   // Create user dialog
   const [createOpen, setCreateOpen] = useState(false);
@@ -232,11 +239,42 @@ export function UserManagement() {
     }
   };
 
-  const filteredUsers = users.filter(
-    (user) =>
+  const filteredUsers = users.filter((user) => {
+    // Text search
+    const matchesSearch =
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.full_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      user.full_name.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Plan filter
+    const matchesPlan = filterPlan === "all" || user.plan_type === filterPlan;
+
+    // Onboarding filter
+    const matchesOnboarding =
+      filterOnboarding === "all" ||
+      (filterOnboarding === "completed" && user.onboarding_completed) ||
+      (filterOnboarding === "pending" && !user.onboarding_completed);
+
+    // Date filter
+    const userDate = new Date(user.created_at);
+    const matchesDateFrom = !filterDateFrom || userDate >= new Date(filterDateFrom);
+    const matchesDateTo = !filterDateTo || userDate <= new Date(filterDateTo + "T23:59:59");
+
+    return matchesSearch && matchesPlan && matchesOnboarding && matchesDateFrom && matchesDateTo;
+  });
+
+  const activeFiltersCount = [
+    filterPlan !== "all",
+    filterOnboarding !== "all",
+    filterDateFrom,
+    filterDateTo,
+  ].filter(Boolean).length;
+
+  const clearFilters = () => {
+    setFilterPlan("all");
+    setFilterOnboarding("all");
+    setFilterDateFrom("");
+    setFilterDateTo("");
+  };
 
   return (
     <Card>
@@ -346,17 +384,164 @@ export function UserManagement() {
         </div>
       </CardHeader>
       <CardContent>
-        {/* Search */}
-        <div className="mb-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por email ou nome..."
-              className="pl-10"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+        {/* Search and Filters */}
+        <div className="mb-4 space-y-3">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por email ou nome..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Button
+              variant={showFilters ? "secondary" : "outline"}
+              size="icon"
+              onClick={() => setShowFilters(!showFilters)}
+              className="relative"
+            >
+              <Filter className="h-4 w-4" />
+              {activeFiltersCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] text-primary-foreground flex items-center justify-center">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </Button>
           </div>
+
+          {/* Filters Panel */}
+          {showFilters && (
+            <div className="p-4 rounded-lg border border-border/50 bg-muted/30 space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  Filtros Avançados
+                </h4>
+                {activeFiltersCount > 0 && (
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="h-7 text-xs">
+                    <X className="h-3 w-3 mr-1" />
+                    Limpar filtros
+                  </Button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Plan filter */}
+                <div className="space-y-2">
+                  <Label className="text-xs flex items-center gap-1">
+                    <Crown className="h-3 w-3" />
+                    Plano
+                  </Label>
+                  <Select value={filterPlan} onValueChange={(v) => setFilterPlan(v as "all" | "free" | "premium")}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Todos os planos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os planos</SelectItem>
+                      <SelectItem value="free">Free</SelectItem>
+                      <SelectItem value="premium">Premium</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Onboarding filter */}
+                <div className="space-y-2">
+                  <Label className="text-xs flex items-center gap-1">
+                    <CheckCircle className="h-3 w-3" />
+                    Onboarding
+                  </Label>
+                  <Select value={filterOnboarding} onValueChange={(v) => setFilterOnboarding(v as "all" | "completed" | "pending")}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Todos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="completed">
+                        <span className="flex items-center gap-1">
+                          <CheckCircle className="h-3 w-3 text-green-500" />
+                          Concluído
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="pending">
+                        <span className="flex items-center gap-1">
+                          <XCircle className="h-3 w-3 text-orange-500" />
+                          Pendente
+                        </span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Date from */}
+                <div className="space-y-2">
+                  <Label className="text-xs flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    Cadastro de
+                  </Label>
+                  <Input
+                    type="date"
+                    value={filterDateFrom}
+                    onChange={(e) => setFilterDateFrom(e.target.value)}
+                    className="h-9"
+                  />
+                </div>
+
+                {/* Date to */}
+                <div className="space-y-2">
+                  <Label className="text-xs flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    Cadastro até
+                  </Label>
+                  <Input
+                    type="date"
+                    value={filterDateTo}
+                    onChange={(e) => setFilterDateTo(e.target.value)}
+                    className="h-9"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Active filters summary */}
+          {activeFiltersCount > 0 && !showFilters && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {filterPlan !== "all" && (
+                <Badge variant="secondary" className="text-xs">
+                  Plano: {filterPlan === "premium" ? "Premium" : "Free"}
+                  <button onClick={() => setFilterPlan("all")} className="ml-1 hover:text-foreground">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {filterOnboarding !== "all" && (
+                <Badge variant="secondary" className="text-xs">
+                  Onboarding: {filterOnboarding === "completed" ? "Concluído" : "Pendente"}
+                  <button onClick={() => setFilterOnboarding("all")} className="ml-1 hover:text-foreground">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {filterDateFrom && (
+                <Badge variant="secondary" className="text-xs">
+                  De: {new Date(filterDateFrom).toLocaleDateString("pt-BR")}
+                  <button onClick={() => setFilterDateFrom("")} className="ml-1 hover:text-foreground">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {filterDateTo && (
+                <Badge variant="secondary" className="text-xs">
+                  Até: {new Date(filterDateTo).toLocaleDateString("pt-BR")}
+                  <button onClick={() => setFilterDateTo("")} className="ml-1 hover:text-foreground">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+            </div>
+          )}
         </div>
 
         {loading ? (
@@ -384,6 +569,17 @@ export function UserManagement() {
                       )}
                       {user.roles.includes("moderator") && (
                         <Badge variant="secondary" className="text-[10px]">Mod</Badge>
+                      )}
+                      {user.onboarding_completed ? (
+                        <Badge variant="outline" className="text-[10px] text-green-600 border-green-600/30">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Onboarding OK
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[10px] text-orange-500 border-orange-500/30">
+                          <XCircle className="h-3 w-3 mr-1" />
+                          Pendente
+                        </Badge>
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground truncate">{user.email}</p>
