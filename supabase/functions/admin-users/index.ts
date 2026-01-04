@@ -12,39 +12,65 @@ serve(async (req) => {
   }
 
   try {
-    // Verificar se o chamador é admin
+    // Extrair token do header Authorization
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    console.log("Auth header presente:", !!authHeader);
+    
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.log("Token inválido ou ausente");
       return new Response(
-        JSON.stringify({ error: "Não autorizado" }),
+        JSON.stringify({ error: "Token de autorização inválido" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    const token = authHeader.replace("Bearer ", "");
+    console.log("Token extraído, verificando usuário...");
+
+    // Criar cliente com o token do usuário para verificar autenticação
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
+      { 
+        global: { 
+          headers: { Authorization: `Bearer ${token}` } 
+        } 
+      }
     );
 
-    const { data: { user: callerUser } } = await supabaseClient.auth.getUser();
-    if (!callerUser) {
+    const { data: { user: callerUser }, error: userError } = await supabaseClient.auth.getUser(token);
+    
+    console.log("Resultado getUser - usuário:", callerUser?.email, "erro:", userError?.message);
+    
+    if (userError || !callerUser) {
+      console.log("Falha na autenticação:", userError?.message);
       return new Response(
-        JSON.stringify({ error: "Usuário não autenticado" }),
+        JSON.stringify({ error: "Usuário não autenticado", details: userError?.message }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    console.log("Usuário autenticado:", callerUser.email);
+
     // Verificar se é admin@dev.local ou tem role admin
     const isDevAdmin = callerUser.email?.toLowerCase() === "admin@dev.local";
+    console.log("É admin@dev.local:", isDevAdmin);
     
     if (!isDevAdmin) {
-      const { data: roleData } = await supabaseClient
+      // Usar service role para verificar roles (evita problemas de RLS)
+      const supabaseAdmin = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
+      
+      const { data: roleData, error: roleError } = await supabaseAdmin
         .from("user_roles")
         .select("role")
         .eq("user_id", callerUser.id)
         .eq("role", "admin")
         .maybeSingle();
+
+      console.log("Verificação de role admin:", roleData, "erro:", roleError?.message);
 
       if (!roleData) {
         return new Response(
