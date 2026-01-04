@@ -265,10 +265,12 @@ const Onboarding = () => {
     }
 
     setStep((prev) => Math.min(prev + 1, totalSteps));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const goBack = () => {
     setStep((prev) => Math.max(prev - 1, 1));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const onSubmit = async (values: OnboardingFormValues) => {
