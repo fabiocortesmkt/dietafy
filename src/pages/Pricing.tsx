@@ -36,27 +36,25 @@ const Pricing = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center">
-      <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-border/50 px-4 py-6">
-        <div className="max-w-3xl mx-auto text-center space-y-3">
-          <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Planos DietaFY</p>
-          <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">Escolha como quer evoluir com a Vita</h1>
-          <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-            Comece grátis e faça upgrade para desbloquear o potencial completo do DietaFY quando estiver pronto.
-          </p>
-          {loading ? (
-            <div className="flex justify-center mt-2">
-              <Skeleton className="h-6 w-24" />
-            </div>
-          ) : planType && (
-            <div className="flex justify-center mt-2">
-              <Badge variant="outline">Seu plano atual: {planType === "premium" ? "PREMIUM" : "FREE"}</Badge>
-            </div>
-          )}
-        </div>
+    <div className="min-h-screen bg-background flex flex-col items-center px-4 py-10">
+      <header className="max-w-3xl w-full mb-8 text-center space-y-3">
+        <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Planos DietaFY</p>
+        <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">Escolha como quer evoluir com a Vita</h1>
+        <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
+          Comece grátis e faça upgrade para desbloquear o potencial completo do DietaFY quando estiver pronto.
+        </p>
+        {loading ? (
+          <div className="flex justify-center mt-2">
+            <Skeleton className="h-6 w-24" />
+          </div>
+        ) : planType && (
+          <div className="flex justify-center mt-2">
+            <Badge variant="outline">Seu plano atual: {planType === "premium" ? "PREMIUM" : "FREE"}</Badge>
+          </div>
+        )}
       </header>
 
-      <main className="grid gap-6 md:grid-cols-2 max-w-4xl w-full px-4 py-10">
+      <main className="grid gap-6 md:grid-cols-2 max-w-4xl w-full">
         <Card className="border-muted">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
