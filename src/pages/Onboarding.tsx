@@ -8,6 +8,7 @@ import { Loader2, User, Ruler, Weight, Target, Dumbbell, MessageCircle, ChevronR
 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { launchConfetti } from "@/lib/confetti";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -309,12 +310,18 @@ const Onboarding = () => {
 
       if (error) throw error;
 
+      // Launch confetti celebration!
+      launchConfetti();
+      // Fire again after a short delay for extra celebration
+      setTimeout(() => launchConfetti(), 300);
+
       toast({
-        title: "Plano criado",
+        title: "🎉 Plano criado com sucesso!",
         description: "Te levando para o seu painel.",
       });
 
-      navigate("/dashboard");
+      // Small delay to let the user enjoy the confetti
+      setTimeout(() => navigate("/dashboard"), 800);
     } catch (error: any) {
       toast({
         title: "Erro ao salvar",
