@@ -149,7 +149,7 @@ const Landing = () => {
               </span>
               <span className="inline-flex items-center gap-1">
                 <Lock className="h-3 w-3 text-primary" />
-                <span>Pagamento seguro</span>
+                <span>Não precisa de cartão</span>
               </span>
               <span className="inline-flex items-center gap-1">
                 <Check className="h-3 w-3 text-primary" />
