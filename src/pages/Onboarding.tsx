@@ -169,6 +169,7 @@ const Onboarding = () => {
   const [step, setStep] = useState(1);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [initializing, setInitializing] = useState(true);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
@@ -312,18 +313,16 @@ const Onboarding = () => {
 
       if (error) throw error;
 
+      // Show success screen
+      setShowSuccess(true);
+      
       // Launch confetti celebration!
-      launchConfetti();
-      // Fire again after a short delay for extra celebration
       setTimeout(() => launchConfetti(), 300);
+      setTimeout(() => launchConfetti(), 600);
+      setTimeout(() => launchConfetti(), 1200);
 
-      toast({
-        title: "🎉 Plano criado com sucesso!",
-        description: "Te levando para o seu painel.",
-      });
-
-      // Small delay to let the user enjoy the confetti
-      setTimeout(() => navigate("/dashboard"), 800);
+      // Navigate to dashboard after animation
+      setTimeout(() => navigate("/dashboard"), 4000);
     } catch (error: any) {
       toast({
         title: "Erro ao salvar",
@@ -496,6 +495,151 @@ const Onboarding = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
+        >
+          Dietafy
+        </motion.p>
+      </div>
+    );
+  }
+
+  // Success screen after completing onboarding
+  if (showSuccess) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-animated overflow-hidden px-6">
+        <motion.div
+          className="flex flex-col items-center text-center"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          {/* Animated checkmark with orb */}
+          <div className="relative mb-8">
+            {/* Outer glow rings */}
+            <motion.div
+              className="absolute -inset-8 rounded-full"
+              style={{
+                background: "radial-gradient(circle, hsl(var(--primary) / 0.3) 0%, transparent 70%)",
+              }}
+              animate={{
+                scale: [1, 1.3, 1],
+                opacity: [0.5, 0.2, 0.5],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+            
+            {/* Success orb */}
+            <motion.div
+              className="relative w-28 h-28 rounded-full flex items-center justify-center shadow-2xl"
+              style={{
+                background: "var(--gradient-primary)",
+                boxShadow: "0 0 60px hsl(var(--primary) / 0.5)",
+              }}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            >
+              {/* Checkmark */}
+              <motion.svg
+                className="w-14 h-14 text-white"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+              >
+                <motion.path
+                  d="M5 12l5 5L20 7"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ delay: 0.5, duration: 0.5 }}
+                />
+              </motion.svg>
+            </motion.div>
+          </div>
+
+          {/* Success text */}
+          <motion.div
+            className="space-y-3"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.4 }}
+          >
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+              Parabéns! 🎉
+            </h1>
+            <p className="text-muted-foreground max-w-sm">
+              Seu plano personalizado está pronto. Vamos começar sua jornada!
+            </p>
+          </motion.div>
+
+          {/* Animated watermelon */}
+          <motion.div
+            className="mt-8"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8, type: "spring" }}
+          >
+            <motion.span
+              className="text-5xl"
+              animate={{
+                y: [0, -10, 0],
+                rotate: [0, 10, -10, 0],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            >
+              🍉
+            </motion.span>
+          </motion.div>
+
+          {/* Loading indicator */}
+          <motion.div
+            className="mt-10 flex flex-col items-center gap-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+          >
+            <p className="text-sm text-muted-foreground">
+              Preparando seu painel...
+            </p>
+            <div className="flex gap-1.5">
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  className="w-2 h-2 rounded-full bg-primary"
+                  animate={{
+                    scale: [1, 1.3, 1],
+                    opacity: [0.4, 1, 0.4],
+                  }}
+                  transition={{
+                    duration: 0.8,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: i * 0.15,
+                  }}
+                />
+              ))}
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Brand */}
+        <motion.p
+          className="absolute bottom-8 text-xs text-muted-foreground/50 tracking-widest uppercase"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2 }}
         >
           Dietafy
         </motion.p>
