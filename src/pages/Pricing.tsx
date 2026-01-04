@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { ShieldCheck, Lock, Check } from "lucide-react";
+import { AuthenticatedLayout } from "@/components/layouts/AuthenticatedLayout";
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -36,7 +37,8 @@ const Pricing = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center px-4 py-10">
+    <AuthenticatedLayout>
+      <div className="flex-1 overflow-y-auto bg-background flex flex-col items-center px-4 py-6">
       <header className="max-w-3xl w-full mb-8 text-center space-y-3">
         <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Planos DietaFY</p>
         <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">Escolha como quer evoluir com a Vita</h1>
@@ -275,7 +277,8 @@ const Pricing = () => {
           </AccordionItem>
         </Accordion>
       </section>
-    </div>
+      </div>
+    </AuthenticatedLayout>
   );
 };
 
