@@ -189,8 +189,7 @@ const Landing = () => {
               <div className="flex items-center gap-1 sm:gap-2">
                 <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-primary animate-pulse" />
                 <span className="font-semibold tracking-[0.22em] uppercase text-[0.7rem] sm:text-[0.8rem] md:text-sm">
-                  <span>🧪</span>{" "}
-                  <span className="text-gradient">Demonstração ao vivo da Vita Nutri IA</span>
+                  <span className="text-gradient">DEMONSTRAÇÃO AO VIVO DO VITA NUTRI IA</span>
                 </span>
               </div>
                 <span className="mt-0.5 sm:mt-0 font-medium px-2 py-0.5 rounded-full bg-muted/60 text-[0.6rem] sm:text-[0.7rem] md:text-xs text-muted-foreground">
