@@ -1,0 +1,247 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 220 9% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 9% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 9% 15%;
+
+    --primary: 158 64% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 91% 60%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 13% 91%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 158 64% 52%;
+
+    --radius: 0.75rem;
+
+    --gradient-primary: linear-gradient(135deg, hsl(158 64% 52%), hsl(217 91% 60%));
+    --gradient-hero: linear-gradient(180deg, hsl(158 64% 52% / 0.05), transparent);
+    --shadow-glow: 0 0 40px hsl(158 64% 52% / 0.2);
+    --shadow-card: 0 10px 30px -10px hsl(220 9% 15% / 0.1);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 220 9% 46%;
+    --sidebar-primary: 158 64% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 13% 91%;
+    --sidebar-accent-foreground: 220 9% 15%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 158 64% 52%;
+  }
+
+  .dark {
+    --background: 220 27% 8%;
+    --foreground: 0 0% 98%;
+
+    --card: 220 22% 12%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 220 22% 12%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 158 64% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 91% 60%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 22% 18%;
+    --muted-foreground: 220 9% 65%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 22% 18%;
+    --input: 220 22% 18%;
+    --ring: 158 64% 52%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(158 64% 52%), hsl(217 91% 60%));
+    --gradient-hero: linear-gradient(180deg, hsl(158 64% 52% / 0.1), transparent);
+    --shadow-glow: 0 0 50px hsl(158 64% 52% / 0.3);
+    --shadow-card: 0 10px 40px -10px hsl(0 0% 0% / 0.3);
+
+    --sidebar-background: 220 22% 12%;
+    --sidebar-foreground: 220 9% 65%;
+    --sidebar-primary: 158 64% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 22% 18%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 220 22% 18%;
+    --sidebar-ring: 158 64% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  /* Global premium scrollbar styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.35) hsl(var(--background));
+  }
+
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.35);
+    border-radius: 9999px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glass-card {
+    background: hsl(var(--card) / 0.9);
+    backdrop-filter: blur(14px);
+    border-color: hsl(var(--border) / 0.7);
+    box-shadow: var(--shadow-card);
+  }
+
+  .glass-card-muted {
+    background: hsl(var(--muted) / 0.25);
+    backdrop-filter: blur(12px);
+    border-color: hsl(var(--border) / 0.6);
+    box-shadow: var(--shadow-card);
+  }
+
+  .hover-lift {
+    transition: transform 0.18s ease-out, box-shadow 0.18s ease-out, border-color 0.18s ease-out;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 45px -20px hsl(var(--foreground) / 0.45);
+    border-color: hsl(var(--primary) / 0.55);
+  }
+
+  .hover-scale {
+    transition: transform 0.18s ease-out, box-shadow 0.18s ease-out, border-color 0.18s ease-out;
+  }
+
+  .hover-scale:hover {
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 16px 40px -18px hsl(var(--foreground) / 0.4);
+    border-color: hsl(var(--primary) / 0.5);
+  }
+}
+
+
+@layer components {
+  .finia-circle {
+    position: relative;
+    background:
+      radial-gradient(circle at 30% 20%, hsl(var(--primary) / 0.25), hsl(var(--primary) / 0.05) 40%, transparent 70%),
+      radial-gradient(circle at 75% 80%, hsl(var(--secondary) / 0.22), transparent 65%);
+    box-shadow:
+      var(--shadow-card),
+      0 0 0 1px hsl(var(--border) / 0.7);
+  }
+
+  .finia-circle-speaking {
+    box-shadow:
+      var(--shadow-glow),
+      0 0 0 2px hsl(var(--primary) / 0.9);
+    transform: scale(1.02);
+  }
+
+  .finia-circle-speaking::before {
+    content: "";
+    position: absolute;
+    inset: -14%;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.25), transparent 70%);
+    opacity: 0.85;
+    filter: blur(20px);
+    animation: finia-pulse 1.8s ease-in-out infinite;
+    z-index: 0;
+  }
+
+  /* Premium scrollbar for sidebar content */
+  [data-sidebar="content"] {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--sidebar-foreground) / 0.35) hsl(var(--sidebar-background));
+  }
+
+  [data-sidebar="content"]::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  [data-sidebar="content"]::-webkit-scrollbar-track {
+    background: hsl(var(--sidebar-background));
+  }
+
+  [data-sidebar="content"]::-webkit-scrollbar-thumb {
+    background: hsl(var(--sidebar-foreground) / 0.35);
+    border-radius: 9999px;
+  }
+
+  [data-sidebar="content"]::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--sidebar-foreground) / 0.5);
+  }
+}
+
+@keyframes finia-pulse {
+  0%, 100% {
+    transform: scale(0.98);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
