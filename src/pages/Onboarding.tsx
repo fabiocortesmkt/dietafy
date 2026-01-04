@@ -330,11 +330,166 @@ const Onboarding = () => {
 
   if (initializing) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-animated">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          <span>Carregando sua jornada...</span>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-animated overflow-hidden">
+        {/* Premium Vita Orb Loading Animation */}
+        <div className="relative flex flex-col items-center">
+          {/* Outer glow rings */}
+          <div className="absolute w-48 h-48 rounded-full opacity-20">
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: "radial-gradient(circle, hsl(var(--primary) / 0.4) 0%, transparent 70%)",
+              }}
+              animate={{
+                scale: [1, 1.5, 1],
+                opacity: [0.3, 0.1, 0.3],
+              }}
+              transition={{
+                duration: 2.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+          </div>
+          
+          {/* Second ring */}
+          <div className="absolute w-36 h-36 rounded-full">
+            <motion.div
+              className="absolute inset-0 rounded-full border-2 border-primary/20"
+              animate={{
+                scale: [1, 1.3, 1],
+                opacity: [0.5, 0.2, 0.5],
+                rotate: [0, 180, 360],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            />
+          </div>
+          
+          {/* Inner rotating ring */}
+          <motion.div
+            className="absolute w-28 h-28 rounded-full border border-dashed border-primary/30"
+            animate={{
+              rotate: [0, 360],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          />
+          
+          {/* Orbiting particles */}
+          {[0, 1, 2, 3].map((i) => (
+            <motion.div
+              key={i}
+              className="absolute w-2 h-2 rounded-full bg-primary/60"
+              style={{
+                top: "50%",
+                left: "50%",
+              }}
+              animate={{
+                x: [
+                  Math.cos((i * Math.PI) / 2) * 50,
+                  Math.cos((i * Math.PI) / 2 + Math.PI) * 50,
+                  Math.cos((i * Math.PI) / 2) * 50,
+                ],
+                y: [
+                  Math.sin((i * Math.PI) / 2) * 50,
+                  Math.sin((i * Math.PI) / 2 + Math.PI) * 50,
+                  Math.sin((i * Math.PI) / 2) * 50,
+                ],
+                scale: [1, 0.6, 1],
+                opacity: [0.8, 0.4, 0.8],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: i * 0.2,
+              }}
+            />
+          ))}
+          
+          {/* Core orb with gradient */}
+          <motion.div
+            className="relative w-20 h-20 rounded-full shadow-2xl"
+            style={{
+              background: "var(--gradient-primary)",
+              boxShadow: "0 0 40px hsl(var(--primary) / 0.5), 0 0 80px hsl(var(--primary) / 0.3)",
+            }}
+            animate={{
+              scale: [1, 1.08, 1],
+              boxShadow: [
+                "0 0 40px hsl(var(--primary) / 0.5), 0 0 80px hsl(var(--primary) / 0.3)",
+                "0 0 60px hsl(var(--primary) / 0.6), 0 0 100px hsl(var(--primary) / 0.4)",
+                "0 0 40px hsl(var(--primary) / 0.5), 0 0 80px hsl(var(--primary) / 0.3)",
+              ],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          >
+            {/* Inner highlight */}
+            <div 
+              className="absolute inset-2 rounded-full opacity-30"
+              style={{
+                background: "radial-gradient(circle at 30% 30%, white 0%, transparent 60%)",
+              }}
+            />
+          </motion.div>
         </div>
+        
+        {/* Loading text with typewriter effect */}
+        <motion.div
+          className="mt-10 text-center"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <motion.p
+            className="text-sm font-medium text-muted-foreground"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            Preparando sua jornada...
+          </motion.p>
+          
+          {/* Animated dots */}
+          <div className="flex justify-center gap-1.5 mt-4">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                className="w-2 h-2 rounded-full bg-primary/60"
+                animate={{
+                  scale: [1, 1.3, 1],
+                  opacity: [0.4, 1, 0.4],
+                }}
+                transition={{
+                  duration: 1,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: i * 0.15,
+                }}
+              />
+            ))}
+          </div>
+        </motion.div>
+        
+        {/* Subtle brand text */}
+        <motion.p
+          className="absolute bottom-8 text-xs text-muted-foreground/50 tracking-widest uppercase"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          Dietafy
+        </motion.p>
       </div>
     );
   }
