@@ -92,14 +92,18 @@ export function WorkoutCard({
         "relative h-32 rounded-t-xl bg-gradient-to-br overflow-hidden",
         category.gradient
       )}>
-        {/* Exercise image */}
+        {/* Exercise image - background layer */}
         <img 
           src={getExerciseImage(workout.title)} 
           alt={workout.title}
-          className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay"
+          className="absolute inset-0 w-full h-full object-cover opacity-30"
         />
+        
+        {/* Overlay for better badge visibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+        
         {/* Category icon */}
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-3 left-3 z-10">
           <div className="category-icon-bg rounded-lg p-2">
             <CategoryIcon className="h-5 w-5 text-primary" />
           </div>
@@ -112,7 +116,7 @@ export function WorkoutCard({
             onToggleFavorite(workout.id);
           }}
           className={cn(
-            "favorite-btn absolute top-3 right-3 p-2 rounded-full bg-background/80 backdrop-blur-sm",
+            "favorite-btn absolute top-3 right-3 z-10 p-2 rounded-full bg-background/80 backdrop-blur-sm",
             isFavorite && "active"
           )}
         >
@@ -125,8 +129,8 @@ export function WorkoutCard({
         </button>
 
         {/* Environment badge */}
-        <div className="absolute bottom-3 left-3">
-          <Badge variant="secondary" className="gap-1 bg-background/80 backdrop-blur-sm">
+        <div className="absolute bottom-3 left-3 z-10">
+          <Badge variant="secondary" className="gap-1 bg-background/90 backdrop-blur-sm text-foreground border-0 shadow-sm">
             {workout.environment === "casa" ? (
               <Home className="h-3 w-3" />
             ) : (
@@ -137,7 +141,7 @@ export function WorkoutCard({
         </div>
 
         {/* Premium/Free badge */}
-        <div className="absolute bottom-3 right-3">
+        <div className="absolute bottom-3 right-3 z-10">
           {workout.is_premium ? (
             <Badge className="badge-premium-shimmer gap-1">
               <Sparkles className="h-3 w-3" />

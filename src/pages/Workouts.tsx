@@ -221,6 +221,8 @@ export default function Workouts() {
       setShowUpgradeModal(true);
       return;
     }
+    // Scroll to top before navigating
+    window.scrollTo(0, 0);
     navigate(`/treinos/${workout.id}`);
   };
 
