@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Camera, MessageCircle, Send, Trash2 } from "lucide-react";
+import { ArrowLeft, Camera, MessageCircle, Send, Trash2, Sparkles } from "lucide-react";
 import {
   canUserAccessFeature,
   getDailyLimits,
@@ -18,6 +18,7 @@ import {
 import { UpgradeLimitModal } from "@/components/UpgradeLimitModal";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { VitaVoiceAgent, type VitaVoiceAgentHandle } from "@/components/VitaVoiceAgent";
+import { motion, AnimatePresence } from "framer-motion";
 
 export interface ChatMessage {
   id: string;
@@ -91,16 +92,13 @@ export const formatChatMessage = (text: string): ReactNode => {
     const listMatch = line.trimStart().match(/^[-•]\s+(.*)$/);
 
     if (listMatch) {
-      // Linha de lista com "- " ou "• " no início
       listItems.push(formatInline(listMatch[1]));
       return;
     }
 
-    // Não é lista: descarrega qualquer lista acumulada
     flushList();
 
     if (line.trim() === "") {
-      // Preserva quebras em branco como espaçamento
       nodes.push(<br key={`br-${idx}`} />);
     } else {
       nodes.push(
@@ -113,6 +111,12 @@ export const formatChatMessage = (text: string): ReactNode => {
 
   flushList();
   return nodes;
+};
+
+const messageVariants = {
+  hidden: { opacity: 0, y: 10, scale: 0.95 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.3, ease: "easeOut" as const } },
+  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
 };
 
 export const VitaChatPanel = ({
@@ -185,7 +189,6 @@ export const VitaChatPanel = ({
     }
   }, [onRegisterVoiceToggle, handleMicToggle]);
 
-  // Keep external ref in sync with the internal VitaVoiceAgent ref
   useEffect(() => {
     if (voiceAgentRef && activeVoiceAgentRef.current) {
       (voiceAgentRef as React.MutableRefObject<VitaVoiceAgentHandle | null>).current =
@@ -278,10 +281,7 @@ export const VitaChatPanel = ({
     }
 
     const length = fullText.length;
-    // Ajusta a velocidade conforme o tamanho da resposta
-    // Respostas curtas: mais devagar (efeito mais "humano")
-    // Respostas longas: mais rápido para acompanhar melhor o áudio
-    let typingSpeed = 30; // ms por caractere (padrão)
+    let typingSpeed = 30;
     if (length < 250) {
       typingSpeed = 40;
     } else if (length > 700) {
@@ -407,7 +407,6 @@ export const VitaChatPanel = ({
       if (voiceEnabled && onVitaMessage && vitaText) {
         const emptyReply: ChatMessage = { ...reply, message: "" };
 
-        // remove temporárias, adiciona mensagem do usuário + bolha vazia da Vita
         setMessages((prev) => [
           ...prev.filter((m) => !m.id.startsWith("temp-")),
           optimistic,
@@ -415,15 +414,12 @@ export const VitaChatPanel = ({
         ]);
 
         try {
-          // Para de "escutar" e marca que a Vita começou a falar
           onOrbStateChange?.("speaking");
-          // Dispara a voz em paralelo, sem esperar o áudio terminar
           void onVitaMessage(vitaText);
         } catch (e) {
           console.error("Erro ao tocar voz da Vita:", e);
         }
 
-        // O texto começa a ser digitado imediatamente em paralelo com a voz
         setIsTyping(false);
         animateVitaReply(reply.id, vitaText);
       } else {
@@ -483,9 +479,7 @@ export const VitaChatPanel = ({
 
       if (voiceEnabled && onVitaMessage) {
         try {
-          // Marca que a Vita começou a falar
           onOrbStateChange?.("speaking");
-          // Dispara a saudação em voz em paralelo, sem esperar terminar
           void onVitaMessage(fullGreetingText);
         } catch (e) {
           console.error("Erro na saudação por voz:", e);
@@ -528,60 +522,66 @@ export const VitaChatPanel = ({
 
   return (
     <div className={embedded ? "w-full flex flex-col" : "min-h-screen bg-background flex flex-col"}>
+      {/* Premium Header */}
       <header
         className={
           embedded
-            ? "px-0 pb-2 flex items-center justify-between gap-3"
-            : "border-b px-4 py-3 md:px-8 md:py-4 flex items-center justify-between gap-3"
+            ? "px-0 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+            : "border-b border-border/40 px-4 py-4 md:px-8 md:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
         }
       >
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 shadow-sm glow">
-            <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-              V
-            </AvatarFallback>
-          </Avatar>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Avatar className="h-12 w-12 shadow-lg ring-2 ring-primary/20">
+              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-bold text-lg">
+                V
+              </AvatarFallback>
+            </Avatar>
+            <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-background animate-pulse" />
+          </div>
           <div>
-            <h1 className="text-base md:text-lg font-semibold flex items-center gap-2">
+            <h1 className="text-lg md:text-xl font-semibold flex items-center gap-2">
               {title}
-              <span className="inline-flex items-center gap-1 text-[11px] text-primary">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-glow" />
-                {isTyping ? "Respondendo" : "Online"}
-              </span>
             </h1>
-            <p className="text-xs text-muted-foreground">{subtitle}</p>
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
+              <span className={`h-2 w-2 rounded-full ${isTyping ? "bg-amber-400" : "bg-emerald-400"} animate-pulse`} />
+              {isTyping ? "Respondendo..." : "Online e pronto para ajudar"}
+            </p>
           </div>
         </div>
+        
         <div className="flex items-center gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="secondary"
+                variant="outline"
                 size="sm"
-                className="inline-flex items-center gap-2 text-xs"
+                className="rounded-full border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all gap-2"
                 onClick={handleNewConversation}
               >
-                <Trash2 className="h-3 w-3" />
-                Nova conversa
+                <Trash2 className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Nova conversa</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="text-xs max-w-xs">
-              Limpa as mensagens atuais e inicia uma nova conversa com o Vita Nutri IA.
+              Limpa as mensagens atuais e inicia uma nova conversa.
             </TooltipContent>
           </Tooltip>
+          
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="hidden sm:inline-flex text-xs"
+            className="hidden sm:inline-flex rounded-full text-xs text-muted-foreground hover:text-foreground"
             onClick={scrollToTop}
           >
-            Voltar ao início da conversa
+            Ir ao início
           </Button>
+          
           {showBackButton && (
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon"
-              className="hidden sm:inline-flex"
+              className="hidden sm:inline-flex rounded-full"
               onClick={() => history.back()}
               aria-label="Voltar"
             >
@@ -593,10 +593,11 @@ export const VitaChatPanel = ({
 
       <main
         className={
-          "flex-1 flex flex-col max-w-3xl w-full mx-auto py-3 md:py-4 gap-3 " +
+          "flex-1 flex flex-col max-w-3xl w-full mx-auto py-4 gap-4 " +
           (embedded ? "px-0" : "px-4 md:px-0")
         }
       >
+        {/* Debug Panel */}
         {debugMode && debugContext && (
           <Card className="border-dashed border-primary/40 bg-card/60 text-xs">
             <CardContent className="pt-3 space-y-2">
@@ -616,6 +617,8 @@ export const VitaChatPanel = ({
             </CardContent>
           </Card>
         )}
+
+        {/* Chat Messages Area */}
         <div
           ref={scrollRef}
           onScroll={handleScroll}
@@ -623,128 +626,155 @@ export const VitaChatPanel = ({
             (embedded
               ? "max-h-[55vh] min-h-[220px]"
               : "flex-1 max-h-[60vh] min-h-[260px]") +
-            " rounded-lg border bg-card/40 p-3 overflow-y-auto"
+            " rounded-2xl border border-border/40 bg-gradient-to-b from-card/60 via-background/40 to-card/60 p-4 overflow-y-auto shadow-inner"
           }
         >
-          <div className="space-y-3">
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={
-                  "flex w-full " + (msg.sender === "vita" ? "justify-start" : "justify-end")
-                }
-              >
-                <div className="flex items-end gap-2 max-w-[80%]">
-                  {msg.sender === "vita" && (
-                    <Avatar className="h-7 w-7">
-                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+          <AnimatePresence mode="popLayout">
+            <div className="space-y-4">
+              {messages.map((msg) => (
+                <motion.div
+                  key={msg.id}
+                  variants={messageVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  layout
+                  className={
+                    "flex w-full " + (msg.sender === "vita" ? "justify-start" : "justify-end")
+                  }
+                >
+                  <div className="flex items-end gap-3 max-w-[85%]">
+                    {msg.sender === "vita" && (
+                      <Avatar className="h-8 w-8 ring-2 ring-primary/20 shadow-sm">
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
+                          V
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div
+                      className={
+                        "rounded-2xl px-4 py-3 shadow-sm " +
+                        (msg.sender === "vita"
+                          ? "bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 text-foreground border border-primary/10"
+                          : "bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground shadow-[0_4px_20px_-8px_hsl(var(--primary)/0.5)]")
+                      }
+                    >
+                      <p className="whitespace-pre-wrap break-words leading-relaxed text-sm md:text-base">
+                        {formatChatMessage(msg.message)}
+                      </p>
+                      <p
+                        className={
+                          "mt-2 text-[10px] text-right " +
+                          (msg.sender === "user"
+                            ? "text-primary-foreground/70"
+                            : "text-muted-foreground")
+                        }
+                      >
+                        {new Date(msg.created_at).toLocaleTimeString("pt-BR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+              
+              {/* Typing Indicator */}
+              {isTyping && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="flex w-full justify-start"
+                >
+                  <div className="flex items-end gap-3 max-w-[85%]">
+                    <Avatar className="h-8 w-8 ring-2 ring-primary/20 shadow-sm">
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-xs font-semibold">
                         V
                       </AvatarFallback>
                     </Avatar>
-                  )}
-                  <div
-                    className={
-                      "rounded-2xl px-3 py-2 shadow-sm " +
-                      (msg.sender === "vita"
-                        ? "bg-primary/10 text-foreground text-sm md:text-base"
-                        : "bg-secondary text-secondary-foreground text-sm md:text-base")
-                    }
-                  >
-                    <p className="whitespace-pre-wrap break-words leading-relaxed">
-                      {formatChatMessage(msg.message)}
-                    </p>
-                    <p
-                      className={
-                        "mt-1 text-[10px] text-right " +
-                        (msg.sender === "user"
-                          ? "text-primary-foreground/80"
-                          : "text-muted-foreground")
-                      }
-                    >
-                      {new Date(msg.created_at).toLocaleTimeString("pt-BR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
+                    <div className="rounded-2xl px-4 py-3 bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 border border-primary/10 flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        <span className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
+                        <span className="h-2 w-2 rounded-full bg-primary/70 animate-bounce" style={{ animationDelay: "150ms" }} />
+                        <span className="h-2 w-2 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+                      </div>
+                      <span className="text-xs text-muted-foreground ml-1">Vita está pensando...</span>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
-            {isTyping && (
-              <div className="flex w-full justify-start">
-                <div className="flex items-end gap-2 max-w-[80%]">
-                  <Avatar className="h-7 w-7">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      V
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="rounded-2xl px-3 py-2 text-sm bg-primary/5 text-foreground flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary/70 animate-pulse delay-150" />
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary/40 animate-pulse delay-300" />
-                    <span className="ml-2 text-xs text-muted-foreground">O Vita Nutri IA está pensando...</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+                </motion.div>
+              )}
+            </div>
+          </AnimatePresence>
         </div>
+
+        {/* New Messages Indicator */}
         {hasNewMessages && (
-          <div className="mt-2 flex justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-center"
+          >
             <Button
               size="sm"
               variant="secondary"
-              className="rounded-full px-3 py-1 text-[11px] flex items-center gap-1 shadow-sm"
+              className="rounded-full px-4 py-2 text-xs flex items-center gap-2 shadow-lg hover:shadow-xl transition-shadow"
               onClick={scrollToBottom}
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-              Novas mensagens abaixo
+              <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+              Novas mensagens
             </Button>
-          </div>
+          </motion.div>
         )}
-        <section className="space-y-3">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+
+        {/* Quick Prompts & Input Section */}
+        <section className="space-y-4">
+          {/* Quick Prompts */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap gap-2 max-w-full">
-              {quickPrompts.map((prompt) => (
-                <Button
+              {quickPrompts.map((prompt, index) => (
+                <motion.button
                   key={prompt}
-                  variant="outline"
-                  size="sm"
-                  className={
-                    "h-auto min-h-9 w-full sm:w-auto rounded-full border-primary/20 bg-gradient-to-r from-background via-card to-background font-medium text-muted-foreground/90 hover:border-primary/40 hover:text-foreground hover:shadow-sm transition-all " +
-                    (embedded ? "text-xs md:text-sm px-4 py-2" : "text-[11px] px-3 py-2")
-                  }
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
                   onClick={() => handleSend(prompt)}
+                  className="group h-auto min-h-[40px] px-4 py-2 rounded-full border border-border/40 bg-gradient-to-r from-background via-card/80 to-background text-sm text-muted-foreground hover:border-primary/40 hover:text-foreground hover:shadow-[0_4px_20px_-8px_hsl(var(--primary)/0.3)] transition-all duration-300"
                 >
-                  <span className="flex items-center gap-1 text-left whitespace-normal break-words">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary/70 shadow-[0_0_8px_hsl(var(--primary)/0.6)] flex-shrink-0" />
+                  <span className="flex items-center gap-2 text-left">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary/60 group-hover:bg-primary group-hover:shadow-[0_0_8px_hsl(var(--primary)/0.6)] transition-all shrink-0" />
                     <span className="flex-1">{prompt}</span>
                   </span>
-                </Button>
+                </motion.button>
               ))}
             </div>
+            
             {limits && (
-              <span className="self-start sm:self-auto whitespace-nowrap rounded-full border border-border/60 bg-card/60 px-3 py-1 text-[11px] text-muted-foreground shadow-sm">
-                {limits.remaining}/{limits.limit} mensagens hoje
-              </span>
+              <Badge variant="outline" className="self-start sm:self-auto whitespace-nowrap rounded-full border-border/60 bg-card/60 px-3 py-1.5 text-xs text-muted-foreground">
+                <Sparkles className="h-3 w-3 mr-1.5 text-primary" />
+                {limits.remaining}/{limits.limit} hoje
+              </Badge>
             )}
           </div>
 
-          <Card className="border border-primary/10 bg-gradient-to-br from-card/90 via-background/90 to-card/90 shadow-[0_18px_45px_-24px_hsl(var(--primary)/0.55)] backdrop-blur-sm rounded-2xl">
-            <CardContent className="pt-3 pb-3 flex flex-col gap-3">
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <MessageCircle className="h-3 w-3 text-primary" />
-                  Pergunte qualquer coisa sobre sua saúde, alimentação ou treinos.
+          {/* Input Card */}
+          <Card className="glass-premium-vita border-primary/20 overflow-hidden">
+            <CardContent className="p-4 space-y-4">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-2">
+                  <MessageCircle className="h-3.5 w-3.5 text-primary" />
+                  Pergunte qualquer coisa sobre saúde, alimentação ou treinos.
                 </span>
                 {limits && (
-                  <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-muted/60 px-2 py-0.5 text-[10px]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary/80 animate-pulse" />
-                    {limits.remaining}/{limits.limit} hoje
+                  <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-muted/40 px-2.5 py-1 text-[11px]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                    {limits.remaining} restantes
                   </span>
                 )}
               </div>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-2">
+              
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <div className="shrink-0 flex items-center gap-2">
                   <input
                     id="vita-file-input"
@@ -851,27 +881,28 @@ export const VitaChatPanel = ({
                     }}
                   />
                   <Button
-                     variant="outline"
-                     size="icon"
-                     className="shrink-0 h-11 w-11 rounded-full"
-                     onClick={() => {
-                       const inputEl = document.getElementById(
-                         "vita-file-input",
-                       ) as HTMLInputElement | null;
-                       inputEl?.click();
-                     }}
-                   >
-                     <Camera className="h-4 w-4" />
-                   </Button>
-                   <VitaVoiceAgent
-                     ref={activeVoiceAgentRef}
-                     onSpeakingChange={(speaking) =>
-                       onOrbStateChange?.(speaking ? "speaking" : "idle")
-                     }
-                     onUserTranscript={handleVoiceUserTranscript}
-                     onAgentResponse={handleVoiceAgentResponse}
-                   />
+                    variant="outline"
+                    size="icon"
+                    className="shrink-0 h-12 w-12 rounded-xl border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all"
+                    onClick={() => {
+                      const inputEl = document.getElementById(
+                        "vita-file-input",
+                      ) as HTMLInputElement | null;
+                      inputEl?.click();
+                    }}
+                  >
+                    <Camera className="h-5 w-5" />
+                  </Button>
+                  <VitaVoiceAgent
+                    ref={activeVoiceAgentRef}
+                    onSpeakingChange={(speaking) =>
+                      onOrbStateChange?.(speaking ? "speaking" : "idle")
+                    }
+                    onUserTranscript={handleVoiceUserTranscript}
+                    onAgentResponse={handleVoiceAgentResponse}
+                  />
                 </div>
+                
                 <Textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
@@ -882,12 +913,13 @@ export const VitaChatPanel = ({
                     }
                   }}
                   placeholder="Pergunte qualquer coisa sobre sua saúde..."
-                  className="min-h-[46px] max-h-32 resize-none text-[15px] md:text-sm flex-1 w-full rounded-xl border border-border/70 bg-background/80 shadow-inner focus-visible:ring-1 focus-visible:ring-primary/70 focus-visible:border-primary/60"
+                  className="min-h-[48px] max-h-32 resize-none text-sm flex-1 w-full rounded-xl border-border/60 bg-background/80 shadow-inner focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary/40"
                   rows={2}
                 />
+                
                 <Button
                   size="icon"
-                  className="shrink-0 h-11 w-11 rounded-xl bg-primary shadow-[0_12px_30px_-16px_hsl(var(--primary)/0.8)] hover:shadow-[0_16px_40px_-18px_hsl(var(--primary)/0.9)]"
+                  className="shrink-0 h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.6)] hover:shadow-[0_12px_32px_-8px_hsl(var(--primary)/0.8)] hover:scale-105 transition-all duration-300"
                   disabled={
                     isSending ||
                     (!input.trim() && (!limits || limits.remaining <= 0)) ||
@@ -895,13 +927,14 @@ export const VitaChatPanel = ({
                   }
                   onClick={() => handleSend()}
                 >
-                  <Send className="h-4 w-4" />
+                  <Send className="h-5 w-5" />
                 </Button>
               </div>
             </CardContent>
           </Card>
         </section>
       </main>
+      
       <UpgradeLimitModal
         open={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
