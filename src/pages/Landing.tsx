@@ -742,17 +742,17 @@ const Landing = () => {
                 viewport={{ once: true }}
               >
                 <Card
-                  className={`relative overflow-hidden ${
+                  className={`relative ${
                     plan.featured
-                      ? "pricing-card-premium border-primary shadow-2xl"
-                      : "border"
+                      ? "pricing-card-premium border-primary shadow-2xl overflow-visible mt-6"
+                      : "border overflow-hidden"
                   }`}
                 >
                   {plan.featured && (
-                    <div className="absolute -top-px left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary" />
+                    <div className="absolute -top-px left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary rounded-t-lg" />
                   )}
                   {plan.featured && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
                       <span className="badge-premium-animated px-4 py-1.5 rounded-full text-sm font-bold text-primary-foreground shadow-lg">
                         <span className="relative z-10">⭐ Mais Popular</span>
                       </span>
