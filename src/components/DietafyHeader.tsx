@@ -38,11 +38,7 @@ export function DietafyHeader() {
 
   return (
     <header
-      className={cn(
-        "sticky top-0 z-20 w-full border-b border-border bg-background transition-colors duration-300",
-        isAdmin &&
-          "bg-[radial-gradient(circle_at_top,_hsl(var(--primary)/0.2),_transparent_55%)]",
-      )}
+      className="sticky top-0 z-20 w-full border-b border-border/50 bg-[radial-gradient(ellipse_at_top,_hsl(var(--primary)/0.15),_transparent_60%)] backdrop-blur-sm transition-colors duration-300"
     >
       <div className="flex h-16 items-center justify-between pr-4 md:h-18 lg:h-20 md:pr-8">
         {/* Left: menu trigger */}
