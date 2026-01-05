@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { useToast } from "@/hooks/use-toast";
 import { AuthenticatedLayout } from "@/components/layouts/AuthenticatedLayout";
 import { canUserAccessFeature, incrementDailyLimit } from "@/lib/limits";
@@ -182,14 +183,7 @@ const Track = () => {
   }, [navigate]);
 
   if (loadingAuth || !user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 rounded-full bg-primary/20 animate-pulse" />
-          <Skeleton className="h-4 w-32" />
-        </div>
-      </div>
-    );
+    return <LoadingOverlay message="Carregando registro diário..." />;
   }
 
   return (

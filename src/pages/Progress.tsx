@@ -9,6 +9,7 @@ import { AuthenticatedLayout } from "@/components/layouts/AuthenticatedLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -414,14 +415,7 @@ const ProgressPage = () => {
   }, [logDaysMap, today]);
 
   if (!user && loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 rounded-full bg-primary/20 animate-pulse" />
-          <Skeleton className="h-4 w-32" />
-        </div>
-      </div>
-    );
+    return <LoadingOverlay message="Carregando seu progresso..." />;
   }
 
   if (!user) return null;
