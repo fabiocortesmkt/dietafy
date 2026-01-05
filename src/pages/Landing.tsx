@@ -154,13 +154,13 @@ const Landing = () => {
             {/* Social Proof Badge */}
             <motion.div
               variants={itemVariants}
-              className="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-4 py-2 text-sm font-medium text-primary mb-4"
+              className="inline-flex flex-col sm:flex-row items-center gap-1 sm:gap-2 rounded-full bg-primary/10 border border-primary/20 px-4 py-2 text-sm font-medium text-primary mb-4"
             >
               <span className="flex items-center gap-1">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="counter-live">{onlineUsers} pessoas online agora</span>
               </span>
-              <span className="text-muted-foreground">•</span>
+              <span className="text-muted-foreground hidden sm:inline">•</span>
               <span className="flex items-center gap-1">
                 <Users className="h-3.5 w-3.5" />
                 +500 emagrecendo com acompanhamento
@@ -169,7 +169,7 @@ const Landing = () => {
 
             <motion.h1
               variants={itemVariants}
-              className="text-4xl sm:text-5xl md:text-7xl font-bold leading-tight"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight"
             >
               <span className="text-shine">Emagreça com acompanhamento</span>
               <br />
@@ -178,14 +178,14 @@ const Landing = () => {
 
             <motion.p
               variants={itemVariants}
-              className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto"
+              className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-2xl mx-auto"
             >
               Tenha um assistente que te orienta todos os dias, com saúde e sem dietas malucas.
             </motion.p>
 
             <motion.p
               variants={itemVariants}
-              className="text-lg text-muted-foreground max-w-2xl mx-auto"
+              className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto"
             >
               Pare de começar dietas e desistir no meio do caminho. O DietaFY te acompanha diariamente para criar hábitos reais e emagrecer de forma sustentável.
             </motion.p>
@@ -196,7 +196,7 @@ const Landing = () => {
             >
               <Button
                 size="lg"
-                className="text-lg px-8 py-6 pulse-glow-cta relative overflow-hidden group"
+                className="text-base sm:text-lg px-6 py-4 sm:px-8 sm:py-6 pulse-glow-cta relative overflow-hidden group"
                 onClick={handleCTAClick}
               >
                 <span className="relative z-10 flex items-center">
@@ -207,7 +207,7 @@ const Landing = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="text-lg px-8 py-6 border-glow-animated"
+                className="text-base sm:text-lg px-6 py-4 sm:px-8 sm:py-6 border-glow-animated"
                 onClick={() =>
                   document
                     .getElementById("como-funciona")
@@ -265,7 +265,7 @@ const Landing = () => {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="mt-8 mb-16 md:mb-24 flex justify-center px-4"
           >
-            <div className="relative w-full max-w-md rounded-3xl glass-intense border-glow-animated flex flex-col items-center justify-center py-10 px-6 gap-8">
+            <div className="relative w-full max-w-[340px] sm:max-w-md rounded-3xl glass-intense border-glow-animated flex flex-col items-center justify-center py-8 sm:py-10 px-4 sm:px-6 gap-6 sm:gap-8">
               {/* Glow effect behind card */}
               <div
                 className="absolute -inset-4 rounded-[2rem] opacity-50 blur-3xl -z-10"
@@ -398,15 +398,15 @@ const Landing = () => {
       </section>
 
       {/* PROBLEMA & SOLUÇÃO */}
-      <section className="py-24 px-4 relative">
-        <div className="container mx-auto max-w-3xl space-y-16">
+      <section className="py-16 md:py-24 px-4 relative">
+        <div className="container mx-auto max-w-3xl space-y-12 md:space-y-16">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
               <span>❌</span>{" "}
               <span className="text-gradient">O problema</span>
             </h2>
@@ -446,7 +446,7 @@ const Landing = () => {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
               <span>✅</span>{" "}
               <span className="text-gradient">A solução</span>
             </h2>
@@ -475,9 +475,9 @@ const Landing = () => {
       </section>
 
       {/* VITA NUTRI IA + WHATSAPP */}
-      <section className="py-20 px-4 bg-muted/20 relative overflow-hidden">
+      <section className="py-16 md:py-20 px-4 bg-muted/20 relative overflow-hidden">
         <div className="absolute inset-0 mesh-gradient-animated opacity-50" />
-        <div className="container mx-auto max-w-4xl grid gap-12 md:grid-cols-2 items-start relative z-10">
+        <div className="container mx-auto max-w-4xl grid gap-8 md:gap-12 md:grid-cols-2 items-start relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -540,7 +540,7 @@ const Landing = () => {
       </section>
 
       {/* DEPOIMENTOS - Premium Cards */}
-      <section className="py-24 px-4">
+      <section className="py-16 md:py-24 px-4">
         <div className="container mx-auto max-w-5xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -565,7 +565,7 @@ const Landing = () => {
             </p>
           </motion.div>
 
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 items-stretch">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch">
             {[
               {
                 badge: "-3,8 kg em 6 semanas",
@@ -619,16 +619,16 @@ const Landing = () => {
       </section>
 
       {/* COMO FUNCIONA - Premium Timeline */}
-      <section id="como-funciona" className="py-24 px-4 bg-muted/10 relative overflow-hidden">
+      <section id="como-funciona" className="py-16 md:py-24 px-4 bg-muted/10 relative overflow-hidden">
         <div className="container mx-auto">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12 md:mb-16"
           >
-            <h2 className="text-4xl font-bold mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
               <span>🧭</span>{" "}
               <span className="text-gradient">Como funciona</span>
             </h2>
@@ -649,7 +649,7 @@ const Landing = () => {
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: idx * 0.15 }}
                   viewport={{ once: true }}
-                  className="flex gap-6 items-start"
+                  className="flex gap-4 sm:gap-6 items-start"
                 >
                   <div
                     className="h-12 w-12 rounded-full flex items-center justify-center font-bold text-primary-foreground shrink-0 step-number-glow relative z-10"
@@ -671,7 +671,7 @@ const Landing = () => {
       </section>
 
       {/* MAIS DO QUE EMAGRECIMENTO */}
-      <section className="py-20 px-4">
+      <section className="py-16 md:py-20 px-4">
         <div className="container mx-auto max-w-3xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -679,14 +679,14 @@ const Landing = () => {
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
               <span>🧠</span>{" "}
               <span className="text-gradient">Mais do que emagrecimento</span>
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground mb-6">
               Além de te ajudar a emagrecer, o DietaFY também auxilia em:
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
               {[
                 { icon: "🍽️", label: "Organização alimentar" },
                 { icon: "💧", label: "Consumo de água" },
@@ -701,7 +701,7 @@ const Landing = () => {
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: i * 0.1 }}
                   viewport={{ once: true }}
-                  className="glass-card rounded-xl p-4 text-center border hover-scale cursor-default"
+                  className="glass-card rounded-xl p-3 sm:p-4 text-center border hover-scale cursor-default"
                 >
                   <span className="text-2xl mb-2 block">{item.icon}</span>
                   <span className="text-sm font-medium">{item.label}</span>
@@ -713,7 +713,7 @@ const Landing = () => {
       </section>
 
       {/* Pricing - Premium Cards */}
-      <section className="py-24 px-4 relative overflow-hidden">
+      <section className="py-16 md:py-24 px-4 relative overflow-hidden">
         <div className="absolute inset-0 mesh-gradient-animated opacity-30" />
         <div className="container mx-auto relative z-10">
           <motion.div
@@ -721,9 +721,9 @@ const Landing = () => {
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12 md:mb-16"
           >
-            <h2 className="text-4xl font-bold mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
               <span>💰</span>{" "}
               <span className="text-gradient">Planos</span>
             </h2>
@@ -744,7 +744,7 @@ const Landing = () => {
                 <Card
                   className={`relative ${
                     plan.featured
-                      ? "pricing-card-premium border-primary shadow-2xl overflow-visible mt-6"
+                      ? "pricing-card-premium border-primary shadow-2xl overflow-visible pt-4"
                       : "border overflow-hidden"
                   }`}
                 >
@@ -800,17 +800,17 @@ const Landing = () => {
       </section>
 
       {/* Garantia e Compra Segura */}
-      <section className="pb-20 px-4">
+      <section className="py-16 md:pb-20 px-4">
         <div className="container mx-auto max-w-4xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="rounded-2xl glass-card border shadow-xl px-6 py-8 md:px-10 md:py-10 flex flex-col md:flex-row gap-8 items-start"
+            className="rounded-2xl glass-card border shadow-xl px-4 sm:px-6 py-6 sm:py-8 md:px-10 md:py-10 flex flex-col md:flex-row gap-6 md:gap-8 items-start"
           >
-            <div className="flex-1 space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1">
+            <div className="flex-1 space-y-4 text-center md:text-left">
+              <div className="inline-flex items-center gap-2 flex-wrap justify-center md:justify-start rounded-full bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1">
                 <ShieldCheck className="h-4 w-4" />
                 <span>Garantia de 7 dias • Compra segura pela Kiwify</span>
               </div>
@@ -865,16 +865,16 @@ const Landing = () => {
       </section>
 
       {/* FAQ - Premium Accordion */}
-      <section className="py-24 px-4 bg-muted/10">
+      <section className="py-16 md:py-24 px-4 bg-muted/10">
         <div className="container mx-auto max-w-3xl">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-10 md:mb-12"
           >
-            <h2 className="text-4xl font-bold mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
               <span>❓</span>{" "}
               <span className="text-gradient">Perguntas Frequentes</span>
             </h2>
@@ -945,16 +945,16 @@ const Landing = () => {
       </section>
 
       {/* CTA FINAL - Premium */}
-      <section className="py-24 px-4 relative overflow-hidden mesh-gradient-animated">
+      <section className="py-16 md:py-24 px-4 relative overflow-hidden mesh-gradient-animated">
         <div className="container mx-auto max-w-3xl text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="space-y-6"
+            className="space-y-4 sm:space-y-6"
           >
-            <h2 className="text-3xl md:text-4xl font-bold">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">
               <span>🟢</span>{" "}
               <span className="text-gradient">Emagreça com acompanhamento diário</span>
             </h2>
@@ -963,7 +963,7 @@ const Landing = () => {
             </p>
             <Button
               size="lg"
-              className="text-lg px-10 py-7 pulse-glow-cta"
+              className="text-base sm:text-lg px-6 py-5 sm:px-10 sm:py-7 pulse-glow-cta"
               onClick={handleCTAClick}
             >
               Começar grátis agora
@@ -986,17 +986,17 @@ const Landing = () => {
       </section>
 
       {/* Footer - Premium */}
-      <footer className="py-12 px-4 border-t relative">
+      <footer className="py-8 md:py-12 px-4 border-t relative">
         <div className="gradient-separator absolute top-0 left-0 right-0" />
         <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 md:gap-6">
             <div className="text-center md:text-left">
               <h3 className="text-xl font-bold text-gradient mb-2">DietaFY</h3>
               <p className="text-sm text-muted-foreground">
                 Transformando vidas através da saúde inteligente
               </p>
             </div>
-            <div className="flex gap-8 text-sm">
+            <div className="flex gap-4 sm:gap-6 md:gap-8 text-sm flex-wrap justify-center md:justify-end">
               {[
                 { href: "/sobre", label: "Sobre" },
                 { href: "/privacidade", label: "Privacidade" },
