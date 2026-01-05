@@ -732,7 +732,7 @@ const Landing = () => {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto pt-6">
             {pricingPlans.map((plan, idx) => (
               <motion.div
                 key={idx}
@@ -740,23 +740,24 @@ const Landing = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: idx * 0.15 }}
                 viewport={{ once: true }}
+                className={plan.featured ? "relative" : ""}
               >
+                {plan.featured && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-30">
+                    <span className="badge-premium-animated px-4 py-1.5 rounded-full text-sm font-bold text-primary-foreground shadow-lg whitespace-nowrap">
+                      <span className="relative z-10">⭐ Mais Popular</span>
+                    </span>
+                  </div>
+                )}
                 <Card
-                  className={`relative ${
+                  className={`relative h-full ${
                     plan.featured
-                      ? "pricing-card-premium border-primary shadow-2xl overflow-visible pt-4"
-                      : "border overflow-hidden"
+                      ? "pricing-card-premium border-primary shadow-2xl"
+                      : "border"
                   }`}
                 >
                   {plan.featured && (
-                    <div className="absolute -top-px left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary rounded-t-lg" />
-                  )}
-                  {plan.featured && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-                      <span className="badge-premium-animated px-4 py-1.5 rounded-full text-sm font-bold text-primary-foreground shadow-lg">
-                        <span className="relative z-10">⭐ Mais Popular</span>
-                      </span>
-                    </div>
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary rounded-t-lg" />
                   )}
                   <CardContent className="pt-8 pb-6 relative z-10">
                     <div className="text-center mb-6">
