@@ -143,7 +143,10 @@ const VitaNutriPage = () => {
   };
 
   const handleVitaMessage = async (text: string) => {
-    if (!voiceEnabled) return;
+    // Só reproduz áudio se voiceEnabled estiver ativo
+    if (!voiceEnabled) {
+      return;
+    }
     try {
       setOrbState("speaking");
       await playVitaVoice(text, selectedVoiceId);
