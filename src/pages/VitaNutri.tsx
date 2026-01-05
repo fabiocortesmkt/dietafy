@@ -55,7 +55,7 @@ const FeatureCard = ({ icon, title, examples, delay = 0 }: FeatureCardProps) => 
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay, duration: 0.4 }}
-    className="group p-4 rounded-2xl bg-gradient-to-br from-card/80 via-background/60 to-card/70 border border-border/40 hover:border-primary/30 transition-all duration-300 hover:shadow-[0_8px_30px_-12px_hsl(var(--primary)/0.25)]"
+    className="group p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-card/80 via-background/60 to-card/70 border border-border/40 hover:border-primary/30 transition-all duration-300 hover:shadow-[0_8px_30px_-12px_hsl(var(--primary)/0.25)]"
   >
     <div className="flex items-start gap-3">
       <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
@@ -170,13 +170,13 @@ const VitaNutriPage = () => {
 
   return (
     <AuthenticatedLayout>
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col pb-16 md:pb-0">
         {/* Premium Header */}
         <motion.header
           variants={headerVariants}
           initial="hidden"
           animate="visible"
-          className="w-full workout-header-gradient border-b border-border/40 px-4 py-6 md:px-8 md:py-8"
+          className="w-full workout-header-gradient border-b border-border/40 px-4 py-4 sm:py-6 md:px-8 md:py-8"
         >
           <div className="max-w-5xl mx-auto">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
@@ -191,7 +191,7 @@ const VitaNutriPage = () => {
 
                 <motion.h1
                   variants={itemVariants}
-                  className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight"
+                  className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight"
                 >
                   Falar com o{" "}
                   <span className="bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
@@ -201,7 +201,7 @@ const VitaNutriPage = () => {
 
                 <motion.p
                   variants={itemVariants}
-                  className="text-base md:text-lg text-muted-foreground leading-relaxed"
+                  className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed"
                 >
                   Seu nutricionista pessoal inteligente, conectado aos seus dados do DietaFY, 
                   para ajudar em emagrecimento, dieta, treino, sono e bem-estar.
@@ -323,7 +323,7 @@ const VitaNutriPage = () => {
                             para adaptar as recomendações à sua rotina real.
                           </p>
                           
-                          <div className="grid gap-4 md:grid-cols-3">
+                          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                             <FeatureCard
                               icon={<Utensils className="h-5 w-5" />}
                               title="Para emagrecimento"

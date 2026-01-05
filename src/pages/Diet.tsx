@@ -572,46 +572,46 @@ const MealCard = ({ meal, index, onRegister }: MealCardProps) => {
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
     >
       <Card className="workout-card overflow-hidden">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-start gap-3">
+        <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+            <div className="flex items-start gap-3 flex-1 min-w-0">
               <div className={cn(
-                "h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0",
+                "h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center flex-shrink-0",
                 meal.icon === "coffee" && "bg-amber-500/10 text-amber-600",
                 meal.icon === "sun" && "bg-orange-500/10 text-orange-600",
                 meal.icon === "moon" && "bg-indigo-500/10 text-indigo-600",
                 meal.icon === "apple" && "bg-emerald-500/10 text-emerald-600",
               )}>
-                <IconComponent className="h-5 w-5" />
+                <IconComponent className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="outline" className="text-xs font-normal gap-1">
-                    <Clock className="h-3 w-3" />
+              <div className="space-y-1 min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                  <Badge variant="outline" className="text-[10px] sm:text-xs font-normal gap-1 px-1.5 sm:px-2">
+                    <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                     {meal.timing}
                   </Badge>
-                  <Badge className="badge-premium-shimmer text-xs font-normal gap-1">
-                    <Flame className="h-3 w-3" />
+                  <Badge className="badge-premium-shimmer text-[10px] sm:text-xs font-normal gap-1 px-1.5 sm:px-2">
+                    <Flame className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                     {meal.calories} kcal
                   </Badge>
                 </div>
-                <CardTitle className="text-base font-semibold leading-tight">
+                <CardTitle className="text-sm sm:text-base font-semibold leading-tight">
                   {meal.title}
                 </CardTitle>
-                <CardDescription className="text-sm leading-snug">
+                <CardDescription className="text-xs sm:text-sm leading-snug line-clamp-2">
                   {meal.subtitle}
                 </CardDescription>
               </div>
             </div>
-            <Badge variant="secondary" className="text-[10px] font-medium capitalize shrink-0">
+            <Badge variant="secondary" className="text-[9px] sm:text-[10px] font-medium capitalize shrink-0 self-start sm:self-auto">
               {meal.goalTag}
             </Badge>
           </div>
         </CardHeader>
         
-        <CardContent className="pt-0">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-border/50 pt-3">
-            <div className="flex flex-wrap items-center gap-2">
+        <CardContent className="pt-0 px-3 sm:px-6 pb-3 sm:pb-6">
+          <div className="flex flex-col gap-3 border-t border-border/50 pt-3">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <MacroPill label="Proteína" value={meal.protein} suffix="g" color="emerald" emphasis />
               <MacroPill label="Carbo" value={meal.carbs} suffix="g" color="blue" />
               <MacroPill label="Gordura" value={meal.fat} suffix="g" color="amber" />
@@ -619,7 +619,7 @@ const MealCard = ({ meal, index, onRegister }: MealCardProps) => {
             <Button
               size="sm"
               variant="outline"
-              className="group hover:border-primary/50 hover:bg-primary/5"
+              className="group hover:border-primary/50 hover:bg-primary/5 w-full sm:w-auto sm:self-end min-h-[44px]"
               onClick={onRegister}
             >
               <CheckCircle2 className="h-3 w-3 mr-1 group-hover:text-primary transition-colors" />
@@ -648,11 +648,11 @@ const MacroSummaryPill = ({ label, value, color }: MacroSummaryPillProps) => {
   };
 
   return (
-    <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-card/80 backdrop-blur-sm border border-border/50">
-      <span className={cn("text-sm font-semibold tabular-nums", colorClasses[color])}>
+    <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-card/80 backdrop-blur-sm border border-border/50">
+      <span className={cn("text-xs sm:text-sm font-semibold tabular-nums", colorClasses[color])}>
         {value}g
       </span>
-      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-[10px] sm:text-xs text-muted-foreground">{label}</span>
     </div>
   );
 };

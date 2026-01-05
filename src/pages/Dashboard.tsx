@@ -954,7 +954,7 @@ const Dashboard = () => {
 
             {/* Metrics Grid */}
             <motion.section variants={itemVariants} aria-label="Métricas principais">
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
                 {/* Weight Card */}
                 <MetricCard
                   title="Peso atual"
@@ -1103,21 +1103,23 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="peso" className="w-full">
-                    <TabsList className="grid grid-cols-2 lg:grid-cols-4 w-full h-auto gap-1 p-1 bg-muted/50">
-                      <TabsTrigger value="peso" className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">
-                        <Scale className="h-3 w-3 mr-1.5 hidden sm:inline" />
-                        Peso
-                      </TabsTrigger>
-                      <TabsTrigger value="gordura" className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">
-                        Gordura %
-                      </TabsTrigger>
-                      <TabsTrigger value="glicose" className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">
-                        Glicose
-                      </TabsTrigger>
-                      <TabsTrigger value="estresse" className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">
-                        Estresse
-                      </TabsTrigger>
-                    </TabsList>
+                    <div className="overflow-x-auto scrollbar-hide -mx-1 px-1">
+                      <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-4 h-auto gap-1 p-1 bg-muted/50">
+                        <TabsTrigger value="peso" className="text-xs whitespace-nowrap px-3 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                          <Scale className="h-3 w-3 mr-1.5 hidden sm:inline" />
+                          Peso
+                        </TabsTrigger>
+                        <TabsTrigger value="gordura" className="text-xs whitespace-nowrap px-3 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                          Gordura %
+                        </TabsTrigger>
+                        <TabsTrigger value="glicose" className="text-xs whitespace-nowrap px-3 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                          Glicose
+                        </TabsTrigger>
+                        <TabsTrigger value="estresse" className="text-xs whitespace-nowrap px-3 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                          Estresse
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
                     <TabsContent value="peso" className="mt-4">
                       <ChartLineWithTarget
                         title="Peso (kg)"
@@ -1309,25 +1311,25 @@ const MetricCard = ({
 }: MetricCardProps) => (
   <motion.div
     whileHover={{ y: -4, transition: { duration: 0.2 } }}
-    className="workout-card rounded-xl p-4"
+    className="workout-card rounded-xl p-3 sm:p-4 min-h-[160px] sm:min-h-[180px]"
   >
-    <div className="flex items-start justify-between mb-3">
-      <div>
-        <h3 className="text-sm font-semibold">{title}</h3>
-        <p className="text-xs text-muted-foreground">{subtitle}</p>
+    <div className="flex items-start justify-between gap-2 mb-2 sm:mb-3">
+      <div className="min-w-0 flex-1">
+        <h3 className="text-xs sm:text-sm font-semibold truncate">{title}</h3>
+        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{subtitle}</p>
       </div>
-      <div className="h-8 w-8 rounded-lg category-icon-bg flex items-center justify-center">
-        <Icon className={cn("h-4 w-4 text-primary", iconClassName)} />
+      <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg category-icon-bg flex items-center justify-center shrink-0">
+        <Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary", iconClassName)} />
       </div>
     </div>
-    <div className="flex items-baseline gap-2">
-      <span className="text-2xl font-bold tracking-tight">{value}</span>
+    <div className="flex flex-wrap items-baseline gap-1 sm:gap-2">
+      <span className="text-xl sm:text-2xl font-bold tracking-tight">{value}</span>
       {valueLabel && (
-        <span className="text-sm text-muted-foreground">{valueLabel}</span>
+        <span className="text-xs sm:text-sm text-muted-foreground">{valueLabel}</span>
       )}
       {trend && (
         <span className={cn(
-          "text-xs font-medium flex items-center gap-0.5",
+          "text-[10px] sm:text-xs font-medium flex items-center gap-0.5",
           trend.positive ? "text-emerald-500" : "text-orange-500"
         )}>
           {trend.positive ? <TrendingDown className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
@@ -1335,7 +1337,7 @@ const MetricCard = ({
         </span>
       )}
     </div>
-    {extra}
+    {extra && <div className="mt-1 sm:mt-2">{extra}</div>}
     {children}
   </motion.div>
 );

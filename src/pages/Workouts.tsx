@@ -333,43 +333,45 @@ export default function Workouts() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <TabsList className="h-auto flex-wrap gap-2 bg-transparent p-0 mb-6">
-                <TabsTrigger value="todos" className="gap-2 data-[state=active]:bg-primary/10">
-                  <Dumbbell className="h-4 w-4" />
-                  Todos
-                  <Badge variant="secondary" className="ml-1 text-xs">
-                    {workouts.length}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="gratuitos" className="gap-2 data-[state=active]:bg-primary/10">
-                  <Zap className="h-4 w-4" />
-                  Gratuitos
-                  <Badge variant="secondary" className="ml-1 text-xs">
-                    {workouts.filter((w) => w.is_basic).length}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="casa" className="gap-2 data-[state=active]:bg-primary/10">
-                  <Home className="h-4 w-4" />
-                  Casa
-                  <Badge variant="secondary" className="ml-1 text-xs">
-                    {workouts.filter((w) => w.environment === "casa").length}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="academia" className="gap-2 data-[state=active]:bg-primary/10">
-                  <Target className="h-4 w-4" />
-                  Academia
-                  <Badge variant="secondary" className="ml-1 text-xs">
-                    {workouts.filter((w) => w.environment === "academia").length}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="favoritos" className="gap-2 data-[state=active]:bg-primary/10">
-                  <Heart className="h-4 w-4" />
-                  Favoritos
-                  <Badge variant="secondary" className="ml-1 text-xs">
-                    {favoriteIds.length}
-                  </Badge>
-                </TabsTrigger>
-              </TabsList>
+              <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+                <TabsList className="inline-flex w-auto min-w-full sm:flex sm:flex-wrap h-auto gap-1.5 sm:gap-2 bg-transparent p-0 mb-4 sm:mb-6">
+                  <TabsTrigger value="todos" className="gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary/10">
+                    <Dumbbell className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    Todos
+                    <Badge variant="secondary" className="ml-1 text-[10px] sm:text-xs hidden sm:inline-flex">
+                      {workouts.length}
+                    </Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="gratuitos" className="gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary/10">
+                    <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    Gratuitos
+                    <Badge variant="secondary" className="ml-1 text-[10px] sm:text-xs hidden sm:inline-flex">
+                      {workouts.filter((w) => w.is_basic).length}
+                    </Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="casa" className="gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary/10">
+                    <Home className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    Casa
+                    <Badge variant="secondary" className="ml-1 text-[10px] sm:text-xs hidden sm:inline-flex">
+                      {workouts.filter((w) => w.environment === "casa").length}
+                    </Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="academia" className="gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary/10">
+                    <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    Academia
+                    <Badge variant="secondary" className="ml-1 text-[10px] sm:text-xs hidden sm:inline-flex">
+                      {workouts.filter((w) => w.environment === "academia").length}
+                    </Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="favoritos" className="gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap data-[state=active]:bg-primary/10">
+                    <Heart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    Favoritos
+                    <Badge variant="secondary" className="ml-1 text-[10px] sm:text-xs hidden sm:inline-flex">
+                      {favoriteIds.length}
+                    </Badge>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
             </motion.div>
 
             {/* Filters */}
@@ -381,17 +383,17 @@ export default function Workouts() {
             >
               {/* Difficulty Filter */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Filter className="h-4 w-4" />
+                <label className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   Dificuldade
                 </label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {(Object.keys(difficultyLabels) as DifficultyFilter[]).map((key) => (
                     <button
                       key={key}
                       onClick={() => setDifficultyFilter(key)}
                       className={cn(
-                        "filter-chip px-3 py-1.5 rounded-full text-sm font-medium",
+                        "filter-chip px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium touch-target",
                         difficultyFilter === key && "active"
                       )}
                     >
@@ -403,17 +405,17 @@ export default function Workouts() {
 
               {/* Goal Filter */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4" />
+                <label className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   Objetivo
                 </label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {(Object.keys(goalLabels) as GoalFilter[]).map((key) => (
                     <button
                       key={key}
                       onClick={() => setGoalFilter(key)}
                       className={cn(
-                        "filter-chip px-3 py-1.5 rounded-full text-sm font-medium",
+                        "filter-chip px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium touch-target",
                         goalFilter === key && "active"
                       )}
                     >
