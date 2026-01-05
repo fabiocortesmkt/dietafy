@@ -79,7 +79,7 @@ const FeatureCard = ({ icon, title, examples, delay = 0 }: FeatureCardProps) => 
 const VitaNutriPage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
-  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>("ballad");
   const [orbState, setOrbState] = useState<VitaOrbState>("idle");
   const [voiceToggleFn, setVoiceToggleFn] = useState<(() => void) | null>(null);
