@@ -11,6 +11,7 @@ import { useVitaVoiceConversation } from "@/hooks/useVitaVoiceConversation";
 import ParticleBackground from "@/components/ParticleBackground";
 import AudioWaves from "@/components/AudioWaves";
 import { launchConfetti } from "@/lib/confetti";
+import TypewriterText from "@/components/TypewriterText";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -171,9 +172,21 @@ const Landing = () => {
               variants={itemVariants}
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-tight"
             >
-              <span className="text-shine">Emagreça com acompanhamento</span>
+              <span className="text-shine">
+                <TypewriterText 
+                  text="Emagreça com acompanhamento" 
+                  delay={500}
+                  speed={40}
+                />
+              </span>
               <br />
-              <span className="text-gradient">diário e constante</span>
+              <span className="text-gradient">
+                <TypewriterText 
+                  text="diário e constante" 
+                  delay={1700}
+                  speed={50}
+                />
+              </span>
             </motion.h1>
 
             <motion.p
