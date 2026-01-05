@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.elevenlabs-transcribe]
 verify_jwt = false
+
+[functions.vita-chat]
+verify_jwt = false
