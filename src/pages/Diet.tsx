@@ -1,15 +1,31 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { AuthenticatedLayout } from "@/components/layouts/AuthenticatedLayout";
-import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Home, UtensilsCrossed, Dumbbell, LineChart, User as UserIcon, Activity, Flame, Salad, Clock, ArrowRight, MessageCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { 
+  Flame, 
+  Salad, 
+  Clock, 
+  ArrowRight, 
+  Sparkles,
+  Camera,
+  UtensilsCrossed,
+  Apple,
+  Coffee,
+  Moon,
+  Sun,
+  Zap,
+  CheckCircle2,
+  ChefHat,
+  Target,
+} from "lucide-react";
 
 interface RecommendedMeal {
   id: string;
@@ -21,7 +37,15 @@ interface RecommendedMeal {
   fat: number;
   timing: string;
   goalTag: string;
+  icon: "coffee" | "sun" | "moon" | "apple";
 }
+
+const mealIcons = {
+  coffee: Coffee,
+  sun: Sun,
+  moon: Moon,
+  apple: Apple,
+};
 
 const buildRecommendedMeals = (goals: string[] | null): RecommendedMeal[] => {
   const normalizedGoals = (goals || []).map((g) => g.toLowerCase());
@@ -41,6 +65,7 @@ const buildRecommendedMeals = (goals: string[] | null): RecommendedMeal[] => {
         fat: 10,
         timing: "Café da manhã",
         goalTag: "perda de gordura",
+        icon: "coffee",
       },
       {
         id: "almoco_perda",
@@ -52,6 +77,7 @@ const buildRecommendedMeals = (goals: string[] | null): RecommendedMeal[] => {
         fat: 14,
         timing: "Almoço",
         goalTag: "perda de gordura",
+        icon: "sun",
       },
       {
         id: "jantar_perda",
@@ -63,6 +89,7 @@ const buildRecommendedMeals = (goals: string[] | null): RecommendedMeal[] => {
         fat: 14,
         timing: "Jantar",
         goalTag: "perda de gordura",
+        icon: "moon",
       },
     ];
   }
@@ -79,6 +106,7 @@ const buildRecommendedMeals = (goals: string[] | null): RecommendedMeal[] => {
         fat: 7,
         timing: "60–90 min antes do treino",
         goalTag: "hipertrofia",
+        icon: "apple",
       },
       {
         id: "pos_treino_hipertrofia",
@@ -90,6 +118,7 @@ const buildRecommendedMeals = (goals: string[] | null): RecommendedMeal[] => {
         fat: 14,
         timing: "Pós‑treino / Almoço",
         goalTag: "hipertrofia",
+        icon: "sun",
       },
       {
         id: "ceia_hipertrofia",
@@ -101,6 +130,7 @@ const buildRecommendedMeals = (goals: string[] | null): RecommendedMeal[] => {
         fat: 15,
         timing: "Ceia",
         goalTag: "hipertrofia",
+        icon: "moon",
       },
     ];
   }
@@ -117,6 +147,7 @@ const buildRecommendedMeals = (goals: string[] | null): RecommendedMeal[] => {
         fat: 9,
         timing: "30–60 min antes do treino",
         goalTag: "performance",
+        icon: "apple",
       },
       {
         id: "refeicao_dia_treino",
@@ -128,6 +159,7 @@ const buildRecommendedMeals = (goals: string[] | null): RecommendedMeal[] => {
         fat: 15,
         timing: "Almoço / Jantar",
         goalTag: "performance",
+        icon: "sun",
       },
       {
         id: "lanchinho_rapido",
@@ -139,6 +171,7 @@ const buildRecommendedMeals = (goals: string[] | null): RecommendedMeal[] => {
         fat: 11,
         timing: "Lanche",
         goalTag: "equilíbrio",
+        icon: "apple",
       },
     ];
   }
@@ -154,6 +187,7 @@ const buildRecommendedMeals = (goals: string[] | null): RecommendedMeal[] => {
       fat: 11,
       timing: "Café da manhã",
       goalTag: "equilíbrio",
+      icon: "coffee",
     },
     {
       id: "almoco_equilibrio",
@@ -165,6 +199,7 @@ const buildRecommendedMeals = (goals: string[] | null): RecommendedMeal[] => {
       fat: 16,
       timing: "Almoço",
       goalTag: "equilíbrio",
+      icon: "sun",
     },
     {
       id: "jantar_equilibrio",
@@ -176,8 +211,33 @@ const buildRecommendedMeals = (goals: string[] | null): RecommendedMeal[] => {
       fat: 13,
       timing: "Jantar",
       goalTag: "equilíbrio",
+      icon: "moon",
     },
   ];
+};
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut" as const,
+    },
+  },
 };
 
 const Diet = () => {
@@ -243,200 +303,408 @@ const Diet = () => {
     };
   }, [navigate]);
 
+  const meals = buildRecommendedMeals(userGoals);
+  const totalCalories = meals.reduce((acc, m) => acc + m.calories, 0);
+  const totalProtein = meals.reduce((acc, m) => acc + m.protein, 0);
+  const totalCarbs = meals.reduce((acc, m) => acc + m.carbs, 0);
+  const totalFat = meals.reduce((acc, m) => acc + m.fat, 0);
+
   if (loadingAuth || !user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Skeleton className="h-10 w-40" />
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 rounded-full bg-primary/20 animate-pulse" />
+          <Skeleton className="h-4 w-32" />
+        </div>
       </div>
     );
   }
 
   return (
     <AuthenticatedLayout>
-      {/* Main content */}
-      <div className="flex-1 flex flex-col pb-16 md:pb-0">
-        <header className="w-full border-b px-4 py-3 md:px-8 md:py-4 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-              Plano alimentar do dia
-            </p>
-            <h1 className="mt-1 text-2xl md:text-3xl font-semibold tracking-tight">Dieta de hoje</h1>
-            <p className="mt-1 text-sm text-muted-foreground max-w-xl">
-              Use estes exemplos como base e vá ajustando com a Vita no registro diário. O importante é a direção, não a perfeição.
-            </p>
+      <div className="flex-1 flex flex-col min-h-screen">
+        {/* Premium Header */}
+        <motion.header 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="w-full workout-header-gradient border-b border-border/50 px-4 py-4 md:px-8 md:py-6"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+            <div className="space-y-1">
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground"
+              >
+                Plano alimentar do dia
+              </motion.p>
+              <motion.h1 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight"
+              >
+                Dieta de <span className="text-gradient">hoje</span>
+              </motion.h1>
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="text-sm text-muted-foreground max-w-md"
+              >
+                Use estes exemplos como base e vá ajustando com a Vita no registro diário.
+              </motion.p>
+            </div>
+
+            {/* Vita Tip Card - Desktop */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 }}
+              className="hidden lg:block"
+            >
+              <Card className="glass-premium-vita max-w-sm">
+                <CardContent className="p-4 flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Salad className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-primary">Dica da Vita</p>
+                    <p className="text-sm leading-relaxed">
+                      Não precisa seguir 100%: registre o que você realmente comeu para que o plano se adapte.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
 
-          <Card className="hidden sm:flex items-center gap-3 p-4 max-w-xs">
-            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary text-lg">
-              <Salad className="h-4 w-4" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">Dica da Vita</p>
-              <p className="text-sm leading-snug">
-                Não precisa seguir 100%: registre o que você realmente comeu para que o plano se adapte à sua rotina.
-              </p>
-            </div>
-          </Card>
-        </header>
+          {/* Macros Summary Bar */}
+          {!loadingMeals && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="mt-4 flex flex-wrap items-center gap-3"
+            >
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-card/80 backdrop-blur-sm border border-border/50">
+                <Flame className="h-4 w-4 text-orange-500" />
+                <span className="text-sm font-semibold">{totalCalories}</span>
+                <span className="text-xs text-muted-foreground">kcal</span>
+              </div>
+              <MacroSummaryPill label="Proteína" value={totalProtein} color="emerald" />
+              <MacroSummaryPill label="Carbo" value={totalCarbs} color="blue" />
+              <MacroSummaryPill label="Gordura" value={totalFat} color="amber" />
+            </motion.div>
+          )}
 
-        <main className="flex-1 px-4 py-3 md:px-8 md:py-4 space-y-6 overflow-y-auto">
-          <section className="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)]">
-            <div className="space-y-4">
-              {loadingMeals ? (
-                <>
-                  <Card>
-                    <CardHeader>
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="mt-2 h-3 w-48" />
-                    </CardHeader>
-                    <CardContent>
-                      <Skeleton className="h-6 w-full" />
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader>
-                      <Skeleton className="h-4 w-28" />
-                      <Skeleton className="mt-2 h-3 w-44" />
-                    </CardHeader>
-                    <CardContent>
-                      <Skeleton className="h-6 w-full" />
-                    </CardContent>
-                  </Card>
-                </>
-              ) : (
-                buildRecommendedMeals(userGoals).map((meal) => (
-                  <Card key={meal.id} className="relative overflow-hidden">
-                    <CardHeader className="flex flex-row items-start justify-between gap-3">
-                      <div className="space-y-1.5">
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant="outline"
-                            className="text-xs font-normal"
-                          >
-                            <Clock className="mr-1 h-3 w-3" /> {meal.timing}
-                          </Badge>
-                          <Badge
-                            variant="secondary"
-                            className="text-xs font-normal flex items-center gap-1"
-                          >
-                            <Flame className="h-3 w-3 text-primary" />
-                            {meal.calories} kcal
-                          </Badge>
+          {/* Vita Tip Card - Mobile */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="lg:hidden mt-4"
+          >
+            <Card className="glass-premium-vita">
+              <CardContent className="p-4 flex items-start gap-3">
+                <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <Salad className="h-4 w-4 text-primary" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-primary">Dica da Vita</p>
+                  <p className="text-sm leading-relaxed">
+                    Registre o que você realmente comeu para que o plano se adapte.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </motion.header>
+
+        <main className="flex-1 px-4 py-4 md:px-8 md:py-6 space-y-6 overflow-y-auto pb-24 md:pb-8">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <section className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+              {/* Meals List */}
+              <div className="space-y-4">
+                <motion.div variants={itemVariants} className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold tracking-tight flex items-center gap-2">
+                    <ChefHat className="h-5 w-5 text-primary" />
+                    Refeições sugeridas
+                  </h2>
+                  <Badge variant="secondary" className="text-xs">
+                    {meals.length} refeições
+                  </Badge>
+                </motion.div>
+
+                {loadingMeals ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <Card key={i} className="workout-card">
+                        <CardHeader>
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="mt-2 h-3 w-48" />
+                        </CardHeader>
+                        <CardContent>
+                          <Skeleton className="h-6 w-full" />
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {meals.map((meal, index) => (
+                      <MealCard 
+                        key={meal.id} 
+                        meal={meal} 
+                        index={index} 
+                        onRegister={() => navigate("/track")} 
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Sidebar */}
+              <aside className="space-y-4">
+                <motion.div variants={itemVariants}>
+                  <Card className="workout-card workout-card-premium overflow-hidden">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-lg category-icon-bg flex items-center justify-center">
+                          <Camera className="h-4 w-4 text-primary" />
                         </div>
-                        <CardTitle className="text-base md:text-lg font-semibold leading-tight">
-                          {meal.title}
-                        </CardTitle>
-                        <CardDescription className="text-sm leading-snug">
-                          {meal.subtitle}
-                        </CardDescription>
+                        <CardTitle className="text-sm">Registrar refeição</CardTitle>
                       </div>
-                      <Badge
-                        variant="outline"
-                        className="text-[11px] font-medium capitalize"
-                      >
-                        {meal.goalTag}
-                      </Badge>
+                      <CardDescription className="text-xs">
+                        Em menos de 1 minuto você registra e a Vita entende seu contexto.
+                      </CardDescription>
                     </CardHeader>
-                    <CardContent className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-t pt-3">
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        <MacroPill
-                          label="Proteína"
-                          value={meal.protein}
-                          suffix="g"
-                          emphasis
-                        />
-                        <MacroPill
-                          label="Carbo"
-                          value={meal.carbs}
-                          suffix="g"
-                        />
-                        <MacroPill
-                          label="Gordura"
-                          value={meal.fat}
-                          suffix="g"
-                        />
-                      </div>
-                      <Button
-                        size="sm"
-                        className="mt-1 md:mt-0 flex items-center gap-2"
-                        variant="outline"
+                    <CardContent className="space-y-3">
+                      <Button 
+                        className="w-full bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25" 
                         onClick={() => navigate("/track")}
                       >
-                        Registrar refeição parecida
-                        <ArrowRight className="h-3 w-3" />
+                        <Salad className="h-4 w-4 mr-2" />
+                        Registrar agora
+                        <ArrowRight className="h-4 w-4 ml-auto" />
+                      </Button>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        💡 Dica: tire uma foto do prato e deixe a Vita te ajudar a analisar depois.
+                      </p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                <motion.div variants={itemVariants}>
+                  <Card className="workout-card overflow-hidden">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-lg category-icon-bg flex items-center justify-center">
+                          <Target className="h-4 w-4 text-primary" />
+                        </div>
+                        <CardTitle className="text-sm">Como pensamos sua dieta</CardTitle>
+                      </div>
+                      <CardDescription className="text-xs">
+                        Hábitos sustentáveis alinhados ao seu treino e sono.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2">
+                        <PrincipleItem icon={Zap} text="Priorizar proteína suficiente ao longo do dia" />
+                        <PrincipleItem icon={Flame} text="Ajustar carboidratos em torno dos treinos" />
+                        <PrincipleItem icon={Salad} text="Garantir saciedade com fibras e gorduras boas" />
+                        <PrincipleItem icon={Sparkles} text="Manter flexibilidade para refeições sociais" />
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                <motion.div variants={itemVariants}>
+                  <Card className="workout-card overflow-hidden border-dashed">
+                    <CardContent className="p-4 text-center">
+                      <div className="h-12 w-12 rounded-full bg-muted mx-auto mb-3 flex items-center justify-center">
+                        <Sparkles className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                      <p className="text-sm font-medium">Quer uma dieta 100% personalizada?</p>
+                      <p className="text-xs text-muted-foreground mt-1 mb-3">
+                        Fale com a Vita Nutri IA para criar um plano único pra você.
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => navigate("/vita-nutri")}
+                      >
+                        Falar com Vita
+                        <ArrowRight className="h-3 w-3 ml-2" />
                       </Button>
                     </CardContent>
                   </Card>
-                ))
-              )}
-            </div>
-
-            <aside className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Comece registrando o básico</CardTitle>
-                  <CardDescription className="text-xs">
-                    Em menos de 1 minuto você registra a refeição e a Vita entende melhor seu contexto alimentar.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button className="w-full flex items-center justify-between" onClick={() => navigate("/track")}>
-                    <span className="flex items-center gap-2">
-                      <Salad className="h-4 w-4" />
-                      Registrar refeição agora
-                    </span>
-                    <ArrowRight className="h-3 w-3" />
-                  </Button>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Dica: se estiver em dúvida, tire uma foto do prato e deixe o Vita te ajudar a analisar depois.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Como a DietaFY pensa a sua dieta</CardTitle>
-                  <CardDescription className="text-xs">
-                    O objetivo é construir hábitos sustentáveis, alinhados ao seu plano de treinos e sono.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2 text-xs text-muted-foreground">
-                  <ul className="list-disc pl-4 space-y-1">
-                    <li>Priorizar proteína suficiente ao longo do dia.</li>
-                    <li>Ajustar carboidratos em torno dos treinos.</li>
-                    <li>Garantir saciedade com fibras e gorduras boas.</li>
-                    <li>Manter flexibilidade para refeições sociais.</li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </aside>
-          </section>
+                </motion.div>
+              </aside>
+            </section>
+          </motion.div>
         </main>
       </div>
     </AuthenticatedLayout>
   );
 };
 
+// Meal Card Component
+interface MealCardProps {
+  meal: RecommendedMeal;
+  index: number;
+  onRegister: () => void;
+}
+
+const MealCard = ({ meal, index, onRegister }: MealCardProps) => {
+  const IconComponent = mealIcons[meal.icon];
+  
+  return (
+    <motion.div
+      variants={itemVariants}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+    >
+      <Card className="workout-card overflow-hidden">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className={cn(
+                "h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0",
+                meal.icon === "coffee" && "bg-amber-500/10 text-amber-600",
+                meal.icon === "sun" && "bg-orange-500/10 text-orange-600",
+                meal.icon === "moon" && "bg-indigo-500/10 text-indigo-600",
+                meal.icon === "apple" && "bg-emerald-500/10 text-emerald-600",
+              )}>
+                <IconComponent className="h-5 w-5" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="outline" className="text-xs font-normal gap-1">
+                    <Clock className="h-3 w-3" />
+                    {meal.timing}
+                  </Badge>
+                  <Badge className="badge-premium-shimmer text-xs font-normal gap-1">
+                    <Flame className="h-3 w-3" />
+                    {meal.calories} kcal
+                  </Badge>
+                </div>
+                <CardTitle className="text-base font-semibold leading-tight">
+                  {meal.title}
+                </CardTitle>
+                <CardDescription className="text-sm leading-snug">
+                  {meal.subtitle}
+                </CardDescription>
+              </div>
+            </div>
+            <Badge variant="secondary" className="text-[10px] font-medium capitalize shrink-0">
+              {meal.goalTag}
+            </Badge>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="pt-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-border/50 pt-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <MacroPill label="Proteína" value={meal.protein} suffix="g" color="emerald" emphasis />
+              <MacroPill label="Carbo" value={meal.carbs} suffix="g" color="blue" />
+              <MacroPill label="Gordura" value={meal.fat} suffix="g" color="amber" />
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="group hover:border-primary/50 hover:bg-primary/5"
+              onClick={onRegister}
+            >
+              <CheckCircle2 className="h-3 w-3 mr-1 group-hover:text-primary transition-colors" />
+              Registrar similar
+              <ArrowRight className="h-3 w-3 ml-1 group-hover:translate-x-0.5 transition-transform" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
+
+// Macro Summary Pill for Header
+interface MacroSummaryPillProps {
+  label: string;
+  value: number;
+  color: "emerald" | "blue" | "amber";
+}
+
+const MacroSummaryPill = ({ label, value, color }: MacroSummaryPillProps) => {
+  const colorClasses = {
+    emerald: "text-emerald-600 dark:text-emerald-400",
+    blue: "text-blue-600 dark:text-blue-400",
+    amber: "text-amber-600 dark:text-amber-400",
+  };
+
+  return (
+    <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-card/80 backdrop-blur-sm border border-border/50">
+      <span className={cn("text-sm font-semibold tabular-nums", colorClasses[color])}>
+        {value}g
+      </span>
+      <span className="text-xs text-muted-foreground">{label}</span>
+    </div>
+  );
+};
+
+// Macro Pill Component
 interface MacroPillProps {
   label: string;
   value: number;
   suffix?: string;
+  color?: "emerald" | "blue" | "amber";
   emphasis?: boolean;
 }
 
-const MacroPill = ({ label, value, suffix, emphasis }: MacroPillProps) => {
+const MacroPill = ({ label, value, suffix, color = "emerald", emphasis }: MacroPillProps) => {
+  const colorClasses = {
+    emerald: emphasis 
+      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" 
+      : "border-border/60 bg-muted/40",
+    blue: emphasis 
+      ? "border-blue-500/40 bg-blue-500/10 text-blue-700 dark:text-blue-400" 
+      : "border-border/60 bg-muted/40",
+    amber: emphasis 
+      ? "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400" 
+      : "border-border/60 bg-muted/40",
+  };
+
   return (
-    <span
-      className={"inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] " +
-        (emphasis ? "border-primary/60 bg-primary/5 text-primary" : "border-border/60 bg-muted/40")}
-    >
+    <span className={cn(
+      "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition-colors",
+      colorClasses[color]
+    )}>
       <span className="font-medium">{label}:</span>
-      <span className="tabular-nums">
-        {value}
-        {suffix}
+      <span className="tabular-nums font-semibold">
+        {value}{suffix}
       </span>
     </span>
   );
 };
+
+// Principle Item Component
+interface PrincipleItemProps {
+  icon: React.ComponentType<{ className?: string }>;
+  text: string;
+}
+
+const PrincipleItem = ({ icon: Icon, text }: PrincipleItemProps) => (
+  <li className="flex items-start gap-2 text-xs text-muted-foreground">
+    <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+      <Icon className="h-3 w-3 text-primary" />
+    </div>
+    <span>{text}</span>
+  </li>
+);
 
 export default Diet;

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { motion } from "framer-motion";
 import {
   Home,
   UtensilsCrossed,
@@ -18,6 +19,13 @@ import {
   Activity,
   Droplet,
   BedDouble,
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+  Target,
+  Zap,
+  Heart,
+  Scale,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +35,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { NavLink } from "@/components/NavLink";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { AuthenticatedLayout } from "@/components/layouts/AuthenticatedLayout";
@@ -42,6 +51,9 @@ import {
   RadialBarChart,
   RadialBar,
   PolarAngleAxis,
+  ResponsiveContainer,
+  Area,
+  AreaChart,
 } from "recharts";
 
 // Minimal shape for user profile data we actually use here
@@ -170,6 +182,42 @@ const dailySchedule: DayEvent[] = [
     type: "meal",
   },
 ];
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut" as const,
+    },
+  },
+};
+
+const headerVariants = {
+  hidden: { opacity: 0, y: -20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut" as const,
+    },
+  },
+};
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -508,7 +556,6 @@ const Dashboard = () => {
       }
       if (weight != null) prevWeight = weight;
 
-      // Versão mais estável: efeitos menores de sono e peso
       const sleepImpact = (sleepScore - 6) * -0.15;
       const weightImpact = deltaWeight * 0.4;
 
@@ -556,7 +603,6 @@ const Dashboard = () => {
       const stressAgg = stressByDate.get(date);
       const stress = stressAgg && stressAgg.count ? stressAgg.total / stressAgg.count : 3;
 
-      // Versão mais estável: coeficientes reduzidos
       let glucose = 95 + carbs * 0.03 + (stress - 3) * 2 - (sleep - 6) * 1.5;
       glucose = Math.max(70, Math.min(160, glucose));
 
@@ -582,7 +628,6 @@ const Dashboard = () => {
     const dates = Array.from(perDay.keys()).sort();
     const last30 = dates.slice(-30);
 
-    // Suaviza com média móvel simples de 3 dias
     const values = last30.map((date) => {
       const { total, count } = perDay.get(date)!;
       return { date, avg: total / count };
@@ -609,10 +654,10 @@ const Dashboard = () => {
   const streakDays = 3; // placeholder até conectarmos com logs reais
 
   const checklistItems = [
-    "Café da manhã registrado",
-    "2L de água",
-    "Treino completado",
-    "7h+ de sono",
+    { label: "Café da manhã registrado", icon: UtensilsCrossed },
+    { label: "2L de água", icon: Droplet },
+    { label: "Treino completado", icon: Dumbbell },
+    { label: "7h+ de sono", icon: BedDouble },
   ];
 
   const [checklistState, setChecklistState] = useState<boolean[]>(
@@ -620,14 +665,14 @@ const Dashboard = () => {
   );
 
   const [upcomingEvents, setUpcomingEvents] = useState<
-    { timeLabel: string; title: string; description: string; isNext: boolean }[]
+    { timeLabel: string; title: string; description: string; isNext: boolean; type: "meal" | "workout" }[]
   >([]);
   const [isShowingTomorrowSchedule, setIsShowingTomorrowSchedule] = useState(false);
 
   useEffect(() => {
     const now = new Date();
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    const dinnerMinutes = 19 * 60 + 30; // 19h30
+    const dinnerMinutes = 19 * 60 + 30;
 
     const baseMapped = dailySchedule.map((event) => {
       const minutes = event.hour * 60 + event.minute;
@@ -638,9 +683,8 @@ const Dashboard = () => {
     let effectiveEvents = baseMapped.filter((event) => event.isFutureToday);
     let showingTomorrow = false;
 
-    // Depois do horário do jantar, mostrar a rotina do dia seguinte
     if (effectiveEvents.length === 0 && nowMinutes >= dinnerMinutes) {
-      effectiveEvents = baseMapped; // usa toda a agenda do próximo dia
+      effectiveEvents = baseMapped;
       showingTomorrow = true;
     }
 
@@ -654,6 +698,7 @@ const Dashboard = () => {
         title: event.title,
         description: event.description,
         isNext: nextEvent ? event.minutes === nextEvent.minutes : false,
+        type: event.type,
       };
     });
 
@@ -698,7 +743,10 @@ const Dashboard = () => {
   if (!user && loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Skeleton className="h-10 w-40" />
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 rounded-full bg-primary/20 animate-pulse" />
+          <Skeleton className="h-4 w-32" />
+        </div>
       </div>
     );
   }
@@ -707,235 +755,303 @@ const Dashboard = () => {
 
   return (
     <AuthenticatedLayout>
-      <div className="flex-1 flex flex-col">
-        <header className="w-full border-b px-4 py-3 md:px-8 md:py-4 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm text-muted-foreground">{todayLabel}</p>
-            <h1 className="mt-1 text-2xl md:text-3xl font-semibold tracking-tight">
-              {greetingForNow()}
-              {greetingName ? `, ${greetingName}!` : "!"}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Vamos ajustar hoje para o seu metabolismo trabalhar a seu favor.
-            </p>
+      <div className="flex-1 flex flex-col min-h-screen">
+        {/* Premium Header with Gradient */}
+        <motion.header 
+          variants={headerVariants}
+          initial="hidden"
+          animate="visible"
+          className="w-full workout-header-gradient border-b border-border/50 px-4 py-4 md:px-8 md:py-6"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+            <div className="space-y-1">
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-sm text-muted-foreground capitalize"
+              >
+                {todayLabel}
+              </motion.p>
+              <motion.h1 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight"
+              >
+                {greetingForNow()}
+                {greetingName ? <span className="text-gradient">, {greetingName}</span> : ""}!
+              </motion.h1>
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="text-sm text-muted-foreground max-w-md"
+              >
+                Vamos ajustar hoje para o seu metabolismo trabalhar a seu favor.
+              </motion.p>
+            </div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 }}
+              className="flex flex-col items-start lg:items-end gap-3"
+            >
+              {profile && (
+                <Badge 
+                  className={cn(
+                    "px-3 py-1.5 text-xs font-semibold",
+                    profile.plan_type === "premium" 
+                      ? "badge-premium-shimmer" 
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {profile.plan_type === "premium" ? (
+                    <>
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      PREMIUM
+                    </>
+                  ) : (
+                    "PLANO FREE"
+                  )}
+                </Badge>
+              )}
+              
+              {/* Vita Message Card - Desktop */}
+              <Card className="hidden lg:flex glass-premium-vita max-w-sm">
+                <CardContent className="p-4 flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-primary">
+                      Mensagem da Vita
+                    </p>
+                    <p className="text-sm leading-relaxed">{vitaMotivationMessage}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
 
-          <div className="flex flex-col items-end gap-2">
-            {profile && (
-              <span className="inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-medium text-muted-foreground">
-                Plano {profile.plan_type === "premium" ? "PREMIUM ⭐" : "FREE"}
-              </span>
-            )}
-            <Card className="hidden sm:flex items-center gap-3 p-4 animate-fade-in max-w-xs">
-              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary text-lg">
-                ✨
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">
-                  Mensagem do Vita, seu nutricionista pessoal
-                </p>
-                <p className="text-sm leading-snug">{vitaMotivationMessage}</p>
-              </div>
+          {/* Vita Message Card - Mobile */}
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="lg:hidden mt-4"
+          >
+            <Card className="glass-premium-vita">
+              <CardContent className="p-4 flex items-start gap-3">
+                <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-primary">
+                    Mensagem da Vita
+                  </p>
+                  <p className="text-sm leading-relaxed">{vitaMotivationMessage}</p>
+                </div>
+              </CardContent>
             </Card>
-          </div>
-        </header>
+          </motion.div>
+        </motion.header>
 
-        <main className="flex-1 px-4 py-3 md:px-8 md:py-4 space-y-6 overflow-y-auto">
-          {profile?.plan_type === "free" && (
-            <section className="space-y-2" aria-label="Banner de upgrade">
-              <Card className="border-dashed border-primary/40 bg-primary/5">
-                <CardContent className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 py-4">
-                  <div>
-                    <p className="text-sm font-medium flex items-center gap-2">
-                      🎯 Desbloqueie todo potencial do DietaFY
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Faça upgrade para Premium e tenha a Vita liberada, WhatsApp ativo e treinos completos.
-                    </p>
-                  </div>
-                  <Button size="sm" onClick={() => navigate("/pricing")}>
-                    Saiba mais
-                  </Button>
-                </CardContent>
-              </Card>
-            </section>
-          )}
-
-          {loadingTodaySummary && !vitaDaySummaryMessages && (
-            <section aria-label="Resumo do dia pelo Vita" className="space-y-2">
-              <Card className="bg-muted/60 border-dashed">
-                <CardContent className="py-3 px-4">
-                  <Skeleton className="h-4 w-40 mb-2" />
-                  <Skeleton className="h-3 w-full mb-1" />
-                  <Skeleton className="h-3 w-3/4" />
-                </CardContent>
-              </Card>
-            </section>
-          )}
-
-          {vitaDaySummaryMessages && (
-            <section aria-label="Resumo do dia pelo Vita" className="space-y-2 animate-fade-in">
-              <Card className="bg-muted/60 border-dashed">
-                <CardContent className="py-3 px-4 flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-primary text-base">
-                      <MessageCircle className="h-4 w-4" />
+        <main className="flex-1 px-4 py-4 md:px-8 md:py-6 space-y-6 overflow-y-auto pb-24 md:pb-8">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-6"
+          >
+            {/* Upgrade Banner for Free Users */}
+            {profile?.plan_type === "free" && (
+              <motion.section variants={itemVariants} aria-label="Banner de upgrade">
+                <Card className="workout-card workout-card-premium border-primary/30 overflow-hidden">
+                  <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-4 relative z-10">
+                    <div className="flex items-start gap-3">
+                      <div className="h-10 w-10 rounded-xl category-icon-bg flex items-center justify-center">
+                        <Zap className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-semibold flex items-center gap-2">
+                          🎯 Desbloqueie todo potencial do DietaFY
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Faça upgrade para Premium e tenha a Vita liberada, WhatsApp ativo e treinos completos.
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-medium text-muted-foreground">
-                        Recado do Vita, seu nutricionista pessoal
+                    <Button 
+                      size="sm" 
+                      onClick={() => navigate("/pricing")}
+                      className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25"
+                    >
+                      Saiba mais
+                      <ArrowUpRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.section>
+            )}
+
+            {/* Vita Day Summary */}
+            {loadingTodaySummary && !vitaDaySummaryMessages && (
+              <motion.section variants={itemVariants} aria-label="Resumo do dia pelo Vita">
+                <Card className="glass-card">
+                  <CardContent className="py-4 px-4">
+                    <Skeleton className="h-4 w-40 mb-3" />
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <Skeleton className="h-16 rounded-lg" />
+                      <Skeleton className="h-16 rounded-lg" />
+                      <Skeleton className="h-16 rounded-lg" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.section>
+            )}
+
+            {vitaDaySummaryMessages && (
+              <motion.section variants={itemVariants} aria-label="Resumo do dia pelo Vita">
+                <Card className="workout-card overflow-hidden">
+                  <CardContent className="py-4 px-4 flex flex-col gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-full category-icon-bg flex items-center justify-center">
+                        <MessageCircle className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-medium text-muted-foreground">
+                          Recado da Vita
+                        </span>
+                        <p className="text-sm font-medium">
+                          Olhei seu dia até agora e aqui vai um resumo rápido:
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <SummaryPill 
+                        icon={Droplet} 
+                        text={vitaDaySummaryMessages.water} 
+                        color="blue"
+                      />
+                      <SummaryPill 
+                        icon={BedDouble} 
+                        text={vitaDaySummaryMessages.sleep} 
+                        color="purple"
+                      />
+                      <SummaryPill 
+                        icon={Dumbbell} 
+                        text={vitaDaySummaryMessages.workout} 
+                        color="green"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.section>
+            )}
+
+            {/* Metrics Grid */}
+            <motion.section variants={itemVariants} aria-label="Métricas principais">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {/* Weight Card */}
+                <MetricCard
+                  title="Peso atual"
+                  subtitle="Últimos 7 dias"
+                  icon={Scale}
+                  value={profile?.weight_kg ? `${profile.weight_kg.toFixed(1)} kg` : "--"}
+                  trend={weightLogs.length >= 2 ? (
+                    (() => {
+                      const first = Number(weightLogs[0].weight_kg);
+                      const last = Number(weightLogs[weightLogs.length - 1].weight_kg);
+                      const delta = last - first;
+                      const isLoss = delta < 0;
+                      const goalIsLoss = (profile?.goals || []).includes("perder_gordura");
+                      return {
+                        value: `${delta > 0 ? "+" : ""}${delta.toFixed(1)} kg`,
+                        positive: goalIsLoss ? isLoss : !isLoss,
+                      };
+                    })()
+                  ) : undefined}
+                  extra={bmiInfo && (
+                    <div className="flex items-center gap-2 text-xs mt-2">
+                      <Badge variant="secondary" className="text-xs">
+                        IMC {bmiInfo.bmi.toFixed(1)}
+                      </Badge>
+                      <span className="text-muted-foreground">
+                        {bmiInfo.category === "abaixo" && "Abaixo do peso"}
+                        {bmiInfo.category === "normal" && "Peso adequado"}
+                        {bmiInfo.category === "sobrepeso" && "Sobrepeso"}
+                        {bmiInfo.category === "obesidade" && "Obesidade"}
                       </span>
-                      <span className="text-sm text-foreground">
-                        Olhei seu dia até agora e aqui vai um resumo rápido:
-                      </span>
                     </div>
-                  </div>
-
-                  <div className="mt-1 grid gap-2 sm:grid-cols-3">
-                    <div className="flex items-start gap-2 text-xs sm:text-sm">
-                      <div className="mt-0.5 h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                        <Droplet className="h-3 w-3" />
-                      </div>
-                      <p>{vitaDaySummaryMessages.water}</p>
-                    </div>
-
-                    <div className="flex items-start gap-2 text-xs sm:text-sm">
-                      <div className="mt-0.5 h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                        <BedDouble className="h-3 w-3" />
-                      </div>
-                      <p>{vitaDaySummaryMessages.sleep}</p>
-                    </div>
-
-                    <div className="flex items-start gap-2 text-xs sm:text-sm">
-                      <div className="mt-0.5 h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                        <Dumbbell className="h-3 w-3" />
-                      </div>
-                      <p>{vitaDaySummaryMessages.workout}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </section>
-          )}
-
-          {/* Seção 2 - Cards de métricas */}
-          <section aria-label="Métricas principais" className="space-y-3">
-            <div className="grid gap-4 md:grid-cols-2">
-              {/* Card Peso Atual */}
-              <Card className="animate-fade-in rounded-xl border border-border/80 bg-card/95 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <div>
-                    <CardTitle className="text-base font-semibold">Peso atual</CardTitle>
-                    <CardDescription>Últimos 7 dias</CardDescription>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-semibold tracking-tight">
-                        {profile?.weight_kg ? `${profile.weight_kg.toFixed(1)} kg` : "--"}
-                      </span>
-                      {weightLogs.length >= 2 ? (
-                        <span
-                          className={cn(
-                            "text-sm font-medium",
-                            (profile?.goals || []).includes("perder_gordura")
-                              ? weightLogs[weightLogs.length - 1].weight_kg < weightLogs[0].weight_kg
-                                ? "text-emerald-500"
-                                : "text-muted-foreground"
-                              : "text-muted-foreground",
-                          )}
-                        >
-                          {(() => {
-                            const first = Number(weightLogs[0].weight_kg);
-                            const last = Number(weightLogs[weightLogs.length - 1].weight_kg);
-                            const delta = last - first;
-                            const sign = delta > 0 ? "+" : "";
-                            return `${sign}${delta.toFixed(1)} kg desde o início`;
-                          })()}
-                        </span>
-                      ) : (
-                        <span className="text-sm font-medium text-muted-foreground">
-                          Comece registrando seu peso na aba Registro diário
-                        </span>
-                      )}
-                    </div>
-                    {bmiInfo ? (
-                      <div className="mt-1 flex items-center gap-2 text-xs">
-                        <span className="px-2 py-0.5 rounded-full bg-muted text-foreground font-medium">
-                          IMC {bmiInfo.bmi.toFixed(1)}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {bmiInfo.category === "abaixo" && "Abaixo do peso"}
-                          {bmiInfo.category === "normal" && "Peso adequado"}
-                          {bmiInfo.category === "sobrepeso" && "Sobrepeso"}
-                          {bmiInfo.category === "obesidade" && "Obesidade"}
-                        </span>
-                      </div>
-                    ) : (
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Preencha peso e altura no seu perfil para ver seu IMC.
-                      </p>
-                    )}
-                  </div>
+                  )}
+                >
                   <ChartWeightMini data={weightHistory7d} />
-                </CardContent>
-              </Card>
+                </MetricCard>
 
-              {/* Card Score Metabólico */}
-              <Card className="animate-fade-in rounded-xl border border-border/80 bg-card/95 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <div>
-                    <CardTitle className="text-base font-semibold">Saúde metabólica</CardTitle>
-                    <CardDescription>Score estimado (0 - 10)</CardDescription>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex items-center gap-4">
-                  <div className="w-32 h-32">
+                {/* Metabolic Score Card */}
+                <MetricCard
+                  title="Saúde metabólica"
+                  subtitle="Score estimado"
+                  icon={Activity}
+                  value={metabolicScore.toFixed(1)}
+                  valueLabel={metabolicLabel}
+                  extra={
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Calculado a partir do seu perfil e rotina.
+                    </p>
+                  }
+                >
+                  <div className="w-full h-16 flex items-center justify-center">
                     <MetabolicGauge score={metabolicScore} />
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-3xl font-semibold leading-none">{metabolicScore.toFixed(1)}</p>
-                    <p className="text-sm font-medium text-muted-foreground">{metabolicLabel}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Calculado a partir do seu perfil, rotina e consistência diária.
+                </MetricCard>
+
+                {/* Streak Card */}
+                <MetricCard
+                  title="Sequência"
+                  subtitle="Dias consecutivos"
+                  icon={Flame}
+                  iconClassName="text-orange-500"
+                  value={String(streakDays)}
+                  valueLabel="dias"
+                  extra={
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Continue para marcos em 7, 14 e 30 dias.
                     </p>
+                  }
+                >
+                  <div className="flex gap-1 mt-2">
+                    {[...Array(7)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={cn(
+                          "h-2 flex-1 rounded-full transition-all",
+                          i < streakDays 
+                            ? "bg-gradient-to-r from-orange-400 to-orange-500" 
+                            : "bg-muted"
+                        )}
+                      />
+                    ))}
                   </div>
-                </CardContent>
-              </Card>
+                </MetricCard>
 
-              {/* Card Streak */}
-              <Card className="animate-fade-in rounded-xl border border-border/80 bg-card/95 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <div>
-                    <CardTitle className="text-base font-semibold">Sequência de dias</CardTitle>
-                    <CardDescription>Registro contínuo de hábitos</CardDescription>
-                  </div>
-                  <div className="text-2xl">
-                    <Flame className="h-6 w-6 text-orange-500" />
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className={cn("flex items-baseline gap-2", streakDays >= 7 && "animate-pulse")}>
-                    <span className="text-3xl font-semibold">{streakDays}</span>
-                    <span className="text-sm text-muted-foreground">dias de disciplina</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Continue assim para desbloquear marcos em 7, 14 e 30 dias consecutivos.
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Card Meta do dia */}
-              <Card className="animate-fade-in rounded-xl border border-border/80 bg-card/95 shadow-sm">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base font-semibold">Meta do dia</CardTitle>
-                  <CardDescription>Checklist rápido do seu hoje</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    {checklistItems.map((label, idx) => (
-                      <label key={label} className="flex items-center gap-2 text-sm">
+                {/* Daily Goals Card */}
+                <MetricCard
+                  title="Meta do dia"
+                  subtitle="Checklist rápido"
+                  icon={Target}
+                  value={`${checklistCompleted}/${checklistItems.length}`}
+                  valueLabel="completas"
+                >
+                  <div className="space-y-2 mt-2">
+                    {checklistItems.map((item, idx) => (
+                      <label 
+                        key={item.label} 
+                        className="flex items-center gap-2 text-xs cursor-pointer group"
+                      >
                         <Checkbox
                           checked={checklistState[idx]}
                           onCheckedChange={(checked) => {
@@ -945,128 +1061,284 @@ const Dashboard = () => {
                               return next;
                             });
                           }}
+                          className="h-4 w-4"
                         />
-                        <span>{label}</span>
+                        <item.icon className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <span className={cn(
+                          "transition-all",
+                          checklistState[idx] && "line-through text-muted-foreground"
+                        )}>
+                          {item.label}
+                        </span>
                       </label>
                     ))}
+                    <div className="mt-2">
+                      <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                        <motion.div 
+                          className="h-full bg-gradient-to-r from-primary to-secondary rounded-full"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${checklistProgress}%` }}
+                          transition={{ duration: 0.5, ease: "easeOut" }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <Progress value={checklistProgress} className="h-2" />
-                    <p className="text-xs text-muted-foreground">
-                      {checklistCompleted} de {checklistItems.length} metas concluídas hoje.
+                </MetricCard>
+              </div>
+            </motion.section>
+
+            {/* Main Chart */}
+            <motion.section variants={itemVariants} aria-label="Gráfico principal">
+              <Card className="workout-card overflow-hidden">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg font-semibold">Seu corpo ao longo do tempo</CardTitle>
+                      <CardDescription>Acompanhe sua evolução nos últimos 30 dias</CardDescription>
+                    </div>
+                    <div className="h-10 w-10 rounded-xl category-icon-bg flex items-center justify-center">
+                      <LineChart className="h-5 w-5 text-primary" />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Tabs defaultValue="peso" className="w-full">
+                    <TabsList className="grid grid-cols-2 lg:grid-cols-4 w-full h-auto gap-1 p-1 bg-muted/50">
+                      <TabsTrigger value="peso" className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                        <Scale className="h-3 w-3 mr-1.5 hidden sm:inline" />
+                        Peso
+                      </TabsTrigger>
+                      <TabsTrigger value="gordura" className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                        Gordura %
+                      </TabsTrigger>
+                      <TabsTrigger value="glicose" className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                        Glicose
+                      </TabsTrigger>
+                      <TabsTrigger value="estresse" className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                        Estresse
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="peso" className="mt-4">
+                      <ChartLineWithTarget
+                        title="Peso (kg)"
+                        data={weightSeries30d}
+                        target={profile?.target_weight_kg ?? undefined}
+                      />
+                    </TabsContent>
+                    <TabsContent value="gordura" className="mt-4">
+                      <ChartLineWithTarget title="Gordura corporal (%)" data={bodyFatSeries30d} />
+                    </TabsContent>
+                    <TabsContent value="glicose" className="mt-4">
+                      <ChartLineWithTarget title="Glicose (índice)" data={glucoseSeries30d} />
+                    </TabsContent>
+                    <TabsContent value="estresse" className="mt-4">
+                      <ChartLineWithTarget title="Estresse (média diária)" data={stressSeries30d} />
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            </motion.section>
+
+            {/* Quick Actions */}
+            <motion.section variants={itemVariants} aria-label="Ações rápidas">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold tracking-tight">Ações rápidas</h2>
+              </div>
+              <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
+                <QuickActionButton 
+                  icon={Droplet} 
+                  label="Registrar água" 
+                  onClick={() => navigate("/track?tab=agua")} 
+                  color="blue"
+                />
+                <QuickActionButton 
+                  icon={Camera} 
+                  label="Registrar refeição" 
+                  onClick={() => navigate("/track?tab=refeicao")} 
+                  color="green"
+                />
+                <QuickActionButton 
+                  icon={BedDouble} 
+                  label="Registrar sono" 
+                  onClick={() => navigate("/track?tab=sono")} 
+                  color="purple"
+                />
+                <QuickActionButton 
+                  icon={SmilePlus} 
+                  label="Registrar humor" 
+                  onClick={() => navigate("/track?tab=estresse")} 
+                  color="orange"
+                />
+              </div>
+            </motion.section>
+
+            {/* Vita Insights */}
+            <motion.section variants={itemVariants} aria-label="Insights da Vita">
+              <Card className="workout-card workout-card-premium border-primary/20 overflow-hidden">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        <div className="h-8 w-8 rounded-lg category-icon-bg flex items-center justify-center">
+                          <Sparkles className="h-4 w-4 text-primary" />
+                        </div>
+                        Insights da Vita
+                      </CardTitle>
+                      <CardDescription>
+                        Análises personalizadas baseadas nos seus dados.
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-primary/5 rounded-xl p-4 border border-primary/10">
+                    <p className="text-sm leading-relaxed">
+                      💡 <span className="font-medium">Exemplo de insight:</span> "Notei que você treina melhor às 7h. Seus níveis de energia ficam até 30% maiores quando você treina nesse horário!".
                     </p>
                   </div>
                 </CardContent>
               </Card>
-            </div>
-          </section>
+            </motion.section>
 
-          {/* Seção 3 - Gráfico principal */}
-          <section aria-label="Gráfico principal" className="space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="text-lg font-semibold tracking-tight">Seu corpo ao longo do tempo</h2>
-            </div>
-            <Card className="rounded-2xl border border-border/80 bg-card/95 shadow-sm">
-              <CardContent className="pt-6">
-                <Tabs defaultValue="peso" className="w-full">
-                  <TabsList className="grid grid-cols-2 md:inline-flex w-full md:w-auto h-auto gap-1">
-                    <TabsTrigger value="peso" className="text-xs sm:text-sm">Peso</TabsTrigger>
-                    <TabsTrigger value="gordura" className="text-xs sm:text-sm">Gordura %</TabsTrigger>
-                    <TabsTrigger value="glicose" className="text-xs sm:text-sm">Glicose</TabsTrigger>
-                    <TabsTrigger value="estresse" className="text-xs sm:text-sm">Cortisol/Estresse</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="peso" className="mt-4">
-                    <ChartLineWithTarget
-                      title="Peso (kg)"
-                      data={weightSeries30d}
-                      target={profile?.target_weight_kg ?? undefined}
-                    />
-                  </TabsContent>
-                  <TabsContent value="gordura" className="mt-4">
-                    <ChartLineWithTarget title="Gordura corporal (%)" data={bodyFatSeries30d} />
-                  </TabsContent>
-                  <TabsContent value="glicose" className="mt-4">
-                    <ChartLineWithTarget title="Glicose (índice)" data={glucoseSeries30d} />
-                  </TabsContent>
-                  <TabsContent value="estresse" className="mt-4">
-                    <ChartLineWithTarget title="Estresse (média diária)" data={stressSeries30d} />
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </section>
-
-          {/* Seção 4 - Quick actions */}
-          <section aria-label="Ações rápidas" className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold tracking-tight">Ações rápidas</h2>
-            </div>
-            <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
-              <QuickActionButton icon={Droplet} label="Registrar água" onClick={() => navigate("/track?tab=agua")} />
-              <QuickActionButton icon={Camera} label="Registrar refeição" onClick={() => navigate("/track?tab=refeicao")} />
-              <QuickActionButton icon={BedDouble} label="Registrar sono" onClick={() => navigate("/track?tab=sono")} />
-              <QuickActionButton icon={SmilePlus} label="Registrar humor" onClick={() => navigate("/track?tab=estresse")} />
-            </div>
-          </section>
-
-          {/* Seção 5 - Vita Insights */}
-          <section aria-label="Insights da Vita" className="space-y-3">
-            <h2 className="text-lg font-semibold tracking-tight">Insights da Vita</h2>
-            <Card className="border-primary/30 bg-primary/5">
-              <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
-                <div className="space-y-1">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <span>💡 Insights da Vita</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Assim que conectarmos seus registros diários, a Vita vai gerar análises personalizadas aqui.
-                  </CardDescription>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm leading-relaxed">
-                  Exemplo de insight: "Notei que você treina melhor às 7h. Seus níveis de energia ficam até 30% maiores
-                  quando você treina nesse horário!".
-                </p>
-              </CardContent>
-            </Card>
-          </section>
-
-          {/* Seção 6 - Próximas refeições/treino */}
-          <section aria-label="Próximas refeições e treinos" className="space-y-3 pb-4">
-            <h2 className="text-lg font-semibold tracking-tight">
-              {isShowingTomorrowSchedule
-                ? "Próximas refeições e treino de amanhã"
-                : "Próximas refeições e treino"}
-            </h2>
-            <Card>
-              <CardContent className="pt-6">
-                <ul className="space-y-4">
+            {/* Schedule Timeline */}
+            <motion.section variants={itemVariants} aria-label="Próximas refeições e treinos" className="pb-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold tracking-tight">
+                  {isShowingTomorrowSchedule
+                    ? "Agenda de amanhã"
+                    : "Próximos eventos"}
+                </h2>
+              </div>
+              <Card className="workout-card overflow-hidden">
+                <CardContent className="pt-6">
                   {upcomingEvents.length ? (
-                    upcomingEvents.map((event) => (
-                      <TimelineItem
-                        key={event.timeLabel + event.title}
-                        time={event.timeLabel}
-                        title={event.title}
-                        description={event.description}
-                        isNext={event.isNext}
-                      />
-                    ))
+                    <div className="relative">
+                      <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-primary/50 via-primary/20 to-transparent" />
+                      <ul className="space-y-4">
+                        {upcomingEvents.map((event, idx) => (
+                          <TimelineItem
+                            key={event.timeLabel + event.title}
+                            time={event.timeLabel}
+                            title={event.title}
+                            description={event.description}
+                            isNext={event.isNext}
+                            type={event.type}
+                            index={idx}
+                          />
+                        ))}
+                      </ul>
+                    </div>
                   ) : (
-                    <p className="text-xs text-muted-foreground">
-                      Nenhuma refeição ou treino pendente hoje. Revise sua rotina nas abas Dieta e Treinos.
-                    </p>
+                    <div className="text-center py-8">
+                      <div className="h-12 w-12 rounded-full bg-muted mx-auto mb-3 flex items-center justify-center">
+                        <Target className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Nenhuma refeição ou treino pendente hoje.
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Revise sua rotina nas abas Dieta e Treinos.
+                      </p>
+                    </div>
                   )}
-                </ul>
-              </CardContent>
-            </Card>
-          </section>
-
+                </CardContent>
+              </Card>
+            </motion.section>
+          </motion.div>
         </main>
-       </div>
-     </AuthenticatedLayout>
-   );
+      </div>
+    </AuthenticatedLayout>
+  );
 };
+
+// Premium Summary Pill Component
+interface SummaryPillProps {
+  icon: React.ComponentType<{ className?: string }>;
+  text: string;
+  color: "blue" | "purple" | "green";
+}
+
+const SummaryPill = ({ icon: Icon, text, color }: SummaryPillProps) => {
+  const colorClasses = {
+    blue: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+    purple: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+    green: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+  };
+
+  return (
+    <div className={cn(
+      "flex items-start gap-2 p-3 rounded-xl border",
+      colorClasses[color]
+    )}>
+      <div className={cn(
+        "h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0",
+        color === "blue" && "bg-blue-500/20",
+        color === "purple" && "bg-purple-500/20",
+        color === "green" && "bg-emerald-500/20",
+      )}>
+        <Icon className="h-3 w-3" />
+      </div>
+      <p className="text-xs leading-relaxed">{text}</p>
+    </div>
+  );
+};
+
+// Premium Metric Card Component
+interface MetricCardProps {
+  title: string;
+  subtitle: string;
+  icon: React.ComponentType<{ className?: string }>;
+  iconClassName?: string;
+  value: string;
+  valueLabel?: string;
+  trend?: { value: string; positive: boolean };
+  extra?: React.ReactNode;
+  children?: React.ReactNode;
+}
+
+const MetricCard = ({ 
+  title, 
+  subtitle, 
+  icon: Icon, 
+  iconClassName,
+  value, 
+  valueLabel,
+  trend, 
+  extra, 
+  children 
+}: MetricCardProps) => (
+  <motion.div
+    whileHover={{ y: -4, transition: { duration: 0.2 } }}
+    className="workout-card rounded-xl p-4"
+  >
+    <div className="flex items-start justify-between mb-3">
+      <div>
+        <h3 className="text-sm font-semibold">{title}</h3>
+        <p className="text-xs text-muted-foreground">{subtitle}</p>
+      </div>
+      <div className="h-8 w-8 rounded-lg category-icon-bg flex items-center justify-center">
+        <Icon className={cn("h-4 w-4 text-primary", iconClassName)} />
+      </div>
+    </div>
+    <div className="flex items-baseline gap-2">
+      <span className="text-2xl font-bold tracking-tight">{value}</span>
+      {valueLabel && (
+        <span className="text-sm text-muted-foreground">{valueLabel}</span>
+      )}
+      {trend && (
+        <span className={cn(
+          "text-xs font-medium flex items-center gap-0.5",
+          trend.positive ? "text-emerald-500" : "text-orange-500"
+        )}>
+          {trend.positive ? <TrendingDown className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
+          {trend.value}
+        </span>
+      )}
+    </div>
+    {extra}
+    {children}
+  </motion.div>
+);
 
 interface MetricLineProps {
   data: { day: string | number; value: number }[];
@@ -1077,54 +1349,83 @@ interface MetricLineProps {
 const ChartLineWithTarget = ({ data, target, title }: MetricLineProps) => {
   if (!data.length) {
     return (
-      <div className="w-full h-64 flex items-center justify-center text-xs text-muted-foreground text-center px-4">
-        {title ? (
-          <>
-            Comece registrando seus dados relacionados a
-            <span className="font-medium ml-1">{title.toLowerCase()}</span> na aba
-            <span className="font-medium ml-1">Registro diário</span> para ver sua evolução aqui.
-          </>
-        ) : (
-          <>
-            Comece registrando seus dados na aba
-            <span className="font-medium ml-1">Registro diário</span> para ver sua evolução aqui.
-          </>
-        )}
+      <div className="w-full h-64 flex flex-col items-center justify-center text-center px-4 bg-muted/20 rounded-xl border border-dashed border-border">
+        <div className="h-12 w-12 rounded-full bg-muted mb-3 flex items-center justify-center">
+          <LineChart className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {title ? (
+            <>
+              Comece registrando seus dados relacionados a{" "}
+              <span className="font-medium text-foreground">{title.toLowerCase()}</span>
+            </>
+          ) : (
+            "Comece registrando seus dados"
+          )}
+        </p>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="mt-3"
+          onClick={() => window.location.href = "/track"}
+        >
+          Ir para Registro diário
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-64 rounded-xl border border-border/70 bg-muted/40 px-3 py-2 shadow-inner">
-      <ReLineChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-        <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" tickLine={false} />
-        <YAxis stroke="hsl(var(--muted-foreground))" tickLine={false} />
-        <ReTooltip
-          contentStyle={{
-            fontSize: "0.75rem",
-            borderRadius: 8,
-            border: "1px solid hsl(var(--border))",
-            backgroundColor: "hsl(var(--card))",
-          }}
-        />
-        <Line
-          type="monotone"
-          dataKey="value"
-          stroke="hsl(var(--primary))"
-          strokeWidth={2}
-          dot={false}
-          strokeLinecap="round"
-        />
-        {typeof target === "number" && (
-          <ReferenceLine
-            y={target}
-            stroke="hsl(var(--primary))"
-            strokeDasharray="4 4"
-            label={{ value: "Meta", position: "right", fill: "hsl(var(--primary))", fontSize: 10 }}
+    <div className="w-full h-64 rounded-xl bg-muted/20 p-3 border border-border/50">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+          <XAxis 
+            dataKey="day" 
+            stroke="hsl(var(--muted-foreground))" 
+            tickLine={false} 
+            axisLine={false}
+            fontSize={11}
           />
-        )}
-      </ReLineChart>
+          <YAxis 
+            stroke="hsl(var(--muted-foreground))" 
+            tickLine={false} 
+            axisLine={false}
+            fontSize={11}
+          />
+          <ReTooltip
+            contentStyle={{
+              fontSize: "0.75rem",
+              borderRadius: 12,
+              border: "1px solid hsl(var(--border))",
+              backgroundColor: "hsl(var(--card))",
+              boxShadow: "0 10px 40px -10px hsl(var(--foreground) / 0.1)",
+            }}
+          />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="hsl(var(--primary))"
+            strokeWidth={2}
+            fillOpacity={1}
+            fill="url(#colorValue)"
+          />
+          {typeof target === "number" && (
+            <ReferenceLine
+              y={target}
+              stroke="hsl(var(--primary))"
+              strokeDasharray="4 4"
+              label={{ value: "Meta", position: "right", fill: "hsl(var(--primary))", fontSize: 10 }}
+            />
+          )}
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
   );
 };
@@ -1135,15 +1436,34 @@ interface WeightMiniProps {
 }
 
 const ChartWeightMini = ({ data }: WeightMiniProps) => {
+  if (!data.length) {
+    return (
+      <div className="w-full h-16 flex items-center justify-center">
+        <p className="text-xs text-muted-foreground">Sem dados</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full h-24">
-      <ReLineChart data={data} margin={{ top: 5, right: 8, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
-        <XAxis dataKey="day" hide />
-        <YAxis hide />
-        <ReTooltip contentStyle={{ fontSize: "0.7rem" }} />
-        <Line type="monotone" dataKey="weight" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-      </ReLineChart>
+    <div className="w-full h-16 mt-2">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <Area 
+            type="monotone" 
+            dataKey="weight" 
+            stroke="hsl(var(--primary))" 
+            strokeWidth={2} 
+            fillOpacity={1}
+            fill="url(#colorWeight)"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
   );
 };
@@ -1153,24 +1473,35 @@ interface MetabolicGaugeProps {
 }
 
 const MetabolicGauge = ({ score }: MetabolicGaugeProps) => {
-  const chartData = [{ name: "score", value: score }];
-
-  const color = score >= 8 ? "hsl(var(--emerald-500))" : score >= 6 ? "hsl(var(--primary))" : score >= 4 ? "#facc15" : "#ef4444";
-
+  const percentage = (score / 10) * 100;
+  
   return (
-    <RadialBarChart
-      cx="50%"
-      cy="60%"
-      innerRadius="70%"
-      outerRadius="100%"
-      barSize={8}
-      data={chartData}
-      startAngle={180}
-      endAngle={0}
-    >
-      <PolarAngleAxis type="number" domain={[0, 10]} tick={false} />
-      <RadialBar dataKey="value" cornerRadius={999} fill={color} background />
-    </RadialBarChart>
+    <div className="relative w-20 h-20">
+      <svg className="w-full h-full transform -rotate-90">
+        <circle
+          cx="40"
+          cy="40"
+          r="32"
+          fill="none"
+          stroke="hsl(var(--muted))"
+          strokeWidth="8"
+        />
+        <circle
+          cx="40"
+          cy="40"
+          r="32"
+          fill="none"
+          stroke="hsl(var(--primary))"
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={`${percentage * 2.01} 201`}
+          className="transition-all duration-1000 ease-out"
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-lg font-bold">{score.toFixed(0)}</span>
+      </div>
+    </div>
   );
 };
 
@@ -1178,50 +1509,103 @@ interface QuickActionButtonProps {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   onClick: () => void;
+  color: "blue" | "green" | "purple" | "orange";
 }
 
-const QuickActionButton = ({ icon: Icon, label, onClick }: QuickActionButtonProps) => (
-  <Button
-    type="button"
-    variant="outline"
-    className="h-24 flex flex-col items-start justify-between px-4 py-3 text-left hover-scale"
-    onClick={onClick}
-  >
-    <Icon className="h-5 w-5 text-primary" />
-    <span className="text-sm font-medium leading-tight">{label}</span>
-  </Button>
-);
+const QuickActionButton = ({ icon: Icon, label, onClick, color }: QuickActionButtonProps) => {
+  const colorClasses = {
+    blue: "hover:border-blue-500/50 hover:bg-blue-500/5 group-hover:text-blue-500",
+    green: "hover:border-emerald-500/50 hover:bg-emerald-500/5 group-hover:text-emerald-500",
+    purple: "hover:border-purple-500/50 hover:bg-purple-500/5 group-hover:text-purple-500",
+    orange: "hover:border-orange-500/50 hover:bg-orange-500/5 group-hover:text-orange-500",
+  };
+
+  const iconColors = {
+    blue: "text-blue-500",
+    green: "text-emerald-500",
+    purple: "text-purple-500",
+    orange: "text-orange-500",
+  };
+
+  return (
+    <motion.button
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      type="button"
+      className={cn(
+        "group h-24 flex flex-col items-start justify-between p-4 text-left rounded-xl border border-border bg-card transition-all duration-200",
+        colorClasses[color]
+      )}
+      onClick={onClick}
+    >
+      <div className={cn(
+        "h-9 w-9 rounded-lg flex items-center justify-center transition-colors",
+        color === "blue" && "bg-blue-500/10",
+        color === "green" && "bg-emerald-500/10",
+        color === "purple" && "bg-purple-500/10",
+        color === "orange" && "bg-orange-500/10",
+      )}>
+        <Icon className={cn("h-5 w-5", iconColors[color])} />
+      </div>
+      <span className="text-sm font-medium leading-tight">{label}</span>
+    </motion.button>
+  );
+};
 
 interface TimelineItemProps {
   time: string;
   title: string;
   description: string;
   isNext?: boolean;
+  type: "meal" | "workout";
+  index: number;
 }
 
-const TimelineItem = ({ time, title, description, isNext }: TimelineItemProps) => (
-  <li className={cn("relative pl-6", isNext && "border-l-2 border-primary/80 ml-[-1px]")}>
-    <span
-      className={cn(
-        "absolute left-0 top-1 h-2 w-2 rounded-full",
-        isNext ? "bg-primary shadow-[0_0_0_4px_rgba(59,130,246,0.25)]" : "bg-primary/60",
+const TimelineItem = ({ time, title, description, isNext, type, index }: TimelineItemProps) => (
+  <motion.li 
+    initial={{ opacity: 0, x: -10 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ delay: index * 0.1 }}
+    className="relative pl-8"
+  >
+    <div className={cn(
+      "absolute left-0 top-1 h-6 w-6 rounded-full flex items-center justify-center",
+      isNext 
+        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30" 
+        : "bg-muted text-muted-foreground"
+    )}>
+      {type === "meal" ? (
+        <UtensilsCrossed className="h-3 w-3" />
+      ) : (
+        <Dumbbell className="h-3 w-3" />
       )}
-    />
-    <div className="flex items-baseline gap-2">
-      <span
-        className={cn(
-          "text-xs font-medium text-muted-foreground w-16",
-          isNext && "text-primary font-semibold",
-        )}
-      >
+    </div>
+    <div className={cn(
+      "flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3",
+      isNext && "text-primary"
+    )}>
+      <span className={cn(
+        "text-sm font-semibold tabular-nums",
+        isNext ? "text-primary" : "text-foreground"
+      )}>
         {time}
       </span>
       <div>
-        <p className={cn("text-sm font-medium", isNext && "text-primary")}>{title}</p>
+        <p className={cn(
+          "text-sm font-medium",
+          isNext ? "text-primary" : "text-foreground"
+        )}>
+          {title}
+        </p>
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
+      {isNext && (
+        <Badge variant="secondary" className="text-xs bg-primary/10 text-primary border-0 ml-auto">
+          Próximo
+        </Badge>
+      )}
     </div>
-  </li>
+  </motion.li>
 );
 
 
