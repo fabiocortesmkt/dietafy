@@ -11,6 +11,7 @@ import Track from "./pages/Track";
 import NotFound from "./pages/NotFound";
 import Workouts from "./pages/Workouts";
 import WorkoutDetail from "./pages/WorkoutDetail";
+import WorkoutHistory from "./pages/WorkoutHistory";
 import Chat from "./pages/Chat";
 import Pricing from "./pages/Pricing";
 import Upgrade from "./pages/Upgrade";
@@ -47,6 +48,7 @@ const App = () => (
           <Route path="/dieta" element={<Diet />} />
           <Route path="/receitas-fit" element={<ReceitasFit />} />
           <Route path="/treinos" element={<Workouts />} />
+          <Route path="/treinos/historico" element={<WorkoutHistory />} />
           <Route path="/progresso" element={<ProgressPage />} />
           <Route path="/perfil" element={<Profile />} />
           <Route path="/vita-nutri" element={<VitaNutriPage />} />

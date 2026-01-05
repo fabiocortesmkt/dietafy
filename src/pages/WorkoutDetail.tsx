@@ -7,7 +7,10 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuthenticatedLayout } from "@/components/layouts/AuthenticatedLayout";
+import { ExerciseTrackingForm } from "@/components/ExerciseTrackingForm";
+import { useExerciseLogs } from "@/hooks/useExerciseLogs";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -29,6 +32,7 @@ import {
   Trophy,
   Clock,
   Volume2,
+  Weight,
 } from "lucide-react";
 
 interface WorkoutDetailRecord {
@@ -155,12 +159,21 @@ function WorkoutDetailContent({ workoutId, userId, onBack }: WorkoutDetailConten
     },
   });
 
+  // Exercise logs hook
+  const { 
+    getBestForExercise, 
+    getLastForExercise, 
+    addMultipleLogs, 
+    isAdding 
+  } = useExerciseLogs(userId);
+
   // State
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [intensity, setIntensity] = useState<number>(7);
   const [saving, setSaving] = useState(false);
   const [workoutStarted, setWorkoutStarted] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("info");
 
   // Timer state
   const [timerSeconds, setTimerSeconds] = useState<number>(0);
@@ -452,37 +465,81 @@ function WorkoutDetailContent({ workoutId, userId, onBack }: WorkoutDetailConten
                               />
                             </div>
 
-                            {/* Instructions */}
-                            {exercise.instructions && (
-                              <div className="bg-muted/50 rounded-lg p-3">
-                                <p className="text-sm font-medium mb-1">Instruções:</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {exercise.instructions}
-                                </p>
-                              </div>
-                            )}
+                            {/* Tabs for Info vs Tracking */}
+                            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                              <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="info">Instruções</TabsTrigger>
+                                <TabsTrigger value="tracking" className="gap-1">
+                                  <Weight className="h-4 w-4" />
+                                  Registrar
+                                </TabsTrigger>
+                              </TabsList>
+                              
+                              <TabsContent value="info" className="mt-4">
+                                {/* Instructions */}
+                                {exercise.instructions && (
+                                  <div className="bg-muted/50 rounded-lg p-3">
+                                    <p className="text-sm font-medium mb-1">Instruções:</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {exercise.instructions}
+                                    </p>
+                                  </div>
+                                )}
 
-                            {/* Action button */}
-                            <Button
-                              className="w-full"
-                              variant={done ? "outline" : "default"}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleExercise(exercise.id, exercise.rest_seconds);
-                              }}
-                            >
-                              {done ? (
-                                <>
-                                  <RotateCcw className="h-4 w-4 mr-2" />
-                                  Desmarcar
-                                </>
-                              ) : (
-                                <>
-                                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                                  Marcar como concluído
-                                </>
-                              )}
-                            </Button>
+                                {/* Action button */}
+                                <Button
+                                  className="w-full mt-4"
+                                  variant={done ? "outline" : "default"}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleExercise(exercise.id, exercise.rest_seconds);
+                                  }}
+                                >
+                                  {done ? (
+                                    <>
+                                      <RotateCcw className="h-4 w-4 mr-2" />
+                                      Desmarcar
+                                    </>
+                                  ) : (
+                                    <>
+                                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                                      Marcar como concluído
+                                    </>
+                                  )}
+                                </Button>
+                              </TabsContent>
+                              
+                              <TabsContent value="tracking" className="mt-4">
+                                <ExerciseTrackingForm
+                                  exerciseName={exercise.exercise_name}
+                                  targetSets={exercise.sets || 3}
+                                  targetReps={exercise.reps}
+                                  lastPerformance={getLastForExercise(exercise.exercise_name)}
+                                  bestPerformance={getBestForExercise(exercise.exercise_name)}
+                                  onSave={async (sets) => {
+                                    try {
+                                      await addMultipleLogs(
+                                        sets.map((s: any, i: number) => ({
+                                          exercise_name: exercise.exercise_name,
+                                          set_number: i + 1,
+                                          reps_completed: s.reps,
+                                          weight_kg: s.weight,
+                                        }))
+                                      );
+                                      toast.success("Progresso salvo!");
+                                      // Auto-complete exercise after saving tracking
+                                      if (!done) {
+                                        toggleExercise(exercise.id, exercise.rest_seconds);
+                                      }
+                                    } catch (error) {
+                                      console.error("Error saving progress:", error);
+                                      toast.error("Erro ao salvar progresso");
+                                    }
+                                  }}
+                                  isSaving={isAdding}
+                                />
+                              </TabsContent>
+                            </Tabs>
                           </div>
                         </motion.div>
                       )}

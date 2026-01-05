@@ -172,6 +172,53 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_logs: {
+        Row: {
+          completed_at: string
+          created_at: string
+          exercise_name: string
+          id: string
+          notes: string | null
+          reps_completed: number | null
+          set_number: number
+          user_id: string
+          weight_kg: number | null
+          workout_log_id: string | null
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          exercise_name: string
+          id?: string
+          notes?: string | null
+          reps_completed?: number | null
+          set_number: number
+          user_id: string
+          weight_kg?: number | null
+          workout_log_id?: string | null
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          exercise_name?: string
+          id?: string
+          notes?: string | null
+          reps_completed?: number | null
+          set_number?: number
+          user_id?: string
+          weight_kg?: number | null
+          workout_log_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_logs_workout_log_id_fkey"
+            columns: ["workout_log_id"]
+            isOneToOne: false
+            referencedRelation: "workout_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meals: {
         Row: {
           ai_analysis: Json | null
