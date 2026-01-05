@@ -14,6 +14,7 @@ import {
   Target,
   TrendingUp,
   Search,
+  History,
 } from "lucide-react";
 
 import { AuthenticatedLayout } from "@/components/layouts/AuthenticatedLayout";
@@ -276,6 +277,15 @@ export default function Workouts() {
                 transition={{ delay: 0.2 }}
                 className="flex items-center gap-2"
               >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/treinos/historico")}
+                  className="gap-2"
+                >
+                  <History className="h-4 w-4" />
+                  Histórico
+                </Button>
                 <Badge
                   variant={isPremiumUser ? "default" : "secondary"}
                   className={cn(
