@@ -264,10 +264,10 @@ const QuickStatPill = ({ icon: Icon, label, value, color }: {
   value: string;
   color: string;
 }) => (
-  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-border/50">
-    <Icon className={cn("h-3.5 w-3.5", color)} />
-    <span className="text-xs text-muted-foreground">{label}:</span>
-    <span className="text-xs font-semibold">{value}</span>
+  <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-muted/50 border border-border/50">
+    <Icon className={cn("h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0", color)} />
+    <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:inline">{label}:</span>
+    <span className="text-[10px] sm:text-xs font-semibold">{value}</span>
   </div>
 );
 
@@ -304,35 +304,37 @@ const TrackTabs = ({ user }: TrackTabsProps) => {
       animate="visible"
       variants={containerVariants}
     >
-      <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
-        {/* Premium Tab List */}
+      <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-4 sm:space-y-6">
+        {/* Premium Tab List - Horizontal scroll on mobile */}
         <motion.div variants={itemVariants}>
-          <TabsList className="w-full h-auto flex flex-wrap justify-start gap-2 bg-transparent p-0">
-            {tabConfig.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = currentTab === tab.id;
-              return (
-                <TabsTrigger
-                  key={tab.id}
-                  value={tab.id}
-                  className={cn(
-                    "filter-chip flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-300",
-                    isActive 
-                      ? "filter-chip active bg-primary/10 border-primary/30 text-foreground shadow-sm" 
-                      : "bg-muted/30 border-transparent hover:bg-muted/50 text-muted-foreground"
-                  )}
-                >
-                  <div className={cn(
-                    "h-6 w-6 rounded-lg flex items-center justify-center transition-colors",
-                    isActive ? tab.bg : "bg-muted/50"
-                  )}>
-                    <Icon className={cn("h-3.5 w-3.5", isActive ? tab.color : "text-muted-foreground")} />
-                  </div>
-                  <span className="text-sm font-medium">{tab.label}</span>
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
+          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="inline-flex w-auto min-w-full sm:flex sm:flex-wrap justify-start gap-1.5 sm:gap-2 bg-transparent p-0">
+              {tabConfig.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = currentTab === tab.id;
+                return (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    className={cn(
+                      "filter-chip flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border transition-all duration-300 whitespace-nowrap touch-target",
+                      isActive 
+                        ? "filter-chip active bg-primary/10 border-primary/30 text-foreground shadow-sm" 
+                        : "bg-muted/30 border-transparent hover:bg-muted/50 text-muted-foreground"
+                    )}
+                  >
+                    <div className={cn(
+                      "h-5 w-5 sm:h-6 sm:w-6 rounded-lg flex items-center justify-center transition-colors shrink-0",
+                      isActive ? tab.bg : "bg-muted/50"
+                    )}>
+                      <Icon className={cn("h-3 w-3 sm:h-3.5 sm:w-3.5", isActive ? tab.color : "text-muted-foreground")} />
+                    </div>
+                    <span className="text-xs sm:text-sm font-medium">{tab.label}</span>
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </div>
         </motion.div>
 
         <TabsContent value="refeicao" className="space-y-6 mt-6">
@@ -379,6 +381,7 @@ const PremiumCard = ({ children, className, delay = 0 }: {
     <Card className={cn(
       "workout-card border-border/50 bg-card/80 backdrop-blur-sm transition-all duration-300",
       "hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20",
+      "p-3 sm:p-4",
       className
     )}>
       {children}

@@ -526,27 +526,27 @@ const ProgressPage = () => {
             className="space-y-6"
           >
             {/* Main Metrics Grid */}
-            <motion.section variants={itemVariants} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <motion.section variants={itemVariants} className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {/* Weight Card */}
               <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
                 <Card className="workout-card overflow-hidden h-full">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-sm font-semibold">Peso atual</CardTitle>
-                        <CardDescription className="text-xs">Últimos 30 dias</CardDescription>
+                  <CardHeader className="pb-2 p-3 sm:p-6 sm:pb-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <CardTitle className="text-xs sm:text-sm font-semibold truncate">Peso atual</CardTitle>
+                        <CardDescription className="text-[10px] sm:text-xs">Últimos 30 dias</CardDescription>
                       </div>
-                      <div className="h-9 w-9 rounded-lg category-icon-bg flex items-center justify-center">
-                        <Scale className="h-4 w-4 text-primary" />
+                      <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg category-icon-bg flex items-center justify-center shrink-0">
+                        <Scale className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold">
+                  <CardContent className="space-y-3 p-3 sm:p-6 pt-0 sm:pt-0">
+                    <div className="flex flex-wrap items-baseline gap-1 sm:gap-2">
+                      <span className="text-2xl sm:text-3xl font-bold">
                         {currentWeight ? `${currentWeight.toFixed(1)}` : "—"}
                       </span>
-                      <span className="text-sm text-muted-foreground">kg</span>
+                      <span className="text-xs sm:text-sm text-muted-foreground">kg</span>
                       {totalDelta !== 0 && (
                         <Badge 
                           variant="secondary"
@@ -613,16 +613,16 @@ const ProgressPage = () => {
                     </div>
 
                     {/* Calendar Dots */}
-                    <div className="grid grid-cols-7 gap-1">
+                    <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
                       {calendarDots.map((dot, i) => (
                         <div key={i} className="flex flex-col items-center gap-0.5">
-                          <span className="text-[9px] text-muted-foreground">{dot.dayLabel}</span>
+                          <span className="text-[8px] sm:text-[9px] text-muted-foreground">{dot.dayLabel}</span>
                           <div className={cn(
-                            "h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-medium transition-colors",
+                            "h-5 w-5 sm:h-6 sm:w-6 rounded-full flex items-center justify-center text-[9px] sm:text-[10px] font-medium transition-colors",
                             dot.hasLog 
                               ? "bg-primary text-primary-foreground" 
                               : "bg-muted text-muted-foreground",
-                            dot.isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                            dot.isToday && "ring-2 ring-primary ring-offset-1 sm:ring-offset-2 ring-offset-background"
                           )}>
                             {dot.dayNumber}
                           </div>
@@ -663,7 +663,7 @@ const ProgressPage = () => {
                       <span className="text-sm text-muted-foreground">treinos</span>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                       <ComparisonBadge 
                         label="Esta semana" 
                         value={weeklyWorkoutComparison.thisWeek} 

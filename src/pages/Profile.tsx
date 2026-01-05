@@ -162,28 +162,28 @@ const SectionCard = ({
 }) => (
   <motion.div variants={itemVariants}>
     <Card className="glass-premium border-border/40 overflow-hidden">
-      <CardHeader className="pb-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className={`h-12 w-12 rounded-2xl ${iconBg} flex items-center justify-center shrink-0`}>
-              <Icon className={`h-6 w-6 ${iconColor}`} />
+      <CardHeader className="pb-3 sm:pb-4 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+          <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+            <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl ${iconBg} flex items-center justify-center shrink-0`}>
+              <Icon className={`h-5 w-5 sm:h-6 sm:w-6 ${iconColor}`} />
             </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <CardTitle className="text-lg">{title}</CardTitle>
+            <div className="space-y-0.5 sm:space-y-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <CardTitle className="text-base sm:text-lg">{title}</CardTitle>
                 {badge && (
                   <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full bg-primary/20 text-primary">
                     {badge}
                   </span>
                 )}
               </div>
-              <CardDescription className="text-sm">{description}</CardDescription>
+              <CardDescription className="text-xs sm:text-sm line-clamp-2">{description}</CardDescription>
             </div>
           </div>
-          {action}
+          {action && <div className="self-start sm:self-auto shrink-0">{action}</div>}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
         {children}
       </CardContent>
     </Card>
@@ -227,7 +227,7 @@ const CheckboxOption = ({
   <motion.label
     whileHover={{ scale: 1.02 }}
     whileTap={{ scale: 0.98 }}
-    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${
+    className={`flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl cursor-pointer transition-all touch-target ${
       checked 
         ? 'bg-primary/10 border border-primary/30' 
         : 'bg-background/50 border border-border/40 hover:border-border/60'
@@ -236,13 +236,13 @@ const CheckboxOption = ({
     <Checkbox
       checked={checked}
       onCheckedChange={onChange}
-      className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+      className="data-[state=checked]:bg-primary data-[state=checked]:border-primary h-4 w-4 sm:h-5 sm:w-5"
     />
-    {Icon && <Icon className={`h-4 w-4 ${checked ? 'text-primary' : 'text-muted-foreground'}`} />}
-    <span className={`text-sm ${checked ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+    {Icon && <Icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 ${checked ? 'text-primary' : 'text-muted-foreground'}`} />}
+    <span className={`text-xs sm:text-sm flex-1 ${checked ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
       {label}
     </span>
-    {checked && <Check className="h-4 w-4 text-primary ml-auto" />}
+    {checked && <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary shrink-0" />}
   </motion.label>
 );
 
