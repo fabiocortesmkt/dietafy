@@ -12,10 +12,10 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Volume2, VolumeX, ChevronDown, Mic, MicOff } from "lucide-react";
+import { Sparkles, Volume2, VolumeX, ChevronDown, Mic, MicOff, Brain, Utensils, Moon, Heart } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { AuthenticatedLayout } from "@/components/layouts/AuthenticatedLayout";
+import { motion } from "framer-motion";
 
 const vitaNutriPrompts = [
   "Montar um cardápio só para hoje para emagrecer com saúde",
@@ -24,6 +24,57 @@ const vitaNutriPrompts = [
   "O que comer antes e depois do treino de hoje para perder gordura?",
   "Qual o próximo passo simples hoje para equilibrar alimentação, sono e treino?",
 ];
+
+const headerVariants = {
+  hidden: { opacity: 0, y: -20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+};
+
+interface FeatureCardProps {
+  icon: React.ReactNode;
+  title: string;
+  examples: string[];
+  delay?: number;
+}
+
+const FeatureCard = ({ icon, title, examples, delay = 0 }: FeatureCardProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay, duration: 0.4 }}
+    className="group p-4 rounded-2xl bg-gradient-to-br from-card/80 via-background/60 to-card/70 border border-border/40 hover:border-primary/30 transition-all duration-300 hover:shadow-[0_8px_30px_-12px_hsl(var(--primary)/0.25)]"
+  >
+    <div className="flex items-start gap-3">
+      <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300">
+        {icon}
+      </div>
+      <div className="flex-1 space-y-2">
+        <p className="font-medium text-foreground text-sm">{title}</p>
+        <ul className="space-y-1.5">
+          {examples.map((ex, i) => (
+            <li key={i} className="text-xs text-muted-foreground leading-relaxed flex items-start gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary/50 mt-1.5 shrink-0" />
+              <span>{ex}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </motion.div>
+);
 
 const VitaNutriPage = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -81,7 +132,6 @@ const VitaNutriPage = () => {
     if (storedVoice && allowedVoices.includes(storedVoice)) {
       setSelectedVoiceId(storedVoice);
     } else {
-      // Sempre garante que a voz padrão seja Masculina Ballad
       setSelectedVoiceId("ballad");
       localStorage.setItem("vita-nutri-voice-id", "ballad");
     }
@@ -120,142 +170,220 @@ const VitaNutriPage = () => {
 
   return (
     <AuthenticatedLayout>
-      <div className="min-h-screen bg-gradient-to-b from-background via-background to-background/95 flex flex-col">
-        <header className="w-full border-b border-border/60 bg-gradient-to-b from-background/80 via-card/70 to-background/90 backdrop-blur-sm px-4 py-3 md:px-10 md:py-4 flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-6 shadow-sm">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-medium text-primary shadow-[0_0_18px_hsl(var(--primary)/0.35)]">
-              <Sparkles className="h-3 w-3" />
-              Vita Nutri IA
-            </div>
+      <div className="min-h-screen bg-background flex flex-col">
+        {/* Premium Header */}
+        <motion.header
+          variants={headerVariants}
+          initial="hidden"
+          animate="visible"
+          className="w-full workout-header-gradient border-b border-border/40 px-4 py-6 md:px-8 md:py-8"
+        >
+          <div className="max-w-5xl mx-auto">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+              {/* Left side - Title & Description */}
+              <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-4 max-w-2xl">
+                <motion.div variants={itemVariants}>
+                  <Badge className="badge-premium-shimmer gap-2 px-4 py-1.5 text-xs font-semibold">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Vita Nutri IA
+                  </Badge>
+                </motion.div>
 
-            <h1 className="text-2xl md:text-4xl lg:text-5xl font-semibold tracking-tight leading-tight">
-              Falar com o <span className="text-primary">Vita Nutri IA</span>
-            </h1>
-            <p className="mt-1 text-sm md:text-base lg:text-lg text-muted-foreground max-w-xl leading-relaxed">
-              Seu nutricionista pessoal inteligente, conectado aos seus dados do DietaFY, para ajudar em emagrecimento, dieta, treino, sono e bem-estar.
-            </p>
-            <div className="mt-2 flex flex-col gap-1 sm:hidden">
-              <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  {voiceEnabled ? <Volume2 className="h-3 w-3 text-primary" /> : <VolumeX className="h-3 w-3" />}
-                  Voz do Vita
-                </span>
-                <Switch checked={voiceEnabled} onCheckedChange={setVoiceEnabled} className="scale-90" />
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {[
-                  { id: "ballad", label: "Masculina - Ballad (padrão)" },
-                  { id: "nova", label: "Feminina – Nova" },
-                ].map((voice) => (
-                  <Button
-                    key={voice.id}
-                    variant={voice.id === selectedVoiceId ? "default" : "outline"}
-                    size="sm"
-                    className="text-[10px] px-2 py-1 rounded-full border-border/70"
-                    onClick={() => handleVoiceChange(voice.id)}
-                  >
-                    {voice.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
-          <Card className="hidden sm:flex items-center gap-3 p-4 max-w-xs border-border/60 bg-card/90 shadow-[0_18px_40px_-26px_hsl(var(--primary)/0.65)] rounded-2xl">
-            <CardContent className="p-0 flex flex-col gap-2 w-full">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
-                  {voiceEnabled ? <Volume2 className="h-3 w-3 text-primary" /> : <VolumeX className="h-3 w-3" />}
-                  <span className="font-medium">Voz do Vita</span>
-                </div>
-                <Switch checked={voiceEnabled} onCheckedChange={setVoiceEnabled} />
-              </div>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {[
-                  { id: "ballad", label: "Masculina - Ballad (padrão)" },
-                  { id: "nova", label: "Feminina – Nova" },
-                ].map((voice) => (
-                  <Button
-                    key={voice.id}
-                    variant={voice.id === selectedVoiceId ? "default" : "outline"}
-                    size="sm"
-                    className="text-[10px] px-2 py-1 rounded-full border-border/70"
-                    onClick={() => handleVoiceChange(voice.id)}
-                  >
-                    {voice.label}
-                  </Button>
-                ))}
-              </div>
-              <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
-                Escolha entre vozes femininas e masculinas para o Vita falar suas respostas em voz alta.
-              </p>
-            </CardContent>
-          </Card>
-        </header>
+                <motion.h1
+                  variants={itemVariants}
+                  className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight"
+                >
+                  Falar com o{" "}
+                  <span className="bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
+                    Vita Nutri IA
+                  </span>
+                </motion.h1>
 
-        <main className="flex-1 flex flex-col items-center px-3 md:px-0 pb-5 gap-3 md:gap-4">
-          <div className="w-full max-w-3xl flex flex-col items-center pt-2 md:pt-4 gap-3 md:gap-5">
-            {showOnboarding && (
-              <Collapsible className="w-full">
-                <Card className="w-full border border-border/70 bg-gradient-to-br from-card/95 via-background/95 to-card/90 shadow-[0_20px_55px_-32px_hsl(var(--primary)/0.6)] rounded-2xl">
-                  <CardContent className="pt-3 pb-3 space-y-2 text-sm">
-                    <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 text-left">
-                      <div className="space-y-1">
-                        <p className="text-[11px] md:text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                          Como o Vita Nutri IA te ajuda
-                        </p>
-                        <p className="text-xs md:text-sm text-muted-foreground max-w-xl">
-                          Toque para ver exemplos de perguntas e como o Vita usa seus dados.
-                        </p>
+                <motion.p
+                  variants={itemVariants}
+                  className="text-base md:text-lg text-muted-foreground leading-relaxed"
+                >
+                  Seu nutricionista pessoal inteligente, conectado aos seus dados do DietaFY, 
+                  para ajudar em emagrecimento, dieta, treino, sono e bem-estar.
+                </motion.p>
+
+                {/* Mobile Voice Controls */}
+                <motion.div variants={itemVariants} className="flex flex-col gap-3 lg:hidden">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      {voiceEnabled ? (
+                        <Volume2 className="h-4 w-4 text-primary" />
+                      ) : (
+                        <VolumeX className="h-4 w-4" />
+                      )}
+                      <span className="font-medium">Voz do Vita</span>
+                    </div>
+                    <Switch checked={voiceEnabled} onCheckedChange={setVoiceEnabled} />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: "ballad", label: "Masculina" },
+                      { id: "nova", label: "Feminina" },
+                    ].map((voice) => (
+                      <Button
+                        key={voice.id}
+                        variant={voice.id === selectedVoiceId ? "default" : "outline"}
+                        size="sm"
+                        className="rounded-full text-xs px-4"
+                        onClick={() => handleVoiceChange(voice.id)}
+                      >
+                        {voice.label}
+                      </Button>
+                    ))}
+                  </div>
+                </motion.div>
+              </motion.div>
+
+              {/* Right side - Voice Control Card (Desktop) */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="hidden lg:block"
+              >
+                <Card className="glass-premium-vita border-primary/20 shadow-[0_20px_50px_-20px_hsl(var(--primary)/0.4)] min-w-[280px]">
+                  <CardContent className="p-5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-sm">
+                        {voiceEnabled ? (
+                          <Volume2 className="h-4 w-4 text-primary" />
+                        ) : (
+                          <VolumeX className="h-4 w-4 text-muted-foreground" />
+                        )}
+                        <span className="font-medium">Voz do Vita</span>
                       </div>
-                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-muted text-muted-foreground shadow-sm">
-                        <ChevronDown className="h-3.5 w-3.5" />
-                      </span>
-                    </CollapsibleTrigger>
-
-                    <CollapsibleContent className="space-y-3 pt-2">
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        O Vita usa os seus dados do DietaFY (perfil, peso, objetivos, refeições e treinos
-                        recentes) para adaptar as recomendações de alimentação, sono e manejo de estresse
-                        à sua rotina real.
-                      </p>
-                      <div className="grid gap-4 md:gap-3 md:grid-cols-3 text-xs md:text-[13px]">
-                        <div className="space-y-1">
-                          <p className="font-medium text-foreground">Para emagrecimento</p>
-                          <ul className="space-y-1 text-muted-foreground">
-                            <li>• "Sugira um cardápio só para hoje para ajudar no emagrecimento"</li>
-                            <li>• "O que ajustar no meu almoço de hoje para perder gordura?"</li>
-                          </ul>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="font-medium text-foreground">Para sono</p>
-                          <ul className="space-y-1 text-muted-foreground">
-                            <li>• "O que posso mudar na minha ceia de hoje para dormir melhor?"</li>
-                            <li>• "Me dê 3 ajustes rápidos na rotina de hoje para melhorar o sono"</li>
-                          </ul>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="font-medium text-foreground">Para estresse</p>
-                          <ul className="space-y-1 text-muted-foreground">
-                            <li>• "Sugira 3 hábitos simples para reduzir meu estresse hoje"</li>
-                            <li>
-                              • "Como posso organizar minhas refeições de hoje para me sentir menos
-                              sobrecarregado(a)?"
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                      <p className="text-[11px] md:text-xs text-muted-foreground">
-                        Dica: fale com o Vita como se fosse um nutricionista pessoal. Conte seu contexto e peça
-                        ajuda para dar o próximo passo, não para ser perfeito.
-                      </p>
-                    </CollapsibleContent>
+                      <Switch checked={voiceEnabled} onCheckedChange={setVoiceEnabled} />
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { id: "ballad", label: "Masculina - Ballad" },
+                        { id: "nova", label: "Feminina – Nova" },
+                      ].map((voice) => (
+                        <Button
+                          key={voice.id}
+                          variant={voice.id === selectedVoiceId ? "default" : "outline"}
+                          size="sm"
+                          className="rounded-full text-xs flex-1"
+                          onClick={() => handleVoiceChange(voice.id)}
+                        >
+                          {voice.label}
+                        </Button>
+                      ))}
+                    </div>
+                    
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Escolha a voz para o Vita responder em áudio.
+                    </p>
                   </CardContent>
                 </Card>
-              </Collapsible>
+              </motion.div>
+            </div>
+          </div>
+        </motion.header>
+
+        {/* Main Content */}
+        <main className="flex-1 flex flex-col items-center px-4 md:px-0 pb-8 gap-6">
+          <div className="w-full max-w-3xl flex flex-col items-center pt-6 gap-6">
+            
+            {/* Onboarding Card */}
+            {showOnboarding && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="w-full"
+              >
+                <Collapsible defaultOpen>
+                  <Card className="glass-premium-vita border-primary/20 overflow-hidden">
+                    <CardContent className="p-0">
+                      <CollapsibleTrigger className="flex w-full items-center justify-between gap-4 p-5 text-left hover:bg-primary/5 transition-colors">
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                            Como o Vita Nutri IA te ajuda
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Toque para ver exemplos e como o Vita usa seus dados.
+                          </p>
+                        </div>
+                        <span className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                          <ChevronDown className="h-4 w-4 transition-transform duration-200 [[data-state=open]_&]:rotate-180" />
+                        </span>
+                      </CollapsibleTrigger>
+
+                      <CollapsibleContent>
+                        <div className="px-5 pb-5 space-y-4">
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            O Vita usa seus dados do DietaFY (perfil, peso, objetivos, refeições e treinos recentes) 
+                            para adaptar as recomendações à sua rotina real.
+                          </p>
+                          
+                          <div className="grid gap-4 md:grid-cols-3">
+                            <FeatureCard
+                              icon={<Utensils className="h-5 w-5" />}
+                              title="Para emagrecimento"
+                              examples={[
+                                "Sugira um cardápio só para hoje",
+                                "O que ajustar no almoço para perder gordura?"
+                              ]}
+                              delay={0.1}
+                            />
+                            <FeatureCard
+                              icon={<Moon className="h-5 w-5" />}
+                              title="Para sono"
+                              examples={[
+                                "O que mudar na ceia para dormir melhor?",
+                                "3 ajustes rápidos para melhorar o sono"
+                              ]}
+                              delay={0.2}
+                            />
+                            <FeatureCard
+                              icon={<Heart className="h-5 w-5" />}
+                              title="Para estresse"
+                              examples={[
+                                "3 hábitos simples para reduzir estresse",
+                                "Como organizar refeições para menos ansiedade?"
+                              ]}
+                              delay={0.3}
+                            />
+                          </div>
+                          
+                          <div className="flex items-start gap-2 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                            <Brain className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                              <span className="font-medium text-foreground">Dica:</span> Fale com o Vita como se fosse um nutricionista pessoal. 
+                              Conte seu contexto e peça ajuda para dar o próximo passo.
+                            </p>
+                          </div>
+                        </div>
+                      </CollapsibleContent>
+                    </CardContent>
+                  </Card>
+                </Collapsible>
+              </motion.div>
             )}
 
-            <VitaOrb state={orbState} onClick={handleOrbClick} />
-            <div className="w-full max-w-3xl mb-3 flex flex-col items-center gap-2">
+            {/* Vita Orb */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              <VitaOrb state={orbState} onClick={handleOrbClick} />
+            </motion.div>
+            
+            {/* Voice Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="flex flex-col items-center gap-3"
+            >
               <Badge
                 variant="default"
                 role="button"
@@ -264,48 +392,56 @@ const VitaNutriPage = () => {
                   if (!voiceEnabled) {
                     setVoiceEnabled(true);
                   }
-
                   if (voiceAgentRef.current) {
                     voiceAgentRef.current.toggleConversation();
                     setIsVoiceBadgeActive((prev) => !prev);
                   } else if (voiceToggleFn) {
-                    // Fallback para comportamento anterior baseado em callback
                     voiceToggleFn();
                     setIsVoiceBadgeActive((prev) => !prev);
                   }
                 }}
-                className="text-xs md:text-sm font-semibold tracking-wide uppercase rounded-full px-6 py-2 bg-primary/90 text-primary-foreground shadow-[0_0_26px_hsl(var(--primary)/0.6)] text-center cursor-pointer hover:bg-primary transition-colors"
+                className="text-sm font-semibold tracking-wide uppercase rounded-full px-8 py-3 bg-gradient-to-r from-primary via-primary/90 to-primary text-primary-foreground shadow-[0_0_30px_hsl(var(--primary)/0.5)] hover:shadow-[0_0_40px_hsl(var(--primary)/0.7)] cursor-pointer transition-all duration-300 hover:scale-105"
               >
                 <span className="inline-flex items-center gap-2">
                   {isVoiceBadgeActive ? (
-                    <MicOff className="h-3.5 w-3.5" />
+                    <MicOff className="h-4 w-4" />
                   ) : (
-                    <Mic className="h-3.5 w-3.5" />
+                    <Mic className="h-4 w-4" />
                   )}
-                  <span>conversar com o Vita Nutri IA por Voz</span>
+                  <span>Conversar por Voz</span>
                 </span>
               </Badge>
+              
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="hidden md:inline-flex rounded-full mt-1"
+                className="hidden md:inline-flex rounded-full text-muted-foreground hover:text-foreground"
                 onClick={() => navigate("/dashboard")}
               >
                 Voltar ao dashboard
               </Button>
-            </div>
-            <VitaChatPanel
-              quickPrompts={vitaNutriPrompts}
-              title="Vita Nutri IA – seu nutricionista pessoal"
-              subtitle="Use linguagem natural: conte sua rotina, objetivos e desafios que o Vita ajusta a estratégia de alimentação e treino para você."
-              showBackButton={false}
-              onVitaMessage={handleVitaMessage}
-              voiceEnabled={voiceEnabled}
-              onOrbStateChange={setOrbState}
-              onRegisterVoiceToggle={setVoiceToggleFn}
-              voiceAgentRef={voiceAgentRef}
-              embedded
-            />
+            </motion.div>
+
+            {/* Chat Panel */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="w-full"
+            >
+              <VitaChatPanel
+                quickPrompts={vitaNutriPrompts}
+                title="Vita Nutri IA – seu nutricionista pessoal"
+                subtitle="Use linguagem natural: conte sua rotina, objetivos e desafios."
+                showBackButton={false}
+                onVitaMessage={handleVitaMessage}
+                voiceEnabled={voiceEnabled}
+                onOrbStateChange={setOrbState}
+                onRegisterVoiceToggle={setVoiceToggleFn}
+                voiceAgentRef={voiceAgentRef}
+                embedded
+              />
+            </motion.div>
           </div>
         </main>
       </div>
