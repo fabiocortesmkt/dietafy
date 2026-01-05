@@ -477,6 +477,7 @@ export const VitaChatPanel = ({
       setSessionId(null);
       setIsTyping(true);
 
+      // TTS só é chamado quando voiceEnabled está ativo
       if (voiceEnabled && onVitaMessage) {
         try {
           onOrbStateChange?.("speaking");
@@ -484,18 +485,15 @@ export const VitaChatPanel = ({
         } catch (e) {
           console.error("Erro na saudação por voz:", e);
         }
-
-        setIsTyping(false);
         animateVitaReply(greeting.id, fullGreetingText);
-        if (!shouldAutoScrollRef.current) {
-          setHasNewMessages(true);
-        }
       } else {
+        // Modo texto: exibe mensagem diretamente sem TTS
         setMessages([{ ...greeting, message: fullGreetingText }]);
-        setIsTyping(false);
-        if (!shouldAutoScrollRef.current) {
-          setHasNewMessages(true);
-        }
+      }
+
+      setIsTyping(false);
+      if (!shouldAutoScrollRef.current) {
+        setHasNewMessages(true);
       }
 
       toast({
