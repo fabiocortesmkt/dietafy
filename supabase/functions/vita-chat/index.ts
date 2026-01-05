@@ -44,14 +44,7 @@ serve(async (req) => {
     }
 
     const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization header" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const jwt = authHeader.replace("Bearer ", "");
+    const jwt = authHeader?.replace("Bearer ", "") ?? "";
 
     const { message, image_url, session_id, voice_enabled, debug }: ChatRequestBody = await req.json();
     if (!message || typeof message !== "string") {
@@ -64,22 +57,44 @@ serve(async (req) => {
     const isVoiceEnabled = !!voice_enabled;
     const isDebug = !!debug;
 
+    // Se não tiver JWT, usar service role para buscar sessão pelo request body
     const supabaseClient = createSupabaseClient(supabaseUrl, serviceRoleKey, jwt);
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser();
+    let userId: string | null = null;
 
-    if (userError || !user) {
-      console.error("Error fetching user", userError);
+    if (jwt) {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabaseClient.auth.getUser();
+
+      if (!userError && user) {
+        userId = user.id;
+      }
+    }
+
+    // Se ainda não temos userId, tentar buscar pela session_id
+    if (!userId && session_id) {
+      const { data: sessionData } = await supabaseClient
+        .from("chat_sessions")
+        .select("user_id")
+        .eq("id", session_id)
+        .maybeSingle();
+      
+      if (sessionData?.user_id) {
+        userId = sessionData.user_id as string;
+      }
+    }
+
+    if (!userId) {
+      console.error("Could not determine user_id");
       return new Response(JSON.stringify({ error: "Não autenticado" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userId = user.id as string;
+    // userId já está definido acima
 
     // 1) Manage / create session
     let activeSessionId: string | null = session_id ?? null;
