@@ -11,6 +11,7 @@ import { AuthenticatedLayout } from "@/components/layouts/AuthenticatedLayout";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { getExerciseImage } from "@/lib/exerciseImages";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -442,25 +443,14 @@ function WorkoutDetailContent({ workoutId, userId, onBack }: WorkoutDetailConten
                           className="border-t overflow-hidden"
                         >
                           <div className="p-4 space-y-4">
-                            {/* GIF placeholder or actual GIF */}
-                            {exercise.gif_url ? (
-                              <div className="aspect-video rounded-lg overflow-hidden bg-muted">
-                                <img
-                                  src={exercise.gif_url}
-                                  alt={exercise.exercise_name}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            ) : (
-                              <div className="aspect-video rounded-lg bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center">
-                                <div className="text-center">
-                                  <Dumbbell className="h-12 w-12 mx-auto text-muted-foreground/50 mb-2" />
-                                  <p className="text-sm text-muted-foreground">
-                                    Demonstração em breve
-                                  </p>
-                                </div>
-                              </div>
-                            )}
+                            {/* Exercise illustration */}
+                            <div className="aspect-video rounded-lg overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5">
+                              <img
+                                src={getExerciseImage(exercise.exercise_name)}
+                                alt={exercise.exercise_name}
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
 
                             {/* Instructions */}
                             {exercise.instructions && (

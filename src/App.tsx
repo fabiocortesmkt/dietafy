@@ -40,6 +40,7 @@ const App = () => (
           <Route path="/track" element={<Track />} />
           <Route path="/workouts" element={<Workouts />} />
           <Route path="/workouts/:id" element={<WorkoutDetail />} />
+          <Route path="/treinos/:id" element={<WorkoutDetail />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/upgrade" element={<Upgrade />} />
