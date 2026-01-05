@@ -1311,34 +1311,36 @@ const MetricCard = ({
 }: MetricCardProps) => (
   <motion.div
     whileHover={{ y: -4, transition: { duration: 0.2 } }}
-    className="workout-card rounded-xl p-3 sm:p-4 min-h-[160px] sm:min-h-[180px]"
+    className="workout-card rounded-xl p-3 sm:p-4 min-h-[180px] sm:min-h-[200px] flex flex-col"
   >
     <div className="flex items-start justify-between gap-2 mb-2 sm:mb-3">
       <div className="min-w-0 flex-1">
-        <h3 className="text-xs sm:text-sm font-semibold truncate">{title}</h3>
-        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{subtitle}</p>
+        <h3 className="text-[11px] sm:text-sm font-semibold leading-tight line-clamp-2">{title}</h3>
+        {subtitle && <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 truncate">{subtitle}</p>}
       </div>
       <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg category-icon-bg flex items-center justify-center shrink-0">
         <Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary", iconClassName)} />
       </div>
     </div>
-    <div className="flex flex-wrap items-baseline gap-1 sm:gap-2">
-      <span className="text-xl sm:text-2xl font-bold tracking-tight">{value}</span>
-      {valueLabel && (
-        <span className="text-xs sm:text-sm text-muted-foreground">{valueLabel}</span>
-      )}
-      {trend && (
-        <span className={cn(
-          "text-[10px] sm:text-xs font-medium flex items-center gap-0.5",
-          trend.positive ? "text-emerald-500" : "text-orange-500"
-        )}>
-          {trend.positive ? <TrendingDown className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
-          {trend.value}
-        </span>
-      )}
+    <div className="flex flex-col gap-0.5">
+      <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+        <span className="text-lg sm:text-2xl font-bold tracking-tight">{value}</span>
+        {valueLabel && (
+          <span className="text-[11px] sm:text-sm text-muted-foreground font-medium">{valueLabel}</span>
+        )}
+        {trend && (
+          <span className={cn(
+            "text-[10px] sm:text-xs font-medium flex items-center gap-0.5",
+            trend.positive ? "text-emerald-500" : "text-orange-500"
+          )}>
+            {trend.positive ? <TrendingDown className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
+            {trend.value}
+          </span>
+        )}
+      </div>
+      {extra && <div className="mt-0.5 sm:mt-1">{extra}</div>}
     </div>
-    {extra && <div className="mt-1 sm:mt-2">{extra}</div>}
-    {children}
+    {children && <div className="mt-auto pt-2">{children}</div>}
   </motion.div>
 );
 
