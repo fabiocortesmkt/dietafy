@@ -749,7 +749,8 @@ All colors MUST be HSL.
 /* Premium pricing card */
 .pricing-card-premium {
   position: relative;
-  overflow: visible;
+  overflow: hidden;
+  isolation: isolate;
 }
 
 .pricing-card-premium::before {
@@ -768,7 +769,6 @@ All colors MUST be HSL.
   animation: rotate-spotlight 8s linear infinite;
   pointer-events: none;
   z-index: -1;
-  clip-path: inset(-10px round var(--radius));
 }
 
 @keyframes rotate-spotlight {
