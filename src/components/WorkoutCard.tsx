@@ -3,6 +3,7 @@ import { Heart, Clock, Flame, Dumbbell, Home, Sparkles, Zap, Target, TrendingUp 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getExerciseImage } from "@/lib/exerciseImages";
 
 interface Workout {
   id: string;
@@ -86,11 +87,17 @@ export function WorkoutCard({
         workout.is_premium && "workout-card-premium"
       )}
     >
-      {/* Header with gradient */}
+      {/* Header with gradient and image */}
       <div className={cn(
-        "relative h-28 rounded-t-xl bg-gradient-to-br",
+        "relative h-32 rounded-t-xl bg-gradient-to-br overflow-hidden",
         category.gradient
       )}>
+        {/* Exercise image */}
+        <img 
+          src={getExerciseImage(workout.title)} 
+          alt={workout.title}
+          className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay"
+        />
         {/* Category icon */}
         <div className="absolute top-3 left-3">
           <div className="category-icon-bg rounded-lg p-2">
