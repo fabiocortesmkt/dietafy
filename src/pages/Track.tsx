@@ -307,8 +307,8 @@ const TrackTabs = ({ user }: TrackTabsProps) => {
       <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-4 sm:space-y-6">
         {/* Premium Tab List - Horizontal scroll on mobile */}
         <motion.div variants={itemVariants}>
-          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2 sm:mx-0 sm:px-0 sm:pb-0">
-            <TabsList className="inline-flex w-max sm:flex sm:flex-wrap justify-start gap-1.5 sm:gap-2 bg-transparent p-0 py-1">
+          <div className="overflow-visible sm:overflow-visible">
+            <TabsList className="flex flex-wrap justify-start gap-1.5 sm:gap-2 bg-transparent p-0 py-1">
               {tabConfig.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = currentTab === tab.id;
@@ -317,7 +317,7 @@ const TrackTabs = ({ user }: TrackTabsProps) => {
                     key={tab.id}
                     value={tab.id}
                     className={cn(
-                      "filter-chip flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border transition-all duration-300 whitespace-nowrap",
+                      "filter-chip flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border transition-all duration-300",
                       isActive 
                         ? "filter-chip active bg-primary/10 border-primary/30 text-foreground shadow-sm" 
                         : "bg-muted/30 border-transparent hover:bg-muted/50 text-muted-foreground"
