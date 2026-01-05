@@ -155,7 +155,7 @@ const Landing = () => {
             {/* Social Proof Badge */}
             <motion.div
               variants={itemVariants}
-              className="inline-flex flex-col sm:flex-row items-center gap-1 sm:gap-2 rounded-full bg-primary/10 border border-primary/20 px-4 py-2 text-sm font-medium text-primary mb-4"
+              className="inline-flex flex-col sm:flex-row items-center gap-1 sm:gap-2 rounded-full bg-primary/10 border border-primary/20 px-4 py-2 text-sm font-medium text-primary mb-4 mt-4 sm:mt-0"
             >
               <span className="flex items-center gap-1">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
