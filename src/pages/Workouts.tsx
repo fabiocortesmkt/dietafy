@@ -1,41 +1,30 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { User } from "@supabase/supabase-js";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { AuthenticatedLayout } from "@/components/layouts/AuthenticatedLayout";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
-import {
-  Activity,
   Dumbbell,
-  Flame,
-  Heart,
-  HeartOff,
   Home,
-  LineChart,
-  Lock,
-  MessageCircle,
-  Timer,
-  User as UserIcon,
-  UtensilsCrossed,
+  Heart,
+  Sparkles,
+  Filter,
+  Zap,
+  Target,
+  TrendingUp,
+  Search,
 } from "lucide-react";
+
+import { AuthenticatedLayout } from "@/components/layouts/AuthenticatedLayout";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { WorkoutCard } from "@/components/WorkoutCard";
+import { UpgradeLimitModal } from "@/components/UpgradeLimitModal";
+import { cn } from "@/lib/utils";
 
 interface Workout {
   id: string;
@@ -44,520 +33,479 @@ interface Workout {
   environment: string;
   duration_min: number;
   difficulty: "iniciante" | "intermediario" | "avancado";
-  goal: "perda_gordura" | "hipertrofia" | "forca" | "mobilidade";
-  equipment_needed: string[] | null;
+  goal: string;
+  equipment_needed: string[];
   calories_burned_est: number | null;
-  tags: string[] | null;
-  is_basic?: boolean;
-  is_premium?: boolean;
+  is_premium: boolean;
+  is_basic: boolean;
 }
 
-const Workouts = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loadingAuth, setLoadingAuth] = useState(true);
-  const [planType, setPlanType] = useState<"free" | "premium" | null>(null);
+type TabValue = "todos" | "gratuitos" | "casa" | "academia" | "favoritos";
+type DifficultyFilter = "todos" | "iniciante" | "intermediario" | "avancado";
+type GoalFilter = "todos" | "perda_gordura" | "hipertrofia" | "forca" | "mobilidade";
+
+const goalLabels: Record<string, string> = {
+  todos: "Todos",
+  perda_gordura: "Queima",
+  hipertrofia: "Hipertrofia",
+  forca: "Força",
+  mobilidade: "Mobilidade",
+};
+
+const difficultyLabels: Record<string, string> = {
+  todos: "Todos",
+  iniciante: "Iniciante",
+  intermediario: "Intermediário",
+  avancado: "Avançado",
+};
+
+export default function Workouts() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [planType, setPlanType] = useState<string>("free");
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
+  // Filters
+  const [activeTab, setActiveTab] = useState<TabValue>("todos");
+  const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>("todos");
+  const [goalFilter, setGoalFilter] = useState<GoalFilter>("todos");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Auth check
   useEffect(() => {
-    let mounted = true;
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return;
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        setUser(null);
         navigate("/auth");
         return;
       }
-      setUser(session.user);
+      setUserId(session.user.id);
+
+      const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("plan_type")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (profile) {
+        setPlanType(profile.plan_type);
+      }
+      setIsAuthChecking(false);
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate("/auth");
+      }
     });
 
-    supabase.auth
-      .getSession()
-      .then(async ({ data: { session } }) => {
-        if (!mounted) return;
-        if (!session) {
-          navigate("/auth");
-          return;
-        }
-        setUser(session.user);
-        const { data: profile } = await supabase
-          .from("user_profiles")
-          .select("plan_type")
-          .eq("user_id", session.user.id)
-          .maybeSingle();
-        setPlanType((profile?.plan_type as "free" | "premium") ?? "free");
-      })
-      .finally(() => {
-        if (mounted) setLoadingAuth(false);
-      });
-
-    return () => {
-      mounted = false;
-      authListener.subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
-  if (loadingAuth || !user || !planType) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Skeleton className="h-10 w-40" />
-      </div>
-    );
-  }
-
-  return (
-    <AuthenticatedLayout>
-      <div className="flex-1 flex flex-col pb-16 md:pb-0">
-        <WorkoutsHeader planType={planType} />
-        <WorkoutsContent userId={user.id} planType={planType} />
-      </div>
-    </AuthenticatedLayout>
-  );
-};
-
-const WorkoutsHeader = ({ planType }: { planType: "free" | "premium" }) => {
-  return (
-    <header className="w-full border-b px-4 pt-3 pb-3 md:px-8 md:pt-4 md:pb-4 flex items-center justify-between gap-4">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Biblioteca de treinos</h1>
-        <p className="mt-1 text-sm text-muted-foreground max-w-xl">
-          Encontre treinos prontos para casa ou academia, filtre por objetivo e dificuldade e deixe o Vita guiar sua rotina.
-        </p>
-      </div>
-      <Card className="hidden sm:flex items-center gap-3 p-4 max-w-xs">
-        <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary text-lg">
-          <Flame className="h-4 w-4" />
-        </div>
-        <div className="space-y-1">
-          <p className="text-xs font-medium text-muted-foreground">Plano atual</p>
-          <p className="text-sm leading-snug">
-            {planType === "premium"
-              ? "Acesso total a todos os treinos."
-              : "Apenas 3 treinos básicos liberados. Faça upgrade para liberar todos."}
-          </p>
-        </div>
-      </Card>
-    </header>
-  );
-};
-
-const WorkoutsContent = ({ userId, planType }: { userId: string; planType: "free" | "premium" }) => {
-  const navigate = useNavigate();
-
-  const { data: workouts = [], isLoading } = useQuery<Workout[]>({
+  // Fetch workouts
+  const { data: workouts = [], isLoading: isLoadingWorkouts } = useQuery({
     queryKey: ["workouts"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("workouts")
         .select("*")
-        .order("duration_min", { ascending: true });
+        .order("created_at", { ascending: false });
+
       if (error) throw error;
       return data as Workout[];
     },
+    enabled: !!userId,
   });
 
-  const { data: favoritesData = [] } = useQuery<string[]>({
+  // Fetch favorites
+  const { data: favoriteIds = [] } = useQuery({
     queryKey: ["workout-favorites", userId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("user_workout_favorites")
         .select("workout_id")
-        .eq("user_id", userId);
+        .eq("user_id", userId!);
+
       if (error) throw error;
-      return (data || []).map((f) => f.workout_id as string);
+      return data.map((f) => f.workout_id);
+    },
+    enabled: !!userId,
+  });
+
+  // Toggle favorite mutation
+  const toggleFavoriteMutation = useMutation({
+    mutationFn: async (workoutId: string) => {
+      const isFavorite = favoriteIds.includes(workoutId);
+
+      if (isFavorite) {
+        const { error } = await supabase
+          .from("user_workout_favorites")
+          .delete()
+          .eq("user_id", userId!)
+          .eq("workout_id", workoutId);
+        if (error) throw error;
+      } else {
+        // Check if premium workout and user is free
+        const workout = workouts.find((w) => w.id === workoutId);
+        if (workout?.is_premium && planType === "free") {
+          setShowUpgradeModal(true);
+          throw new Error("Premium only");
+        }
+
+        const { error } = await supabase
+          .from("user_workout_favorites")
+          .insert({ user_id: userId!, workout_id: workoutId });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workout-favorites", userId] });
+    },
+    onError: (error) => {
+      if (error.message !== "Premium only") {
+        toast.error("Erro ao atualizar favoritos");
+      }
     },
   });
 
-  const [tab, setTab] = useState<string>("todos");
-  const [durationFilter, setDurationFilter] = useState<string | null>(null);
-  const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
-  const [goalFilter, setGoalFilter] = useState<string | null>(null);
-
-  const favorites = favoritesData;
-
+  // Filter workouts
   const filteredWorkouts = useMemo(() => {
-    return workouts.filter((w) => {
-      if (tab === "casa" && w.environment !== "casa") return false;
-      if (tab === "academia" && w.environment !== "academia") return false;
-      if (tab === "favoritos" && !favorites.includes(w.id)) return false;
-      if (tab === "gratis" && !w.is_basic) return false;
+    let result = workouts;
 
-      if (durationFilter) {
-        if (durationFilter === "lt20" && w.duration_min >= 20) return false;
-        if (durationFilter === "20-40" && (w.duration_min < 20 || w.duration_min > 40)) return false;
-        if (durationFilter === "40-60" && (w.duration_min < 40 || w.duration_min > 60)) return false;
-        if (durationFilter === "gt60" && w.duration_min <= 60) return false;
-      }
-
-      if (difficultyFilter && w.difficulty !== difficultyFilter) return false;
-      if (goalFilter && w.goal !== goalFilter) return false;
-
-      return true;
-    });
-  }, [workouts, tab, favorites, durationFilter, difficultyFilter, goalFilter]);
-
-  return (
-    <main className="flex-1 px-4 py-3 md:px-8 md:py-4 space-y-6 overflow-y-auto">
-      <Tabs value={tab} onValueChange={setTab} className="space-y-4">
-        <div className="flex flex-col gap-3">
-          <TabsList className="w-full flex flex-wrap justify-start gap-1">
-            <TabsTrigger value="todos">Todos</TabsTrigger>
-            <TabsTrigger value="gratis">Grátis</TabsTrigger>
-            <TabsTrigger value="casa">Casa</TabsTrigger>
-            <TabsTrigger value="academia">Academia</TabsTrigger>
-            <TabsTrigger value="favoritos">Favoritos</TabsTrigger>
-          </TabsList>
-
-          <div className="flex flex-wrap gap-2 text-xs">
-            <FilterChip
-              label="<20min"
-              active={durationFilter === "lt20"}
-              onClick={() => setDurationFilter(durationFilter === "lt20" ? null : "lt20")}
-            />
-            <FilterChip
-              label="20-40min"
-              active={durationFilter === "20-40"}
-              onClick={() => setDurationFilter(durationFilter === "20-40" ? null : "20-40")}
-            />
-            <FilterChip
-              label="40-60min"
-              active={durationFilter === "40-60"}
-              onClick={() => setDurationFilter(durationFilter === "40-60" ? null : "40-60")}
-            />
-            <FilterChip
-              label="60min+"
-              active={durationFilter === "gt60"}
-              onClick={() => setDurationFilter(durationFilter === "gt60" ? null : "gt60")}
-            />
-
-            <FilterChip
-              label="Iniciante"
-              active={difficultyFilter === "iniciante"}
-              onClick={() => setDifficultyFilter(difficultyFilter === "iniciante" ? null : "iniciante")}
-            />
-            <FilterChip
-              label="Intermediário"
-              active={difficultyFilter === "intermediario"}
-              onClick={() => setDifficultyFilter(difficultyFilter === "intermediario" ? null : "intermediario")}
-            />
-            <FilterChip
-              label="Avançado"
-              active={difficultyFilter === "avancado"}
-              onClick={() => setDifficultyFilter(difficultyFilter === "avancado" ? null : "avancado")}
-            />
-
-            <FilterChip
-              label="Perda de gordura"
-              active={goalFilter === "perda_gordura"}
-              onClick={() => setGoalFilter(goalFilter === "perda_gordura" ? null : "perda_gordura")}
-            />
-            <FilterChip
-              label="Hipertrofia"
-              active={goalFilter === "hipertrofia"}
-              onClick={() => setGoalFilter(goalFilter === "hipertrofia" ? null : "hipertrofia")}
-            />
-            <FilterChip
-              label="Força"
-              active={goalFilter === "forca"}
-              onClick={() => setGoalFilter(goalFilter === "forca" ? null : "forca")}
-            />
-            <FilterChip
-              label="Mobilidade"
-              active={goalFilter === "mobilidade"}
-              onClick={() => setGoalFilter(goalFilter === "mobilidade" ? null : "mobilidade")}
-            />
-          </div>
-
-          {planType === "free" && (
-            <Card className="border-primary/40 bg-primary/5 mt-1">
-              <CardContent className="py-4 flex flex-col gap-3">
-                <div className="space-y-1 text-sm">
-                  <p className="font-semibold">Diferença entre plano Free e Premium</p>
-                  <ul className="list-disc pl-4 text-xs text-muted-foreground space-y-1">
-                    <li>Free: acesso a alguns treinos básicos, principalmente em casa.</li>
-                    <li>Premium: acesso a todos os treinos, blocos semanais completos e variações por nível.</li>
-                    <li>Favoritar treinos completos e rotinas guiadas pela Vita são exclusivos do Premium.</li>
-                  </ul>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button size="sm" onClick={() => navigate("/upgrade")}>
-                    Fazer upgrade agora
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => setTab("gratis")}>
-                    Ver treinos liberados (Free)
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        <TabsContent value={tab} className="mt-4">
-          {isLoading ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-40 w-full" />
-              ))}
-            </div>
-          ) : (
-            <WorkoutGrid workouts={filteredWorkouts} favorites={favorites} userId={userId} planType={planType} />
-          )}
-        </TabsContent>
-      </Tabs>
-    </main>
-  );
-};
-
-const FilterChip = ({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) => {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={
-        "inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors " +
-        (active
-          ? "bg-primary text-primary-foreground border-primary"
-          : "bg-background text-muted-foreground hover:bg-muted")
-      }
-    >
-      {label}
-    </button>
-  );
-};
-
-const WorkoutGrid = ({
-  workouts,
-  favorites,
-  userId,
-  planType,
-}: {
-  workouts: Workout[];
-  favorites: string[];
-  userId: string;
-  planType: "free" | "premium";
-}) => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const toggleFavorite = async (workoutId: string) => {
-    const isFav = favorites.includes(workoutId);
-
-    if (isFav) {
-      const { error } = await supabase
-        .from("user_workout_favorites")
-        .delete()
-        .eq("user_id", userId)
-        .eq("workout_id", workoutId);
-      if (error) {
-        console.error("Erro ao remover favorito", error);
-        toast({
-          title: "Erro ao atualizar favorito",
-          description: "Tente novamente mais tarde.",
-          variant: "destructive",
-        });
-      }
-    } else {
-      if (planType === "free") {
-        toast({
-          title: "Treino Premium",
-          description: "Favoritar treinos completos é exclusivo do plano Premium.",
-        });
-        return;
-      }
-      const { error } = await supabase.from("user_workout_favorites").insert({
-        user_id: userId,
-        workout_id: workoutId,
-      });
-      if (error) {
-        console.error("Erro ao adicionar favorito", error);
-        toast({
-          title: "Erro ao atualizar favorito",
-          description: "Tente novamente mais tarde.",
-          variant: "destructive",
-        });
-      }
+    // Tab filter
+    switch (activeTab) {
+      case "gratuitos":
+        result = result.filter((w) => w.is_basic);
+        break;
+      case "casa":
+        result = result.filter((w) => w.environment === "casa");
+        break;
+      case "academia":
+        result = result.filter((w) => w.environment === "academia");
+        break;
+      case "favoritos":
+        result = result.filter((w) => favoriteIds.includes(w.id));
+        break;
     }
+
+    // Difficulty filter
+    if (difficultyFilter !== "todos") {
+      result = result.filter((w) => w.difficulty === difficultyFilter);
+    }
+
+    // Goal filter
+    if (goalFilter !== "todos") {
+      result = result.filter((w) => w.goal === goalFilter);
+    }
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (w) =>
+          w.title.toLowerCase().includes(query) ||
+          w.category.toLowerCase().includes(query)
+      );
+    }
+
+    return result;
+  }, [workouts, activeTab, difficultyFilter, goalFilter, searchQuery, favoriteIds]);
+
+  const handleStartWorkout = (workout: Workout) => {
+    if (workout.is_premium && planType === "free") {
+      setShowUpgradeModal(true);
+      return;
+    }
+    navigate(`/treinos/${workout.id}`);
   };
 
-  if (!workouts.length) {
+  const isPremiumUser = planType !== "free";
+
+  if (isAuthChecking) {
     return (
-      <Card className="p-6 flex flex-col items-center justify-center text-center gap-2">
-        <p className="text-sm font-medium">Nenhum treino encontrado com os filtros atuais.</p>
-        <p className="text-xs text-muted-foreground">Ajuste os filtros ou veja todos os treinos.</p>
-      </Card>
+      <AuthenticatedLayout>
+        <div className="container py-8 space-y-8">
+          <Skeleton className="h-32 w-full" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-80 rounded-xl" />
+            ))}
+          </div>
+        </div>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {planType === "free" && (
-        <Card className="border-primary/50 bg-primary/5">
-          <CardContent className="py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-            <div className="space-y-1 text-sm">
-              <p className="font-medium">Desbloqueie todos os treinos Premium</p>
-              <p className="text-xs text-muted-foreground max-w-xl">
-                Acesse blocos semanais completos, variações de exercícios (fácil / padrão / avançado) e treinos
-                avançados que a Vita usa para montar sua rotina ideal.
-              </p>
+    <AuthenticatedLayout>
+      <div className="min-h-screen">
+        {/* Header Section */}
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="workout-header-gradient border-b"
+        >
+          <div className="container py-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <motion.h1
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-3xl md:text-4xl font-bold text-gradient"
+                >
+                  Biblioteca de Treinos
+                </motion.h1>
+                <motion.p
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-muted-foreground mt-1"
+                >
+                  {workouts.length} treinos disponíveis para você
+                </motion.p>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="flex items-center gap-2"
+              >
+                <Badge
+                  variant={isPremiumUser ? "default" : "secondary"}
+                  className={cn(
+                    "px-4 py-1.5",
+                    isPremiumUser && "badge-premium-shimmer"
+                  )}
+                >
+                  {isPremiumUser ? (
+                    <>
+                      <Sparkles className="h-4 w-4 mr-1" />
+                      Premium
+                    </>
+                  ) : (
+                    "Free"
+                  )}
+                </Badge>
+              </motion.div>
             </div>
-            <Button size="sm" className="text-xs" onClick={() => navigate("/upgrade")}>
-              Fazer upgrade para Premium
-            </Button>
-          </CardContent>
-        </Card>
-      )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {workouts.map((workout) => {
-          const isFav = favorites.includes(workout.id);
-          const categoryLabel = buildCategoryLabel(workout);
-          const subtitle = buildSubtitle(workout);
-          const isPremium = Boolean(workout.is_premium) || !workout.is_basic;
-          const isLockedForFreeUser = planType === "free" && isPremium;
-
-          const handleStartClick = () => {
-            if (isLockedForFreeUser) {
-              toast({
-                title: "Treino Premium",
-                description:
-                  "Este treino faz parte do plano Premium. Faça upgrade para liberar todos os treinos e blocos semanais.",
-              });
-              navigate("/upgrade");
-              return;
-            }
-            navigate(`/workouts/${workout.id}`);
-          };
-
-          return (
-            <Card
-              key={workout.id}
-              className={
-                "flex flex-col justify-between relative overflow-hidden" +
-                (planType === "free" && workout.is_basic ? " border-primary/60" : "")
-              }
+            {/* Search bar */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-6 relative max-w-md"
             >
-              {isLockedForFreeUser && (
-                <div className="absolute inset-0 bg-background/60 backdrop-blur-[1px] pointer-events-none" />
-              )}
-              <CardHeader className="pb-2 flex flex-row items-start justify-between gap-3 relative z-10">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className="text-xs">
-                      {categoryLabel}
-                    </Badge>
-                    {workout.is_basic && (
-                      <Badge
-                        className={
-                          "text-[10px] font-semibold " +
-                          (planType === "free"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-foreground")
-                        }
-                      >
-                        Gratuito
-                      </Badge>
-                    )}
-                    {isLockedForFreeUser && (
-                      <Badge variant="outline" className="flex items-center gap-1 text-[10px]">
-                        <Lock className="h-3 w-3" /> Premium
-                      </Badge>
-                    )}
-                  </div>
-                  <CardTitle className="text-base leading-snug">{workout.title}</CardTitle>
-                  <CardDescription className="text-xs leading-snug">{subtitle}</CardDescription>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => toggleFavorite(workout.id)}
-                  className="rounded-full p-2 border bg-background hover:bg-muted transition-colors relative z-10"
-                  aria-label={isFav ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-                >
-                  {isFav ? (
-                    <Heart className="h-4 w-4 text-primary fill-primary" />
-                  ) : (
-                    <HeartOff className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </button>
-              </CardHeader>
-              <CardContent className="pt-0 pb-4 flex items-end justify-between gap-4 relative z-10">
-                <div className="flex flex-wrap gap-2 text-xs">
-                  <Badge variant="outline" className="flex items-center gap-1 text-[11px]">
-                    <Timer className="h-3 w-3" />
-                    {workout.duration_min}min
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar treinos..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-background/50 backdrop-blur-sm"
+              />
+            </motion.div>
+          </div>
+        </motion.header>
+
+        {/* Main Content */}
+        <div className="container py-6">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)} className="workout-tabs">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <TabsList className="h-auto flex-wrap gap-2 bg-transparent p-0 mb-6">
+                <TabsTrigger value="todos" className="gap-2 data-[state=active]:bg-primary/10">
+                  <Dumbbell className="h-4 w-4" />
+                  Todos
+                  <Badge variant="secondary" className="ml-1 text-xs">
+                    {workouts.length}
                   </Badge>
-                  {typeof workout.calories_burned_est === "number" && (
-                    <Badge variant="outline" className="flex items-center gap-1 text-[11px]">
-                      <Flame className="h-3 w-3 text-primary" />
-                      ≈ {workout.calories_burned_est} kcal
-                    </Badge>
-                  )}
+                </TabsTrigger>
+                <TabsTrigger value="gratuitos" className="gap-2 data-[state=active]:bg-primary/10">
+                  <Zap className="h-4 w-4" />
+                  Gratuitos
+                  <Badge variant="secondary" className="ml-1 text-xs">
+                    {workouts.filter((w) => w.is_basic).length}
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger value="casa" className="gap-2 data-[state=active]:bg-primary/10">
+                  <Home className="h-4 w-4" />
+                  Casa
+                  <Badge variant="secondary" className="ml-1 text-xs">
+                    {workouts.filter((w) => w.environment === "casa").length}
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger value="academia" className="gap-2 data-[state=active]:bg-primary/10">
+                  <Target className="h-4 w-4" />
+                  Academia
+                  <Badge variant="secondary" className="ml-1 text-xs">
+                    {workouts.filter((w) => w.environment === "academia").length}
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger value="favoritos" className="gap-2 data-[state=active]:bg-primary/10">
+                  <Heart className="h-4 w-4" />
+                  Favoritos
+                  <Badge variant="secondary" className="ml-1 text-xs">
+                    {favoriteIds.length}
+                  </Badge>
+                </TabsTrigger>
+              </TabsList>
+            </motion.div>
+
+            {/* Filters */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="flex flex-wrap gap-6 mb-6"
+            >
+              {/* Difficulty Filter */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  Dificuldade
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {(Object.keys(difficultyLabels) as DifficultyFilter[]).map((key) => (
+                    <button
+                      key={key}
+                      onClick={() => setDifficultyFilter(key)}
+                      className={cn(
+                        "filter-chip px-3 py-1.5 rounded-full text-sm font-medium",
+                        difficultyFilter === key && "active"
+                      )}
+                    >
+                      {difficultyLabels[key]}
+                    </button>
+                  ))}
                 </div>
-                <Button
-                  size="sm"
-                  className="text-xs"
-                  variant={isLockedForFreeUser ? "outline" : "default"}
-                  onClick={handleStartClick}
+              </div>
+
+              {/* Goal Filter */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Objetivo
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {(Object.keys(goalLabels) as GoalFilter[]).map((key) => (
+                    <button
+                      key={key}
+                      onClick={() => setGoalFilter(key)}
+                      className={cn(
+                        "filter-chip px-3 py-1.5 rounded-full text-sm font-medium",
+                        goalFilter === key && "active"
+                      )}
+                    >
+                      {goalLabels[key]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Workouts Grid */}
+            <TabsContent value={activeTab} className="mt-0">
+              {isLoadingWorkouts ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(6)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: i * 0.1 }}
+                    >
+                      <Skeleton className="h-80 rounded-xl" />
+                    </motion.div>
+                  ))}
+                </div>
+              ) : filteredWorkouts.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-16"
                 >
-                  {isLockedForFreeUser ? (
-                    <span className="inline-flex items-center gap-1">
-                      <Lock className="h-3 w-3" /> Desbloquear
-                    </span>
-                  ) : (
-                    "Iniciar treino"
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted mb-4">
+                    <Dumbbell className="h-10 w-10 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">Nenhum treino encontrado</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Tente ajustar os filtros ou buscar por outro termo
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setActiveTab("todos");
+                      setDifficultyFilter("todos");
+                      setGoalFilter("todos");
+                      setSearchQuery("");
+                    }}
+                  >
+                    Limpar filtros
+                  </Button>
+                </motion.div>
+              ) : (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${activeTab}-${difficultyFilter}-${goalFilter}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                  >
+                    {filteredWorkouts.map((workout, index) => (
+                      <WorkoutCard
+                        key={workout.id}
+                        workout={workout}
+                        isFavorite={favoriteIds.includes(workout.id)}
+                        isPremiumUser={isPremiumUser}
+                        onToggleFavorite={(id) => toggleFavoriteMutation.mutate(id)}
+                        onStartWorkout={handleStartWorkout}
+                        index={index}
+                      />
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
+              )}
+            </TabsContent>
+          </Tabs>
+
+          {/* Premium CTA for free users */}
+          {!isPremiumUser && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mt-12 p-8 rounded-2xl bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 border border-primary/20 text-center"
+            >
+              <Sparkles className="h-10 w-10 mx-auto text-primary mb-4" />
+              <h3 className="text-2xl font-bold mb-2">Desbloqueie todos os treinos</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                Acesse {workouts.filter((w) => w.is_premium).length} treinos premium exclusivos
+                com programas avançados e acompanhamento personalizado.
+              </p>
+              <Button size="lg" onClick={() => navigate("/upgrade")}>
+                <Sparkles className="h-5 w-5 mr-2" />
+                Fazer upgrade agora
+              </Button>
+            </motion.div>
+          )}
+        </div>
       </div>
-    </div>
+
+      <UpgradeLimitModal
+        open={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        feature="advanced_workouts"
+      />
+    </AuthenticatedLayout>
   );
-};
-
-function buildCategoryLabel(workout: Workout): string {
-  if (workout.category === "mobilidade") {
-    return "Mobilidade / recuperação";
-  }
-
-  const env = workout.environment === "casa" ? "Casa" : "Academia";
-  if (workout.goal === "perda_gordura") return `HIIT ${env}`;
-  if (workout.goal === "hipertrofia") return `${env} hipertrofia`;
-  if (workout.goal === "forca") return `${env} força`;
-  return `${env} mobilidade`;
 }
-
-function buildSubtitle(workout: Workout): string {
-  const pieces: string[] = [];
-
-  if (workout.goal === "perda_gordura") pieces.push("Foco em perda de gordura");
-  if (workout.goal === "hipertrofia") pieces.push("Foco em ganho de massa");
-  if (workout.goal === "forca") pieces.push("Foco em força");
-  if (workout.goal === "mobilidade") pieces.push("Foco em mobilidade e recuperação");
-
-  const diffMap: Record<string, string> = {
-    iniciante: "Nível iniciante",
-    intermediario: "Nível intermediário",
-    avancado: "Nível avançado",
-  };
-
-  pieces.push(diffMap[workout.difficulty]);
-
-  if (workout.equipment_needed && workout.equipment_needed.length) {
-    pieces.push(`Equipamentos: ${workout.equipment_needed.join(", ")}`);
-  } else if (workout.environment === "casa") {
-    pieces.push("Sem equipamento");
-  }
-
-  return pieces.join(" • ");
-}
-
-export default Workouts;
