@@ -749,7 +749,7 @@ All colors MUST be HSL.
 /* Premium pricing card */
 .pricing-card-premium {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .pricing-card-premium::before {
