@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { motion } from "framer-motion";
 import {
   Tabs,
   TabsContent,
@@ -24,18 +25,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { NavLink } from "@/components/NavLink";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { AuthenticatedLayout } from "@/components/layouts/AuthenticatedLayout";
 import { canUserAccessFeature, incrementDailyLimit } from "@/lib/limits";
 import type { FeatureKey } from "@/lib/limits";
 import { UpgradeLimitModal } from "@/components/UpgradeLimitModal";
 import {
-  Home,
-  UtensilsCrossed,
-  Dumbbell,
-  LineChart,
-  User as UserIcon,
   Droplets,
   Moon,
   Activity,
@@ -43,6 +37,15 @@ import {
   CheckCircle2,
   Camera,
   MessageCircle,
+  Dumbbell,
+  Scale,
+  Sparkles,
+  TrendingUp,
+  Clock,
+  Flame,
+  Heart,
+  Brain,
+  Target,
 } from "lucide-react";
 import {
   LineChart as ReLineChart,
@@ -53,11 +56,41 @@ import {
   Tooltip as ReTooltip,
   BarChart,
   Bar,
+  ResponsiveContainer,
+  Area,
+  AreaChart,
 } from "recharts";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@/lib/utils";
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as const }
+  }
+};
+
+const headerVariants = {
+  hidden: { opacity: 0, y: -20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] as const }
+  }
+};
 
 const mealSchema = z.object({
   type: z.string().min(1, "Selecione o tipo de refeição"),
@@ -86,14 +119,6 @@ const weightSchema = z.object({
   fasting: z.boolean().optional(),
 });
 
-const waterSchema = z.object({
-  ml: z
-    .number()
-    .int()
-    .min(0)
-    .max(10000),
-});
-
 const sleepSchema = z.object({
   date: z.string().min(1, "Selecione a data"),
   sleepTime: z.string().min(1, "Informe o horário que dormiu"),
@@ -107,6 +132,16 @@ const stressSchema = z.object({
   emoji: z.string().min(1, "Selecione um emoji"),
   notes: z.string().optional(),
 });
+
+// Tab configuration with colors
+const tabConfig = [
+  { id: "refeicao", label: "Refeição", icon: Salad, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+  { id: "peso", label: "Peso", icon: Scale, color: "text-blue-500", bg: "bg-blue-500/10" },
+  { id: "agua", label: "Água", icon: Droplets, color: "text-cyan-500", bg: "bg-cyan-500/10" },
+  { id: "sono", label: "Sono", icon: Moon, color: "text-indigo-500", bg: "bg-indigo-500/10" },
+  { id: "estresse", label: "Estresse", icon: Activity, color: "text-orange-500", bg: "bg-orange-500/10" },
+  { id: "treino", label: "Treino", icon: Dumbbell, color: "text-primary", bg: "bg-primary/10" },
+] as const;
 
 const Track = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -149,7 +184,10 @@ const Track = () => {
   if (loadingAuth || !user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Skeleton className="h-10 w-40" />
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 rounded-full bg-primary/20 animate-pulse" />
+          <Skeleton className="h-4 w-32" />
+        </div>
       </div>
     );
   }
@@ -157,38 +195,81 @@ const Track = () => {
   return (
     <AuthenticatedLayout>
       <div className="flex-1 flex flex-col pb-16 md:pb-0">
-        <header className="w-full border-b px-4 pt-3 pb-3 md:px-8 md:pt-4 md:pb-4 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm text-muted-foreground">
-              {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
-            </p>
-            <h1 className="mt-1 text-2xl md:text-3xl font-semibold tracking-tight">Registro diário</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Centralize aqui tudo o que influencia o seu metabolismo: refeições, peso, água, sono,
-              estresse e treinos.
-            </p>
-          </div>
-          <Card className="hidden sm:flex items-center gap-3 p-4 max-w-xs">
-            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary text-lg">
-              📝
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">Dica da Vita</p>
-              <p className="text-sm leading-snug">
-                Quanto mais consistente for seu registro diário, mais precisas serão as recomendações da
-                Vita.
-              </p>
-            </div>
-          </Card>
-        </header>
+        {/* Premium Header */}
+        <motion.header 
+          className="workout-header-gradient w-full border-b px-4 pt-4 pb-5 md:px-8 md:pt-6 md:pb-6"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
+          <div className="max-w-6xl mx-auto">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+              <motion.div variants={headerVariants} className="space-y-1">
+                <p className="text-sm text-muted-foreground capitalize">
+                  {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
+                </p>
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+                  Registro Diário
+                </h1>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  Centralize tudo o que influencia seu metabolismo: refeições, peso, água, sono, estresse e treinos.
+                </p>
+              </motion.div>
 
-        <main className="flex-1 px-4 py-3 md:px-8 md:py-4 space-y-6 overflow-y-auto">
-          <TrackTabs user={user} />
+              {/* Vita Tip Card */}
+              <motion.div 
+                variants={itemVariants}
+                className="glass-premium-vita p-4 rounded-xl max-w-xs hidden sm:block"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">Dica da Vita</p>
+                    <p className="text-sm leading-snug">
+                      Quanto mais consistente for seu registro, mais precisas serão as recomendações.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Quick Stats Pills */}
+            <motion.div 
+              variants={itemVariants}
+              className="flex flex-wrap gap-2 mt-4"
+            >
+              <QuickStatPill icon={Target} label="Dias esta semana" value="4/7" color="text-primary" />
+              <QuickStatPill icon={Flame} label="Streak atual" value="12 dias" color="text-orange-500" />
+              <QuickStatPill icon={Heart} label="Bem-estar" value="8.2" color="text-rose-500" />
+            </motion.div>
+          </div>
+        </motion.header>
+
+        <main className="flex-1 px-4 py-4 md:px-8 md:py-6 overflow-y-auto">
+          <div className="max-w-6xl mx-auto">
+            <TrackTabs user={user} />
+          </div>
         </main>
       </div>
     </AuthenticatedLayout>
   );
 };
+
+// Quick Stat Pill Component
+const QuickStatPill = ({ icon: Icon, label, value, color }: { 
+  icon: React.ElementType; 
+  label: string; 
+  value: string;
+  color: string;
+}) => (
+  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-border/50">
+    <Icon className={cn("h-3.5 w-3.5", color)} />
+    <span className="text-xs text-muted-foreground">{label}:</span>
+    <span className="text-xs font-semibold">{value}</span>
+  </div>
+);
 
 type RefeicaoFormValues = z.infer<typeof mealSchema>;
 
@@ -218,87 +299,126 @@ const TrackTabs = ({ user }: TrackTabsProps) => {
   };
 
   return (
-    <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
-      <TabsList className="w-full flex flex-wrap justify-start gap-1">
-        <TabsTrigger value="refeicao" className="flex items-center gap-2">
-          <Salad className="h-4 w-4" />
-          Refeição
-        </TabsTrigger>
-        <TabsTrigger value="peso" className="flex items-center gap-2">
-          <LineChart className="h-4 w-4" />
-          Peso
-        </TabsTrigger>
-        <TabsTrigger value="agua" className="flex items-center gap-2">
-          <Droplets className="h-4 w-4" />
-          Água
-        </TabsTrigger>
-        <TabsTrigger value="sono" className="flex items-center gap-2">
-          <Moon className="h-4 w-4" />
-          Sono
-        </TabsTrigger>
-        <TabsTrigger value="estresse" className="flex items-center gap-2">
-          <Activity className="h-4 w-4" />
-          Estresse
-        </TabsTrigger>
-        <TabsTrigger value="treino" className="flex items-center gap-2">
-          <Dumbbell className="h-4 w-4" />
-          Treino
-        </TabsTrigger>
-      </TabsList>
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
+        {/* Premium Tab List */}
+        <motion.div variants={itemVariants}>
+          <TabsList className="w-full h-auto flex flex-wrap justify-start gap-2 bg-transparent p-0">
+            {tabConfig.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = currentTab === tab.id;
+              return (
+                <TabsTrigger
+                  key={tab.id}
+                  value={tab.id}
+                  className={cn(
+                    "filter-chip flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-300",
+                    isActive 
+                      ? "filter-chip active bg-primary/10 border-primary/30 text-foreground shadow-sm" 
+                      : "bg-muted/30 border-transparent hover:bg-muted/50 text-muted-foreground"
+                  )}
+                >
+                  <div className={cn(
+                    "h-6 w-6 rounded-lg flex items-center justify-center transition-colors",
+                    isActive ? tab.bg : "bg-muted/50"
+                  )}>
+                    <Icon className={cn("h-3.5 w-3.5", isActive ? tab.color : "text-muted-foreground")} />
+                  </div>
+                  <span className="text-sm font-medium">{tab.label}</span>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </motion.div>
 
-      <TabsContent value="refeicao" className="space-y-6">
-        <RefeicaoTab userId={user.id} />
-      </TabsContent>
+        <TabsContent value="refeicao" className="space-y-6 mt-6">
+          <RefeicaoTab userId={user.id} />
+        </TabsContent>
 
-      <TabsContent value="peso" className="space-y-6">
-        <PesoTab userId={user.id} />
-      </TabsContent>
+        <TabsContent value="peso" className="space-y-6 mt-6">
+          <PesoTab userId={user.id} />
+        </TabsContent>
 
-      <TabsContent value="agua" className="space-y-6">
-        <AguaTab userId={user.id} />
-      </TabsContent>
+        <TabsContent value="agua" className="space-y-6 mt-6">
+          <AguaTab userId={user.id} />
+        </TabsContent>
 
-      <TabsContent value="sono" className="space-y-6">
-        <SonoTab userId={user.id} />
-      </TabsContent>
+        <TabsContent value="sono" className="space-y-6 mt-6">
+          <SonoTab userId={user.id} />
+        </TabsContent>
 
-      <TabsContent value="estresse" className="space-y-6">
-        <EstresseTab userId={user.id} />
-      </TabsContent>
+        <TabsContent value="estresse" className="space-y-6 mt-6">
+          <EstresseTab userId={user.id} />
+        </TabsContent>
 
-      <TabsContent value="treino" className="space-y-6">
-        <TreinoTab userId={user.id} />
-      </TabsContent>
-    </Tabs>
+        <TabsContent value="treino" className="space-y-6 mt-6">
+          <TreinoTab userId={user.id} />
+        </TabsContent>
+      </Tabs>
+    </motion.div>
   );
 };
+
+// Premium Card Wrapper
+const PremiumCard = ({ children, className, delay = 0 }: { 
+  children: React.ReactNode; 
+  className?: string;
+  delay?: number;
+}) => (
+  <motion.div
+    variants={itemVariants}
+    initial="hidden"
+    animate="visible"
+    transition={{ delay }}
+    whileHover={{ y: -4, transition: { duration: 0.2 } }}
+  >
+    <Card className={cn(
+      "workout-card border-border/50 bg-card/80 backdrop-blur-sm transition-all duration-300",
+      "hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20",
+      className
+    )}>
+      {children}
+    </Card>
+  </motion.div>
+);
+
+// Section Header Component
+const SectionHeader = ({ title, action }: { title: string; action?: React.ReactNode }) => (
+  <motion.div 
+    variants={itemVariants}
+    className="flex items-center justify-between"
+  >
+    <h2 className="text-sm font-semibold tracking-tight text-foreground">{title}</h2>
+    {action}
+  </motion.div>
+);
+
 const RefeicaoTab = ({ userId }: { userId: string }) => {
   const { toast } = useToast();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [aiResult, setAiResult] = useState<
-    | {
-        name: string;
-        calories?: number;
-        protein?: number;
-        carbs?: number;
-        fat?: number;
-        ingredients?: string[];
-        healthScore?: number;
-      }
-    | null
-  >(null);
+  const [aiResult, setAiResult] = useState<{
+    name: string;
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+    ingredients?: string[];
+    healthScore?: number;
+  } | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
-  const [meals, setMeals] = useState<
-    {
-      id: string;
-      datetime: string;
-      type: string;
-      description: string;
-      calories: number | null;
-      photo_url: string | null;
-    }[]
-  >([]);
+  const [meals, setMeals] = useState<{
+    id: string;
+    datetime: string;
+    type: string;
+    description: string;
+    calories: number | null;
+    photo_url: string | null;
+  }[]>([]);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [modalFeature, setModalFeature] = useState<FeatureKey>("log_meal");
 
@@ -421,15 +541,6 @@ const RefeicaoTab = ({ userId }: { userId: string }) => {
 
     setAnalyzing(true);
     try {
-      // Ponto de integração com Lovable AI / Firecrawl via Edge Function.
-      // Quando a função estiver criada, basta descomentar a chamada abaixo.
-      // const { data, error } = await supabase.functions.invoke("meals-ai-analyze", {
-      //   body: { photoUrl: photoPreview },
-      // });
-      // if (error) throw error;
-      // setAiResult(data?.analysis ?? null);
-
-      // Placeholder temporário: simula uma análise básica.
       setTimeout(async () => {
         setAiResult({
           name: "Prato balanceado",
@@ -458,70 +569,116 @@ const RefeicaoTab = ({ userId }: { userId: string }) => {
     }
   };
 
+  const mealTypeLabels: Record<string, string> = {
+    cafe_manha: "Café da manhã",
+    lanche_manha: "Lanche da manhã",
+    almoco: "Almoço",
+    lanche_tarde: "Lanche da tarde",
+    jantar: "Jantar",
+    ceia: "Ceia",
+  };
+
   return (
-    <div className="space-y-6">
+    <motion.div 
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       <UpgradeLimitModal open={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} feature={modalFeature} />
+      
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Opção A - Registro por foto */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Camera className="h-4 w-4" />
-              Registro por foto
-            </CardTitle>
-            <CardDescription>Tire uma foto ou escolha da galeria para a Vita analisar.</CardDescription>
+        {/* Photo Registration Card */}
+        <PremiumCard>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center">
+                <Camera className="h-5 w-5 text-violet-500" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Registro por foto</CardTitle>
+                <CardDescription className="text-xs">Tire uma foto para a Vita analisar</CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Input type="file" accept="image/*" onChange={handlePhotoChange} />
+            <div className="relative">
+              <Input 
+                type="file" 
+                accept="image/*" 
+                onChange={handlePhotoChange}
+                className="file:mr-3 file:px-3 file:py-1 file:rounded-lg file:border-0 file:bg-primary/10 file:text-primary file:text-xs file:font-medium hover:file:bg-primary/20"
+              />
               {photoPreview && (
-                <div className="mt-3 rounded-md overflow-hidden border bg-muted/40">
-                  <img src={photoPreview} alt="Pré-visualização da refeição" className="w-full h-40 object-cover" />
-                </div>
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mt-3 rounded-xl overflow-hidden border-2 border-primary/20 bg-muted/40"
+                >
+                  <img src={photoPreview} alt="Pré-visualização" className="w-full h-40 object-cover" />
+                </motion.div>
               )}
             </div>
-            <Button onClick={handleAnalyzeWithAI} disabled={analyzing} className="w-full">
-              {analyzing ? "O Vita está analisando..." : "Analisar com IA"}
+            <Button 
+              onClick={handleAnalyzeWithAI} 
+              disabled={analyzing} 
+              className="w-full bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 text-white"
+            >
+              {analyzing ? (
+                <>
+                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                  O Vita está analisando...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Analisar com IA
+                </>
+              )}
             </Button>
 
             {aiResult && (
-              <div className="mt-4 space-y-3 border-t pt-4">
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4 space-y-3 border-t border-border/50 pt-4"
+              >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">{aiResult.name}</p>
+                    <p className="text-sm font-semibold">{aiResult.name}</p>
                     {aiResult.calories !== undefined && (
                       <p className="text-xs text-muted-foreground">{aiResult.calories} kcal (estimado)</p>
                     )}
                   </div>
                   {aiResult.healthScore !== undefined && (
-                    <div className="text-right text-sm">
-                      <span className="block text-xs text-muted-foreground">Score de saudabilidade</span>
-                      <span className="text-lg font-semibold">{aiResult.healthScore.toFixed(1)}</span>
+                    <div className="text-right">
+                      <span className="block text-xs text-muted-foreground">Score</span>
+                      <span className="text-xl font-bold text-emerald-500">{aiResult.healthScore.toFixed(1)}</span>
                     </div>
                   )}
                 </div>
+                
                 {(aiResult.protein || aiResult.carbs || aiResult.fat) && (
-                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                    <div>
-                      <p className="font-medium">Proteína</p>
-                      <p className="text-muted-foreground">{aiResult.protein ?? "--"} g</p>
-                    </div>
-                    <div>
-                      <p className="font-medium">Carbo</p>
-                      <p className="text-muted-foreground">{aiResult.carbs ?? "--"} g</p>
-                    </div>
-                    <div>
-                      <p className="font-medium">Gordura</p>
-                      <p className="text-muted-foreground">{aiResult.fat ?? "--"} g</p>
-                    </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <MacroPill label="Proteína" value={aiResult.protein} unit="g" color="bg-blue-500/10 text-blue-600" />
+                    <MacroPill label="Carbo" value={aiResult.carbs} unit="g" color="bg-amber-500/10 text-amber-600" />
+                    <MacroPill label="Gordura" value={aiResult.fat} unit="g" color="bg-rose-500/10 text-rose-600" />
                   </div>
                 )}
+                
                 {aiResult.ingredients && aiResult.ingredients.length > 0 && (
                   <div className="text-xs">
                     <p className="font-medium mb-1">Ingredientes detectados</p>
-                    <p className="text-muted-foreground">{aiResult.ingredients.join(", ")}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {aiResult.ingredients.map((ing, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                          {ing}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 )}
+                
                 <div className="flex gap-2">
                   <Button
                     variant="default"
@@ -536,39 +693,37 @@ const RefeicaoTab = ({ userId }: { userId: string }) => {
                       });
                     }}
                   >
+                    <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
                     Confirmar
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => {
-                      toast({
-                        title: "Edite manualmente",
-                        description: "Ajuste os campos ao lado como preferir.",
-                      });
-                    }}
-                  >
-                    Editar manualmente
+                  <Button variant="outline" size="sm" className="flex-1">
+                    Editar
                   </Button>
                 </div>
-              </div>
+              </motion.div>
             )}
           </CardContent>
-        </Card>
+        </PremiumCard>
 
-        {/* Opção B - Registro manual */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Registro manual</CardTitle>
-            <CardDescription>Descreva o que você comeu nesta refeição.</CardDescription>
+        {/* Manual Registration Card */}
+        <PremiumCard delay={0.1}>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-500/20 flex items-center justify-center">
+                <Salad className="h-5 w-5 text-emerald-500" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Registro manual</CardTitle>
+                <CardDescription className="text-xs">Descreva o que você comeu</CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Tipo de refeição</label>
+                <label className="text-xs font-medium text-muted-foreground">Tipo de refeição</label>
                 <select
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                  className="w-full rounded-xl border border-border/50 bg-background px-3 py-2.5 text-sm focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
                   {...form.register("type")}
                 >
                   <option value="">Selecione</option>
@@ -585,10 +740,11 @@ const RefeicaoTab = ({ userId }: { userId: string }) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">O que você comeu?</label>
+                <label className="text-xs font-medium text-muted-foreground">O que você comeu?</label>
                 <Textarea
                   rows={3}
                   placeholder="Ex: 150g de frango grelhado, 1 xícara de arroz integral, salada verde"
+                  className="rounded-xl border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 resize-none"
                   {...form.register("description")}
                 />
                 {form.formState.errors.description && (
@@ -597,16 +753,15 @@ const RefeicaoTab = ({ userId }: { userId: string }) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center justify-between">
+                <label className="text-xs font-medium text-muted-foreground flex items-center justify-between">
                   <span>Calorias (opcional)</span>
                   <button
                     type="button"
-                    className="text-xs text-primary flex items-center gap-1"
+                    className="text-xs text-primary flex items-center gap-1 hover:underline"
                     onClick={() => {
                       toast({
                         title: "Perguntar para Vita",
-                        description:
-                          "Integração com IA para estimar calorias será conectada em uma próxima etapa.",
+                        description: "Integração com IA para estimar calorias será conectada em breve.",
                       });
                     }}
                   >
@@ -614,79 +769,106 @@ const RefeicaoTab = ({ userId }: { userId: string }) => {
                     Perguntar para Vita
                   </button>
                 </label>
-                <Input type="number" step="1" min="0" placeholder="Ex: 520" {...form.register("calories")} />
-                {form.formState.errors.calories && (
-                  <p className="text-xs text-destructive">{form.formState.errors.calories.message}</p>
-                )}
+                <Input 
+                  type="number" 
+                  step="1" 
+                  min="0" 
+                  placeholder="Ex: 520" 
+                  className="rounded-xl border-border/50"
+                  {...form.register("calories")} 
+                />
               </div>
 
-              <Button type="submit" className="w-full flex items-center justify-center gap-2">
-                <CheckCircle2 className="h-4 w-4" />
+              <Button type="submit" className="w-full rounded-xl">
+                <CheckCircle2 className="h-4 w-4 mr-2" />
                 Salvar refeição
               </Button>
             </form>
           </CardContent>
-        </Card>
+        </PremiumCard>
       </div>
 
-      {/* Histórico de refeições */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium tracking-tight">Histórico recente</h2>
-        </div>
+      {/* History Section */}
+      <section className="space-y-4">
+        <SectionHeader title="Histórico recente" />
+        
         {loadingHistory ? (
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-20 w-full rounded-xl" />
+            ))}
           </div>
         ) : meals.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhuma refeição registrada ainda.</p>
+          <PremiumCard>
+            <CardContent className="py-8 text-center">
+              <Salad className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
+              <p className="text-sm text-muted-foreground">Nenhuma refeição registrada ainda.</p>
+            </CardContent>
+          </PremiumCard>
         ) : (
-          <div className="space-y-4">
-            {Object.entries(groupedMeals).map(([dateLabel, items]) => {
+          <motion.div className="space-y-4" variants={containerVariants}>
+            {Object.entries(groupedMeals).map(([dateLabel, items], groupIndex) => {
               const totalDay = items.reduce((acc, meal) => acc + (meal.calories ?? 0), 0);
               return (
-                <div key={dateLabel} className="space-y-2">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{dateLabel}</span>
-                    {totalDay > 0 && <span>Total: {totalDay.toFixed(0)} kcal</span>}
+                <motion.div 
+                  key={dateLabel} 
+                  className="space-y-2"
+                  variants={itemVariants}
+                  custom={groupIndex}
+                >
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium text-foreground">{dateLabel}</span>
+                    {totalDay > 0 && (
+                      <span className="text-muted-foreground px-2 py-0.5 rounded-full bg-muted/50">
+                        {totalDay.toFixed(0)} kcal
+                      </span>
+                    )}
                   </div>
                   <div className="space-y-2">
                     {items.map((meal) => (
-                      <Card key={meal.id} className="flex items-center justify-between px-3 py-2">
+                      <motion.div
+                        key={meal.id}
+                        whileHover={{ scale: 1.01 }}
+                        className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/30 hover:border-primary/20 transition-all"
+                      >
                         <div className="flex items-center gap-3">
-                          <div className="h-9 w-9 rounded-md bg-muted flex items-center justify-center text-xs">
+                          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-medium text-primary">
                             {format(new Date(meal.datetime), "HH:mm")}
                           </div>
-                          <div className="space-y-1">
-                            <p className="text-xs font-medium leading-tight line-clamp-2">
-                              {meal.description}
-                            </p>
-                            <p className="text-[11px] text-muted-foreground lowercase">
-                              {meal.type.replace("_", " ")}
+                          <div className="space-y-0.5">
+                            <p className="text-sm font-medium line-clamp-1">{meal.description}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {mealTypeLabels[meal.type] || meal.type}
                             </p>
                           </div>
                         </div>
-                        <div className="text-right text-xs">
+                        <div className="text-right">
                           {meal.calories ? (
-                            <p className="font-medium">{meal.calories.toFixed(0)} kcal</p>
+                            <p className="text-sm font-semibold">{meal.calories.toFixed(0)} <span className="text-xs font-normal text-muted-foreground">kcal</span></p>
                           ) : (
-                            <p className="text-muted-foreground">-- kcal</p>
+                            <p className="text-xs text-muted-foreground">-- kcal</p>
                           )}
                         </div>
-                      </Card>
+                      </motion.div>
                     ))}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         )}
       </section>
-    </div>
+    </motion.div>
   );
 };
+
+// Macro Pill Component
+const MacroPill = ({ label, value, unit, color }: { label: string; value?: number; unit: string; color: string }) => (
+  <div className={cn("text-center p-2 rounded-lg", color)}>
+    <p className="text-[10px] font-medium opacity-70">{label}</p>
+    <p className="text-sm font-bold">{value ?? "--"}{unit}</p>
+  </div>
+);
 
 const PesoTab = ({ userId }: { userId: string }) => {
   const { toast } = useToast();
@@ -699,9 +881,7 @@ const PesoTab = ({ userId }: { userId: string }) => {
     },
   });
   const [loading, setLoading] = useState(true);
-  const [logs, setLogs] = useState<
-    { id: string; date: string; weight_kg: number; fasting: boolean }[]
-  >([]);
+  const [logs, setLogs] = useState<{ id: string; date: string; weight_kg: number; fasting: boolean }[]>([]);
 
   useEffect(() => {
     const loadWeights = async () => {
@@ -782,99 +962,168 @@ const PesoTab = ({ userId }: { userId: string }) => {
     return last.weight_kg - prev.weight_kg;
   }, [logs]);
 
+  const currentWeight = logs.length > 0 ? logs[logs.length - 1].weight_kg : null;
+
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Registrar peso</CardTitle>
-          <CardDescription>Use medidas consistentes, de preferência em jejum.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 md:grid-cols-[1.5fr,1fr]">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Peso (kg)</label>
-                <Input type="number" step="0.1" placeholder="Ex: 72.4" {...form.register("weight")} />
-                {form.formState.errors.weight && (
-                  <p className="text-xs text-destructive">{form.formState.errors.weight.message}</p>
-                )}
+    <motion.div 
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <div className="grid gap-4 md:grid-cols-3">
+        {/* Current Weight Card */}
+        <PremiumCard className="md:col-span-1">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-2">
+              <div className="h-14 w-14 mx-auto rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
+                <Scale className="h-7 w-7 text-blue-500" />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Data</label>
-                <Input type="date" {...form.register("date")} />
-                {form.formState.errors.date && (
-                  <p className="text-xs text-destructive">{form.formState.errors.date.message}</p>
-                )}
+              <p className="text-xs text-muted-foreground mt-3">Peso atual</p>
+              <p className="text-3xl font-bold">{currentWeight?.toFixed(1) ?? "--"} <span className="text-lg font-normal text-muted-foreground">kg</span></p>
+              {diffFromLast !== null && (
+                <div className={cn(
+                  "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium",
+                  diffFromLast < 0 ? "bg-emerald-500/10 text-emerald-600" : 
+                  diffFromLast > 0 ? "bg-rose-500/10 text-rose-600" : 
+                  "bg-muted text-muted-foreground"
+                )}>
+                  <TrendingUp className={cn("h-3 w-3", diffFromLast < 0 && "rotate-180")} />
+                  {diffFromLast < 0 ? "" : "+"}{diffFromLast.toFixed(1)} kg
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </PremiumCard>
+
+        {/* Register Weight Card */}
+        <PremiumCard className="md:col-span-2" delay={0.1}>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
+                <Scale className="h-5 w-5 text-blue-500" />
               </div>
-              <label className="flex items-center gap-2 text-sm">
+              <div>
+                <CardTitle className="text-base">Registrar peso</CardTitle>
+                <CardDescription className="text-xs">Use medidas consistentes, de preferência em jejum</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">Peso (kg)</label>
+                  <Input 
+                    type="number" 
+                    step="0.1" 
+                    placeholder="Ex: 72.4" 
+                    className="rounded-xl border-border/50"
+                    {...form.register("weight")} 
+                  />
+                  {form.formState.errors.weight && (
+                    <p className="text-xs text-destructive">{form.formState.errors.weight.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">Data</label>
+                  <Input 
+                    type="date" 
+                    className="rounded-xl border-border/50"
+                    {...form.register("date")} 
+                  />
+                </div>
+              </div>
+              
+              <label className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border/30 cursor-pointer hover:bg-muted/50 transition-colors">
                 <Checkbox
                   checked={form.watch("fasting")}
                   onCheckedChange={(checked) => form.setValue("fasting", Boolean(checked))}
                 />
-                Medição em jejum
+                <div>
+                  <span className="text-sm font-medium">Medição em jejum</span>
+                  <p className="text-xs text-muted-foreground">Mais preciso para acompanhamento</p>
+                </div>
               </label>
-              <Button type="submit" className="w-full md:w-auto flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4" />
+              
+              <Button type="submit" className="w-full sm:w-auto rounded-xl">
+                <CheckCircle2 className="h-4 w-4 mr-2" />
                 Salvar peso
               </Button>
-            </div>
+            </form>
+          </CardContent>
+        </PremiumCard>
+      </div>
 
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p>
-                Registrar seu peso diariamente ajuda a Vita a entender sua resposta às dietas e treinos ao longo do
-                tempo.
-              </p>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium tracking-tight">Evolução nos últimos 30 dias</h2>
-          {diffFromLast !== null && (
-            <span
-              className={cn(
-                "text-xs font-medium",
-                diffFromLast < 0 ? "text-emerald-500" : diffFromLast > 0 ? "text-destructive" : "text-muted-foreground",
-              )}
-            >
-              {diffFromLast < 0 ? "-" : diffFromLast > 0 ? "+" : ""}
-              {Math.abs(diffFromLast).toFixed(1)} kg desde a última medição
-            </span>
-          )}
-        </div>
-
-        <Card className="p-4">
-          {loading ? (
-            <Skeleton className="h-40 w-full" />
-          ) : chartData.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum registro de peso ainda.</p>
-          ) : (
-            <div className="h-52 w-full">
-              <ReLineChart data={chartData} width={600} height={200}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="dateLabel" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} domain={["dataMin - 1", "dataMax + 1"]} />
-                <ReTooltip
-                  content={({ active, payload }) => {
-                    if (!active || !payload || payload.length === 0) return null;
-                    const item = payload[0];
-                    return (
-                      <div className="rounded-md border bg-background px-2 py-1 text-xs shadow-sm">
-                        <p className="font-medium">{item.payload.dateLabel}</p>
-                        <p>{Number(item.value ?? 0).toFixed(1)} kg</p>
-                      </div>
-                    );
-                  }}
-                />
-                <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-              </ReLineChart>
-            </div>
-          )}
-        </Card>
+      {/* Chart Section */}
+      <section className="space-y-4">
+        <SectionHeader 
+          title="Evolução nos últimos 30 dias"
+          action={
+            diffFromLast !== null && (
+              <span className={cn(
+                "text-xs font-medium px-2 py-1 rounded-full",
+                diffFromLast < 0 ? "bg-emerald-500/10 text-emerald-600" : 
+                diffFromLast > 0 ? "bg-rose-500/10 text-rose-600" : 
+                "bg-muted text-muted-foreground"
+              )}>
+                {diffFromLast < 0 ? "" : "+"}{diffFromLast.toFixed(1)} kg desde última medição
+              </span>
+            )
+          }
+        />
+        
+        <PremiumCard>
+          <CardContent className="pt-6">
+            {loading ? (
+              <Skeleton className="h-52 w-full rounded-xl" />
+            ) : chartData.length === 0 ? (
+              <div className="h-52 flex items-center justify-center">
+                <div className="text-center">
+                  <Scale className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
+                  <p className="text-sm text-muted-foreground">Nenhum registro de peso ainda.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="h-52 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="weightGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" />
+                    <XAxis dataKey="dateLabel" tick={{ fontSize: 10 }} className="text-muted-foreground" />
+                    <YAxis tick={{ fontSize: 10 }} domain={["dataMin - 1", "dataMax + 1"]} className="text-muted-foreground" />
+                    <ReTooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload || payload.length === 0) return null;
+                        const item = payload[0];
+                        return (
+                          <div className="rounded-xl border bg-background/95 backdrop-blur-sm px-3 py-2 shadow-lg">
+                            <p className="text-xs text-muted-foreground">{item.payload.dateLabel}</p>
+                            <p className="text-sm font-bold">{Number(item.value ?? 0).toFixed(1)} kg</p>
+                          </div>
+                        );
+                      }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2} 
+                      fill="url(#weightGradient)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </CardContent>
+        </PremiumCard>
       </section>
-    </div>
+    </motion.div>
   );
 };
 
@@ -940,69 +1189,152 @@ const AguaTab = ({ userId }: { userId: string }) => {
   };
 
   const filledCups = Math.round(ml / 250);
+  const progress = Math.min((ml / metaMl) * 100, 100);
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Ingestão de água</CardTitle>
-          <CardDescription>Cada copo representa 250ml.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {loading ? (
-            <Skeleton className="h-20 w-full" />
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {Array.from({ length: 8 }).map((_, idx) => {
-                const isFilled = idx < filledCups;
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => {
-                      const next = idx + 1 === filledCups ? (idx * 250) : (idx + 1) * 250;
-                      persistWater(next);
-                    }}
-                    className={cn(
-                      "h-12 w-10 rounded-md border flex flex-col items-center justify-center text-xs",
-                      isFilled ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground",
-                    )}
-                  >
-                    <Droplets className="h-4 w-4" />
-                    <span>{(idx + 1) * 250}ml</span>
-                  </button>
-                );
-              })}
+    <motion.div 
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Progress Card */}
+        <PremiumCard>
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4">
+              <div className="relative h-32 w-32 mx-auto">
+                <svg className="h-32 w-32 -rotate-90" viewBox="0 0 100 100">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    stroke="hsl(var(--muted))"
+                    strokeWidth="8"
+                    fill="none"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth="8"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeDasharray={`${progress * 2.83} 283`}
+                    className="transition-all duration-500"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <Droplets className="h-6 w-6 text-cyan-500 mb-1" />
+                  <span className="text-2xl font-bold">{ml}</span>
+                  <span className="text-xs text-muted-foreground">/ {metaMl} ml</span>
+                </div>
+              </div>
+              
+              <div className="space-y-1">
+                <p className="text-sm font-medium">{progress.toFixed(0)}% da meta diária</p>
+                <p className="text-xs text-muted-foreground">
+                  {metaMl - ml > 0 ? `Faltam ${metaMl - ml} ml` : "Meta atingida! 🎉"}
+                </p>
+              </div>
             </div>
-          )}
+          </CardContent>
+        </PremiumCard>
 
-          <div className="flex items-center justify-between text-sm">
-            <span>
-              {(ml / 1000).toFixed(2)}L / {(metaMl / 1000).toFixed(1)}L meta
-            </span>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                const next = Math.min(ml + 250, 4000);
-                persistWater(next);
-              }}
-            >
-              +250ml
-            </Button>
+        {/* Controls Card */}
+        <PremiumCard delay={0.1}>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
+                <Droplets className="h-5 w-5 text-cyan-500" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Ingestão de água</CardTitle>
+                <CardDescription className="text-xs">Cada copo representa 250ml</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {loading ? (
+              <Skeleton className="h-20 w-full rounded-xl" />
+            ) : (
+              <>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {Array.from({ length: 8 }).map((_, idx) => {
+                    const isFilled = idx < filledCups;
+                    return (
+                      <motion.button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          const next = idx + 1 === filledCups ? idx * 250 : (idx + 1) * 250;
+                          persistWater(next);
+                        }}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={cn(
+                          "h-12 w-12 rounded-xl flex items-center justify-center transition-all duration-300",
+                          isFilled
+                            ? "bg-gradient-to-br from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/30"
+                            : "bg-muted/50 border border-border/50 text-muted-foreground hover:bg-muted"
+                        )}
+                      >
+                        <Droplets className="h-5 w-5" />
+                      </motion.button>
+                    );
+                  })}
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => persistWater(ml + 250)}
+                    className="flex-1 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600"
+                  >
+                    <Droplets className="h-4 w-4 mr-2" />
+                    +250ml
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => persistWater(Math.max(0, ml - 250))}
+                    className="rounded-xl"
+                  >
+                    -250ml
+                  </Button>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </PremiumCard>
+      </div>
+
+      {/* Tips Card */}
+      <PremiumCard delay={0.2}>
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-4">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Sparkles className="h-5 w-5 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Dicas da Vita para hidratação</p>
+              <ul className="text-xs text-muted-foreground space-y-1">
+                <li>• Beba um copo de água ao acordar</li>
+                <li>• Mantenha uma garrafa sempre por perto</li>
+                <li>• Aumente a ingestão em dias de treino</li>
+                <li>• Frutas e vegetais também contribuem</li>
+              </ul>
+            </div>
           </div>
         </CardContent>
-      </Card>
-    </div>
+      </PremiumCard>
+    </motion.div>
   );
 };
 
 const SonoTab = ({ userId }: { userId: string }) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [logs, setLogs] = useState<
-    { id: string; date: string; sleep_time: string; wake_time: string; quality_score: number }[]
-  >([]);
+  const [logs, setLogs] = useState<{ id: string; date: string; sleep_time: string; wake_time: string; quality_score: number }[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [sleepTime, setSleepTime] = useState("23:00");
@@ -1119,43 +1451,78 @@ const SonoTab = ({ userId }: { userId: string }) => {
   );
 
   const tagOptions = [
-    { id: "acordei_cansado", label: "Acordei cansado" },
-    { id: "sonho_ruim", label: "Sonho ruim" },
-    { id: "insonia", label: "Insônia" },
+    { id: "acordei_cansado", label: "Acordei cansado", icon: "😴" },
+    { id: "sonho_ruim", label: "Sonho ruim", icon: "😰" },
+    { id: "insonia", label: "Insônia", icon: "🌙" },
+    { id: "descansei_bem", label: "Descansei bem", icon: "😌" },
   ];
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Registro de sono</CardTitle>
-          <CardDescription>Entenda como a qualidade do seu sono influencia seus resultados.</CardDescription>
+    <motion.div 
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <PremiumCard>
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
+              <Moon className="h-5 w-5 text-indigo-500" />
+            </div>
+            <div>
+              <CardTitle className="text-base">Registro de sono</CardTitle>
+              <CardDescription className="text-xs">Entenda como a qualidade do sono influencia seus resultados</CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Data</label>
-                <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                <label className="text-xs font-medium text-muted-foreground">Data</label>
+                <Input 
+                  type="date" 
+                  value={date} 
+                  onChange={(e) => setDate(e.target.value)}
+                  className="rounded-xl border-border/50"
+                />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Dormiu</label>
-                  <Input type="time" value={sleepTime} onChange={(e) => setSleepTime(e.target.value)} />
+                  <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                    <Moon className="h-3 w-3" /> Dormiu
+                  </label>
+                  <Input 
+                    type="time" 
+                    value={sleepTime} 
+                    onChange={(e) => setSleepTime(e.target.value)}
+                    className="rounded-xl border-border/50"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Acordou</label>
-                  <Input type="time" value={wakeTime} onChange={(e) => setWakeTime(e.target.value)} />
+                  <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> Acordou
+                  </label>
+                  <Input 
+                    type="time" 
+                    value={wakeTime} 
+                    onChange={(e) => setWakeTime(e.target.value)}
+                    className="rounded-xl border-border/50"
+                  />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">Total estimado: {hours.toFixed(1)} horas de sono.</p>
+              <div className="p-3 rounded-xl bg-indigo-500/10 text-center">
+                <p className="text-xs text-muted-foreground">Total estimado</p>
+                <p className="text-2xl font-bold text-indigo-600">{hours.toFixed(1)}h</p>
+              </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center justify-between">
-                  <span>Qualidade do sono (0-10)</span>
-                  <span className="text-xs text-muted-foreground">{quality}</span>
+                <label className="text-xs font-medium text-muted-foreground flex items-center justify-between">
+                  <span>Qualidade do sono</span>
+                  <span className="text-lg font-bold text-indigo-600">{quality}/10</span>
                 </label>
                 <Slider
                   min={0}
@@ -1163,15 +1530,16 @@ const SonoTab = ({ userId }: { userId: string }) => {
                   step={1}
                   value={[quality]}
                   onValueChange={(value: number[]) => setQuality(value[0] ?? 0)}
+                  className="py-2"
                 />
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-medium">Tags</p>
+                <p className="text-xs font-medium text-muted-foreground">Como você se sentiu?</p>
                 <div className="flex flex-wrap gap-2">
                   {tagOptions.map((tag) => {
                     const active = selectedTags.includes(tag.id);
                     return (
-                      <button
+                      <motion.button
                         key={tag.id}
                         type="button"
                         onClick={() => {
@@ -1179,60 +1547,73 @@ const SonoTab = ({ userId }: { userId: string }) => {
                             prev.includes(tag.id) ? prev.filter((t) => t !== tag.id) : [...prev, tag.id],
                           );
                         }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         className={cn(
-                          "px-3 py-1 rounded-full border text-xs",
-                          active ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground",
+                          "px-3 py-1.5 rounded-xl border text-xs flex items-center gap-1.5 transition-all",
+                          active 
+                            ? "bg-indigo-500/20 border-indigo-500/30 text-indigo-600" 
+                            : "bg-muted/30 border-border/30 text-muted-foreground hover:bg-muted/50"
                         )}
                       >
+                        <span>{tag.icon}</span>
                         {tag.label}
-                      </button>
+                      </motion.button>
                     );
                   })}
                 </div>
               </div>
-              <Button onClick={saveSleep} className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4" />
+              <Button onClick={saveSleep} className="w-full rounded-xl">
+                <CheckCircle2 className="h-4 w-4 mr-2" />
                 Salvar sono
               </Button>
             </div>
           </div>
         </CardContent>
-      </Card>
+      </PremiumCard>
 
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium tracking-tight">Padrão semanal</h2>
-        </div>
-        <Card className="p-4">
-          {loading ? (
-            <Skeleton className="h-40 w-full" />
-          ) : chartData.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum registro de sono ainda.</p>
-          ) : (
-            <div className="h-52 w-full">
-              <BarChart data={chartData} width={600} height={200}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="dateLabel" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <ReTooltip
-                  content={({ active, payload }) => {
-                    if (!active || !payload || payload.length === 0) return null;
-                    const item = payload[0];
-                    return (
-                      <div className="rounded-md border bg-background px-2 py-1 text-xs shadow-sm">
-                        <p className="font-medium">{item.payload.dateLabel}</p>
-                        <p>{Number(item.value ?? 0).toFixed(1)} h de sono</p>
-                      </div>
-                    );
-                  }}
-                />
-                <Bar dataKey="hours" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </div>
-          )}
-        </Card>
+      {/* Chart Section */}
+      <section className="space-y-4">
+        <SectionHeader title="Padrão semanal" />
+        <PremiumCard>
+          <CardContent className="pt-6">
+            {loading ? (
+              <Skeleton className="h-52 w-full rounded-xl" />
+            ) : chartData.length === 0 ? (
+              <div className="h-52 flex items-center justify-center">
+                <div className="text-center">
+                  <Moon className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
+                  <p className="text-sm text-muted-foreground">Nenhum registro de sono ainda.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="h-52 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" />
+                    <XAxis dataKey="dateLabel" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <ReTooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload || payload.length === 0) return null;
+                        const item = payload[0];
+                        return (
+                          <div className="rounded-xl border bg-background/95 backdrop-blur-sm px-3 py-2 shadow-lg">
+                            <p className="text-xs text-muted-foreground">{item.payload.dateLabel}</p>
+                            <p className="text-sm font-bold">{Number(item.value ?? 0).toFixed(1)}h de sono</p>
+                          </div>
+                        );
+                      }}
+                    />
+                    <Bar dataKey="hours" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </CardContent>
+        </PremiumCard>
       </section>
-    </div>
+    </motion.div>
   );
 };
 
@@ -1242,9 +1623,7 @@ const EstresseTab = ({ userId }: { userId: string }) => {
   const [emoji, setEmoji] = useState("😊");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(true);
-  const [logs, setLogs] = useState<
-    { id: string; datetime: string; level: number; emoji: string | null; notes: string | null }[]
-  >([]);
+  const [logs, setLogs] = useState<{ id: string; datetime: string; level: number; emoji: string | null; notes: string | null }[]>([]);
 
   useEffect(() => {
     const loadStress = async () => {
@@ -1317,114 +1696,156 @@ const EstresseTab = ({ userId }: { userId: string }) => {
   };
 
   const emojis = [
-    { symbol: "😊", label: "Bem" },
-    { symbol: "😐", label: "Neutro" },
-    { symbol: "😟", label: "Preocupado" },
-    { symbol: "😰", label: "Ansioso" },
-    { symbol: "😫", label: "Exausto" },
+    { symbol: "😊", label: "Bem", color: "from-emerald-500/20 to-green-500/20" },
+    { symbol: "😐", label: "Neutro", color: "from-gray-500/20 to-slate-500/20" },
+    { symbol: "😟", label: "Preocupado", color: "from-amber-500/20 to-yellow-500/20" },
+    { symbol: "😰", label: "Ansioso", color: "from-orange-500/20 to-red-500/20" },
+    { symbol: "😫", label: "Exausto", color: "from-rose-500/20 to-red-500/20" },
   ];
 
+  const getLevelColor = (lvl: number) => {
+    if (lvl <= 3) return "text-emerald-500";
+    if (lvl <= 6) return "text-amber-500";
+    return "text-rose-500";
+  };
+
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Registro de estresse</CardTitle>
-          <CardDescription>Entenda seus gatilhos e momentos de maior carga emocional.</CardDescription>
+    <motion.div 
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <PremiumCard>
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-rose-500/20 flex items-center justify-center">
+              <Brain className="h-5 w-5 text-orange-500" />
+            </div>
+            <div>
+              <CardTitle className="text-base">Registro de estresse</CardTitle>
+              <CardDescription className="text-xs">Entenda seus gatilhos e momentos de maior carga emocional</CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <p className="text-sm font-medium">Como você se sente agora?</p>
-            <div className="flex flex-wrap gap-2">
+            <p className="text-xs font-medium text-muted-foreground">Como você se sente agora?</p>
+            <div className="flex flex-wrap gap-2 justify-center">
               {emojis.map((e) => (
-                <button
+                <motion.button
                   key={e.symbol}
                   type="button"
                   onClick={() => setEmoji(e.symbol)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   className={cn(
-                    "h-12 w-12 rounded-full flex items-center justify-center border text-2xl",
-                    emoji === e.symbol ? "bg-primary text-primary-foreground" : "bg-background",
+                    "h-14 w-14 rounded-xl flex flex-col items-center justify-center border-2 transition-all duration-300",
+                    emoji === e.symbol 
+                      ? `bg-gradient-to-br ${e.color} border-primary shadow-lg` 
+                      : "bg-muted/30 border-transparent hover:bg-muted/50"
                   )}
                 >
-                  {e.symbol}
-                </button>
+                  <span className="text-2xl">{e.symbol}</span>
+                </motion.button>
               ))}
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium flex items-center justify-between">
-              <span>Nível de estresse (0-10)</span>
-              <span className="text-xs text-muted-foreground">{level}</span>
+            <label className="text-xs font-medium text-muted-foreground flex items-center justify-between">
+              <span>Nível de estresse</span>
+              <span className={cn("text-lg font-bold", getLevelColor(level))}>{level}/10</span>
             </label>
-            <Slider min={0} max={10} step={1} value={[level]} onValueChange={([val]) => setLevel(val)} />
+            <Slider min={0} max={10} step={1} value={[level]} onValueChange={([val]) => setLevel(val)} className="py-2" />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">O que te estressou? (opcional)</label>
+            <label className="text-xs font-medium text-muted-foreground">O que te estressou? (opcional)</label>
             <Textarea
               rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Ex: reunião longa, trânsito, pouco sono..."
+              className="rounded-xl border-border/50 resize-none"
             />
           </div>
 
-          <div className="space-y-2 text-xs text-muted-foreground">
-            <p className="font-medium">Sugestões da Vita (baseado em evidência)</p>
-            <ul className="list-disc pl-4 space-y-1">
-              <li>Respiração 4-7-8 por 3 minutos.</li>
-              <li>Meditação guiada curta (5-10 minutos).</li>
-              <li>Caminhada leve de 10 minutos ao ar livre.</li>
+          <div className="p-4 rounded-xl bg-muted/30 border border-border/30 space-y-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <p className="text-xs font-medium">Sugestões da Vita</p>
+            </div>
+            <ul className="text-xs text-muted-foreground space-y-1 ml-6">
+              <li>• Respiração 4-7-8 por 3 minutos</li>
+              <li>• Meditação guiada curta (5-10 minutos)</li>
+              <li>• Caminhada leve de 10 minutos ao ar livre</li>
             </ul>
           </div>
 
-          <Button onClick={saveStress} className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4" />
+          <Button onClick={saveStress} className="w-full rounded-xl">
+            <CheckCircle2 className="h-4 w-4 mr-2" />
             Salvar registro de estresse
           </Button>
         </CardContent>
-      </Card>
+      </PremiumCard>
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-medium tracking-tight">Histórico recente</h2>
-        <Card className="p-4 space-y-2 max-h-64 overflow-y-auto">
-          {loading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          ) : logs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum registro ainda.</p>
-          ) : (
-            logs.map((log) => (
-              <div key={log.id} className="flex items-start justify-between text-xs py-1 border-b last:border-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{log.emoji || "😐"}</span>
-                  <div>
-                    <p className="font-medium">
-                      {format(new Date(log.datetime), "dd/MM HH:mm", { locale: ptBR })} - Nível {log.level}
-                    </p>
-                    {log.notes && <p className="text-muted-foreground line-clamp-2">{log.notes}</p>}
-                  </div>
-                </div>
+      {/* History Section */}
+      <section className="space-y-4">
+        <SectionHeader title="Histórico recente" />
+        <PremiumCard>
+          <CardContent className="pt-4 max-h-64 overflow-y-auto">
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-12 w-full rounded-xl" />
+                ))}
               </div>
-            ))
-          )}
-        </Card>
+            ) : logs.length === 0 ? (
+              <div className="py-8 text-center">
+                <Activity className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
+                <p className="text-sm text-muted-foreground">Nenhum registro ainda.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {logs.map((log, idx) => (
+                  <motion.div 
+                    key={log.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="flex items-start justify-between p-3 rounded-xl bg-muted/20 border border-border/20"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{log.emoji || "😐"}</span>
+                      <div>
+                        <p className="text-xs font-medium">
+                          {format(new Date(log.datetime), "dd/MM HH:mm", { locale: ptBR })}
+                        </p>
+                        {log.notes && <p className="text-xs text-muted-foreground line-clamp-1">{log.notes}</p>}
+                      </div>
+                    </div>
+                    <span className={cn("text-sm font-bold", getLevelColor(log.level))}>
+                      {log.level}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </PremiumCard>
       </section>
-    </div>
+    </motion.div>
   );
 };
 
 const TreinoTab = ({ userId }: { userId: string }) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [intensity, setIntensity] = useState(7);
   const [completed, setCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [logs, setLogs] = useState<
-    { id: string; date: string; completed: boolean; intensity: number | null }[]
-  >([]);
+  const [logs, setLogs] = useState<{ id: string; date: string; completed: boolean; intensity: number | null }[]>([]);
 
   useEffect(() => {
     const loadWorkouts = async () => {
@@ -1488,125 +1909,188 @@ const TreinoTab = ({ userId }: { userId: string }) => {
     setLogs(data || []);
   };
 
+  const completedCount = logs.filter(l => l.completed).length;
+
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Treino de hoje</CardTitle>
-          <CardDescription>
-            Escolha ou registre seu treino e marque como concluído para acompanhar sua consistência.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-3">
-            <Button
-              variant="outline"
-              className="flex items-center justify-center gap-2"
-              onClick={() =>
-                toast({
-                  title: "Biblioteca de treinos",
-                  description: "Tela de treinos será implementada em breve.",
-                })
-              }
-            >
-              <Dumbbell className="h-4 w-4" />
-              Escolher da biblioteca
-            </Button>
-            <Button
-              variant="outline"
-              className="flex items-center justify-center gap-2"
-              onClick={() =>
-                toast({
-                  title: "Criar treino personalizado",
-                  description: "Construtor de treinos será adicionado em uma próxima fase.",
-                })
-              }
-            >
-              Criar treino personalizado
-            </Button>
-            <Button
-              variant="default"
-              className="flex items-center justify-center gap-2"
-              onClick={() =>
-                toast({
-                  title: "Pedir sugestão para Vita",
-                  description: "Integração com IA para sugestões de treino será conectada em breve.",
-                })
-              }
-            >
-              <MessageCircle className="h-4 w-4" />
-              Pedir sugestão para Vita
-            </Button>
-          </div>
+    <motion.div 
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      {/* Quick Actions */}
+      <motion.div variants={itemVariants} className="grid gap-3 sm:grid-cols-3">
+        <motion.button
+          whileHover={{ scale: 1.02, y: -2 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate("/treinos")}
+          className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 text-left hover:shadow-lg hover:shadow-primary/10 transition-all"
+        >
+          <Dumbbell className="h-6 w-6 text-primary mb-2" />
+          <p className="text-sm font-medium">Biblioteca de treinos</p>
+          <p className="text-xs text-muted-foreground">Escolha um treino pronto</p>
+        </motion.button>
+        
+        <motion.button
+          whileHover={{ scale: 1.02, y: -2 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => toast({
+            title: "Em breve",
+            description: "Construtor de treinos personalizados.",
+          })}
+          className="p-4 rounded-xl bg-muted/30 border border-border/30 text-left hover:bg-muted/50 transition-all"
+        >
+          <Target className="h-6 w-6 text-muted-foreground mb-2" />
+          <p className="text-sm font-medium">Criar treino</p>
+          <p className="text-xs text-muted-foreground">Monte seu próprio treino</p>
+        </motion.button>
+        
+        <motion.button
+          whileHover={{ scale: 1.02, y: -2 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate("/vita-nutri")}
+          className="p-4 rounded-xl bg-gradient-to-br from-violet-500/10 to-purple-500/10 border border-violet-500/20 text-left hover:shadow-lg hover:shadow-violet-500/10 transition-all"
+        >
+          <Sparkles className="h-6 w-6 text-violet-500 mb-2" />
+          <p className="text-sm font-medium">Pedir sugestão</p>
+          <p className="text-xs text-muted-foreground">Pergunte para a Vita</p>
+        </motion.button>
+      </motion.div>
 
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox checked={completed} onCheckedChange={(checked) => setCompleted(Boolean(checked))} />
-                Marcar treino de hoje como concluído
-              </label>
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center justify-between">
-                  <span>Intensidade percebida (1-10)</span>
-                  <span className="text-xs text-muted-foreground">{intensity}</span>
-                </label>
-                <Slider
-                  min={1}
-                  max={10}
-                  step={1}
-                  value={[intensity]}
-                  onValueChange={([val]) => setIntensity(val)}
-                />
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Today's Workout Card */}
+        <PremiumCard>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                <Dumbbell className="h-5 w-5 text-primary" />
               </div>
-              <Button onClick={saveWorkout} className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4" />
-                Marcar como concluído
-              </Button>
+              <div>
+                <CardTitle className="text-base">Treino de hoje</CardTitle>
+                <CardDescription className="text-xs">Marque como concluído para acompanhar</CardDescription>
+              </div>
             </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <label className="flex items-center gap-3 p-4 rounded-xl bg-muted/30 border border-border/30 cursor-pointer hover:bg-muted/50 transition-colors">
+              <Checkbox 
+                checked={completed} 
+                onCheckedChange={(checked) => setCompleted(Boolean(checked))} 
+                className="h-5 w-5"
+              />
+              <div className="flex-1">
+                <span className="text-sm font-medium">Marcar treino como concluído</span>
+                <p className="text-xs text-muted-foreground">Treino do dia {format(new Date(), "dd/MM")}</p>
+              </div>
+              {completed && <CheckCircle2 className="h-5 w-5 text-emerald-500" />}
+            </label>
+            
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground flex items-center justify-between">
+                <span>Intensidade percebida</span>
+                <span className="text-lg font-bold text-primary">{intensity}/10</span>
+              </label>
+              <Slider
+                min={1}
+                max={10}
+                step={1}
+                value={[intensity]}
+                onValueChange={([val]) => setIntensity(val)}
+                className="py-2"
+              />
+            </div>
+            
+            <Button onClick={saveWorkout} className="w-full rounded-xl">
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Salvar treino
+            </Button>
+          </CardContent>
+        </PremiumCard>
 
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p>
-                Após os treinos, faça sessões leves de respiração ou alongamento. Em breve a Vita poderá sugerir rotinas
-                de recuperação personalizadas.
+        {/* Stats Card */}
+        <PremiumCard delay={0.1}>
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4">
+              <div className="h-16 w-16 mx-auto rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                <Flame className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Treinos nos últimos 14 dias</p>
+                <p className="text-4xl font-bold">{completedCount}</p>
+              </div>
+              <div className="flex justify-center gap-1">
+                {logs.slice(0, 7).map((log, i) => (
+                  <div
+                    key={log.id}
+                    className={cn(
+                      "h-8 w-8 rounded-lg flex items-center justify-center text-xs font-medium",
+                      log.completed 
+                        ? "bg-primary/20 text-primary" 
+                        : "bg-muted/30 text-muted-foreground"
+                    )}
+                  >
+                    {format(new Date(log.date), "dd")}
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Dica: Mantenha consistência com 3-5 treinos por semana
               </p>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </PremiumCard>
+      </div>
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-medium tracking-tight">Últimos treinos</h2>
-        <Card className="p-4 space-y-2 max-h-64 overflow-y-auto">
-          {loading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-36" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          ) : logs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum treino registrado ainda.</p>
-          ) : (
-            logs.map((log) => (
-              <div
-                key={log.id}
-                className="flex items-center justify-between text-xs py-1 border-b last:border-0"
-              >
-                <div className="flex items-center gap-2">
-                  <Dumbbell className="h-3 w-3" />
-                  <span>{format(new Date(log.date), "dd/MM", { locale: ptBR })}</span>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium">
-                    {log.completed ? "Concluído" : "Pendente"}
-                    {log.intensity && ` • Int. ${log.intensity}`}
-                  </p>
-                </div>
+      {/* History Section */}
+      <section className="space-y-4">
+        <SectionHeader title="Últimos treinos" />
+        <PremiumCard>
+          <CardContent className="pt-4 max-h-64 overflow-y-auto">
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-12 w-full rounded-xl" />
+                ))}
               </div>
-            ))
-          )}
-        </Card>
+            ) : logs.length === 0 ? (
+              <div className="py-8 text-center">
+                <Dumbbell className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
+                <p className="text-sm text-muted-foreground">Nenhum treino registrado ainda.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {logs.map((log, idx) => (
+                  <motion.div
+                    key={log.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/20"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "h-10 w-10 rounded-lg flex items-center justify-center",
+                        log.completed ? "bg-emerald-500/20" : "bg-muted/50"
+                      )}>
+                        <Dumbbell className={cn("h-4 w-4", log.completed ? "text-emerald-500" : "text-muted-foreground")} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{format(new Date(log.date), "EEEE, dd/MM", { locale: ptBR })}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {log.completed ? "Concluído" : "Pendente"}
+                          {log.intensity && ` • Intensidade ${log.intensity}`}
+                        </p>
+                      </div>
+                    </div>
+                    {log.completed && <CheckCircle2 className="h-5 w-5 text-emerald-500" />}
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </PremiumCard>
       </section>
-    </div>
+    </motion.div>
   );
 };
 
