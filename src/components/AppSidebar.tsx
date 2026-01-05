@@ -89,7 +89,7 @@ export function AppSidebar() {
                 <img
                   src={dietafyWatermelon}
                   alt="Dietafy"
-                  className="h-6 w-6 md:h-6 md:w-6 lg:h-7 lg:w-7"
+                  className="h-8 w-auto object-contain"
                 />
               ) : (
                 <img
