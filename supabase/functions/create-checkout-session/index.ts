@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     });
 
     // Default price ID for premium plan with trial
-    const defaultPriceId = "price_1RQ5wJCKSMBjAqEO1nIH1V6Y";
+    const defaultPriceId = "price_1SmP6EEO389b8oKoU3686BlM";
     const finalPriceId = priceId || defaultPriceId;
 
     console.log(`Creating checkout session for email: ${email}, origin: ${origin}`);
