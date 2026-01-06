@@ -231,7 +231,7 @@ const Landing = () => {
             >
               {[
                 { icon: ShieldCheck, text: "7 dias de garantia" },
-                { icon: Lock, text: "Pagamento 100% seguro" },
+                { icon: Users, text: "+2.500 pessoas transformadas" },
                 { icon: Check, text: "Sem fidelidade" },
               ].map((item, i) => (
                 <span key={i} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -826,26 +826,33 @@ const Landing = () => {
 
                     {plan.featured && (
                       <div className="mt-6 pt-6 border-t border-border/50">
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#635BFF]/10 border border-[#635BFF]/20 transition-all hover:bg-[#635BFF]/15 hover:scale-105">
-                            <svg className="h-5 w-auto" viewBox="0 0 60 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M59.64 14.28C59.64 8.77 56.68 4.66 51.44 4.66C46.18 4.66 42.7 8.77 42.7 14.23C42.7 20.67 46.78 24 51.93 24C54.45 24 56.37 23.44 57.82 22.66V18.56C56.37 19.28 54.68 19.73 52.52 19.73C50.4 19.73 48.55 18.99 48.3 16.49H59.59C59.59 16.22 59.64 14.93 59.64 14.28ZM48.22 12.88C48.22 10.49 49.74 9.47 51.42 9.47C53.06 9.47 54.49 10.49 54.49 12.88H48.22Z" fill="#635BFF"/>
-                              <path d="M36.95 4.66C34.81 4.66 33.42 5.66 32.65 6.38L32.39 4.98H27.3V28L32.87 26.81L32.89 22.63C33.68 23.2 34.85 24 36.93 24C41.17 24 45.03 20.67 45.03 14.18C45.01 8.24 41.11 4.66 36.95 4.66ZM35.69 19.47C34.25 19.47 33.4 18.95 32.89 18.31L32.87 10.54C33.42 9.84 34.29 9.34 35.69 9.34C37.96 9.34 39.54 11.84 39.54 14.39C39.54 17 37.98 19.47 35.69 19.47Z" fill="#635BFF"/>
-                              <path d="M22.46 3.42L28.05 2.21V-2L22.46 -0.77V3.42Z" fill="#635BFF"/>
-                              <path d="M28.05 5.01H22.46V23.68H28.05V5.01Z" fill="#635BFF"/>
-                              <path d="M18.76 6.53L18.42 5.01H13.43V23.68H18.99V10.96C20.31 9.24 22.54 9.57 23.22 9.82V5.01C22.52 4.74 19.96 4.23 18.76 6.53Z" fill="#635BFF"/>
-                              <path d="M7.62 1.68L2.16 2.87L2.14 19.02C2.14 21.85 4.24 24 7.07 24C8.64 24 9.79 23.7 10.42 23.34V19.11C9.81 19.38 7.6 20.06 7.6 17.23V9.68H10.42V5.01H7.6L7.62 1.68Z" fill="#635BFF"/>
-                            </svg>
-                            <span className="text-xs font-medium text-[#635BFF]">Powered by Stripe</span>
+                        <div className="flex flex-col items-center gap-4">
+                          {/* Premium Stripe Badge */}
+                          <div className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-[#635BFF]/5 via-[#635BFF]/10 to-[#635BFF]/5 border border-[#635BFF]/20 transition-all duration-300 hover:border-[#635BFF]/40 hover:shadow-lg hover:shadow-[#635BFF]/10 group">
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#635BFF] to-[#7B73FF] flex items-center justify-center shadow-lg shadow-[#635BFF]/30 group-hover:scale-110 transition-transform">
+                              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z" fill="white"/>
+                              </svg>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-[#635BFF]">Pagamento seguro via Stripe</span>
+                              <span className="text-[11px] text-muted-foreground">Usado por Shopify, Amazon e milhões de empresas</span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
+                          
+                          {/* Security badges */}
+                          <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] text-muted-foreground">
+                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                               <Lock className="h-3 w-3" />
                               SSL 256-bit
                             </span>
-                            <span className="flex items-center gap-1">
+                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                               <ShieldCheck className="h-3 w-3" />
-                              100% Seguro
+                              PCI DSS Nível 1
+                            </span>
+                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                              <Check className="h-3 w-3" />
+                              Dados protegidos
                             </span>
                           </div>
                         </div>
