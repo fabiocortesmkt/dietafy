@@ -6,6 +6,28 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
 
+async function sendNotification(supabaseUrl: string, functionName: string, payload: object, anonKey: string) {
+  try {
+    const response = await fetch(`${supabaseUrl}/functions/v1/${functionName}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${anonKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    
+    if (!response.ok) {
+      const error = await response.text();
+      console.error(`Error calling ${functionName}:`, error);
+    } else {
+      console.log(`✅ Successfully called ${functionName}`);
+    }
+  } catch (err) {
+    console.error(`Error invoking ${functionName}:`, err);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -53,6 +75,7 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
@@ -106,7 +129,7 @@ Deno.serve(async (req) => {
         // Check if user profile exists
         const { data: existingProfile } = await supabase
           .from("user_profiles")
-          .select("id")
+          .select("id, name, phone, whatsapp_opt_in")
           .eq("user_id", user.id)
           .maybeSingle();
 
@@ -128,10 +151,75 @@ Deno.serve(async (req) => {
             console.error("Error updating user profile:", updateError);
           } else {
             console.log(`Successfully updated user profile for ${user.id}`);
+            
+            // Send Day 0 notification
+            await sendNotification(supabaseUrl, 'trial-started-notification', {
+              user_id: user.id,
+              email: customerEmail,
+              name: existingProfile.name || user.user_metadata?.name || 'Usuário',
+              phone: existingProfile.phone,
+              whatsapp_opt_in: existingProfile.whatsapp_opt_in,
+            }, supabaseAnonKey);
           }
         } else {
           console.log(`User profile does not exist yet for ${user.id}, will be created during onboarding`);
+          
+          // Still send Day 0 notification with minimal data
+          await sendNotification(supabaseUrl, 'trial-started-notification', {
+            user_id: user.id,
+            email: customerEmail,
+            name: user.user_metadata?.name || 'Usuário',
+            phone: null,
+            whatsapp_opt_in: false,
+          }, supabaseAnonKey);
         }
+
+        break;
+      }
+
+      case "invoice.payment_succeeded": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
+        const subscriptionId = invoice.subscription as string;
+
+        console.log(`Invoice payment succeeded for customer: ${customerId}`);
+
+        // Skip if this is the first invoice (trial period)
+        // billing_reason will be 'subscription_create' for trial start
+        if (invoice.billing_reason === 'subscription_create') {
+          console.log('First invoice (trial start), skipping activation notification');
+          break;
+        }
+
+        // Find user by stripe_customer_id
+        const { data: profile, error: profileError } = await supabase
+          .from("user_profiles")
+          .select("user_id, name, phone, whatsapp_opt_in")
+          .eq("stripe_customer_id", customerId)
+          .maybeSingle();
+
+        if (profileError || !profile) {
+          console.error("User not found for customer:", customerId);
+          break;
+        }
+
+        // Get user email
+        const { data: authData } = await supabase.auth.admin.getUserById(profile.user_id);
+        const userEmail = authData?.user?.email;
+
+        if (!userEmail) {
+          console.error("No email found for user:", profile.user_id);
+          break;
+        }
+
+        // Send Day 3 activation notification
+        await sendNotification(supabaseUrl, 'trial-activated-notification', {
+          user_id: profile.user_id,
+          email: userEmail,
+          name: profile.name || 'Usuário',
+          phone: profile.phone,
+          whatsapp_opt_in: profile.whatsapp_opt_in,
+        }, supabaseAnonKey);
 
         break;
       }
