@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, Utensils, Dumbbell, TrendingUp, ArrowRight, ChevronDown, ShieldCheck, Lock, Star, Users, Zap, Sparkles } from "lucide-react";
+import { Check, Utensils, Dumbbell, TrendingUp, ArrowRight, ChevronDown, ShieldCheck, Lock, Star, Users, Zap, Sparkles, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -60,10 +60,12 @@ const Landing = () => {
     {
       name: "Gratuito",
       price: "R$ 0",
+      subtitle: "Para experimentar",
       features: [
         "Teste o acompanhamento",
-        "Conversas limitadas com a Vita",
+        "5 conversas com a Vita",
         "Acesso básico à plataforma",
+        "Registro de refeições limitado",
       ],
       cta: "Começar grátis",
       featured: false,
@@ -72,14 +74,18 @@ const Landing = () => {
       name: "Premium",
       price: "R$ 29,90",
       period: "/mês",
+      subtitle: "Acompanhamento completo",
+      savings: "Economize R$ 60/mês vs nutricionista",
       features: [
-        "Conversas ilimitadas",
-        "Acompanhamento completo",
+        "Conversas ilimitadas com a Vita",
+        "Acompanhamento 24/7 completo",
         "Integração com WhatsApp",
-        "Relatórios de evolução",
+        "Relatórios de evolução detalhados",
         "Suporte prioritário",
+        "Treinos personalizados",
+        "Análise de fotos de refeições",
       ],
-      cta: "Assinar Premium",
+      cta: "Começar agora →",
       featured: true,
     },
   ];
@@ -714,7 +720,7 @@ const Landing = () => {
       </section>
 
       {/* Pricing - Premium Cards */}
-      <section className="py-16 md:py-24 px-4 relative overflow-hidden">
+      <section id="planos" className="py-16 md:py-24 px-4 relative overflow-hidden">
         <div className="absolute inset-0 mesh-gradient-animated opacity-30" />
         <div className="container mx-auto relative z-10">
           <motion.div
@@ -724,16 +730,19 @@ const Landing = () => {
             viewport={{ once: true }}
             className="text-center mb-12 md:mb-16"
           >
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              <span>💰</span>{" "}
-              <span className="text-gradient">Planos</span>
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+              <Sparkles className="h-4 w-4" />
+              Investimento que se paga
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+              Escolha seu <span className="text-gradient">plano</span>
             </h2>
-            <p className="text-xl text-muted-foreground">
-              Comece grátis e evolua quando estiver pronto.
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+              Menos que um café por dia para transformar sua saúde
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto pt-6">
+          <div className="grid md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
             {pricingPlans.map((plan, idx) => (
               <motion.div
                 key={idx}
@@ -741,45 +750,66 @@ const Landing = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: idx * 0.15 }}
                 viewport={{ once: true }}
-                className={plan.featured ? "relative" : ""}
+                className={`relative ${plan.featured ? "md:-mt-4 md:mb-4" : ""}`}
               >
                 {plan.featured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-30">
-                    <span className="badge-premium-animated px-4 py-1.5 rounded-full text-sm font-bold text-primary-foreground shadow-lg whitespace-nowrap">
-                      <span className="relative z-10">⭐ Mais Popular</span>
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-30">
+                    <span className="badge-premium-animated px-5 py-2 rounded-full text-sm font-bold text-primary-foreground shadow-xl whitespace-nowrap flex items-center gap-2">
+                      <Star className="h-4 w-4 fill-current" />
+                      <span className="relative z-10">Mais Popular</span>
                     </span>
                   </div>
                 )}
                 <Card
-                  className={`relative h-full ${
+                  className={`relative h-full transition-all duration-300 ${
                     plan.featured
-                      ? "pricing-card-premium border-primary shadow-2xl"
-                      : "border"
+                      ? "pricing-card-premium border-2 border-primary shadow-2xl shadow-primary/20 scale-[1.02]"
+                      : "border border-border/50 hover:border-border hover:shadow-lg"
                   }`}
                 >
                   {plan.featured && (
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary rounded-t-lg" />
+                    <>
+                      <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary via-secondary to-primary rounded-t-lg" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 rounded-lg pointer-events-none" />
+                    </>
                   )}
-                  <CardContent className="pt-8 pb-6 relative z-10">
-                    <div className="text-center mb-6">
-                      <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                  <CardContent className="pt-10 pb-8 px-6 md:px-8 relative z-10">
+                    <div className="text-center mb-8">
+                      <h3 className="text-2xl md:text-3xl font-bold mb-1">{plan.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-4">{plan.subtitle}</p>
                       <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-4xl font-bold">{plan.price}</span>
+                        <span className={`text-5xl md:text-6xl font-bold ${plan.featured ? "text-gradient" : ""}`}>
+                          {plan.price}
+                        </span>
                         {plan.period && (
-                          <span className="text-muted-foreground">{plan.period}</span>
+                          <span className="text-lg text-muted-foreground">{plan.period}</span>
                         )}
                       </div>
+                      {plan.savings && (
+                        <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
+                          <TrendingUp className="h-3.5 w-3.5" />
+                          {plan.savings}
+                        </div>
+                      )}
                     </div>
-                    <ul className="space-y-3 mb-6">
+                    
+                    <ul className="space-y-3 mb-8">
                       {plan.features.map((feature, fIdx) => (
-                        <li key={fIdx} className="flex items-start gap-2">
-                          <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                          <span>{feature}</span>
+                        <li key={fIdx} className="flex items-start gap-3">
+                          <div className={`shrink-0 mt-0.5 h-5 w-5 rounded-full flex items-center justify-center ${
+                            plan.featured ? "bg-primary/20" : "bg-muted"
+                          }`}>
+                            <Check className={`h-3 w-3 ${plan.featured ? "text-primary" : "text-muted-foreground"}`} />
+                          </div>
+                          <span className={plan.featured ? "text-foreground" : "text-muted-foreground"}>
+                            {feature}
+                          </span>
                         </li>
                       ))}
                     </ul>
+                    
                     <Button
-                      className={`w-full ${plan.featured ? "pulse-glow-cta" : ""}`}
+                      className={`w-full text-base py-6 ${plan.featured ? "pulse-glow-cta" : ""}`}
                       variant={plan.featured ? "default" : "outline"}
                       size="lg"
                       onClick={() => {
@@ -793,11 +823,67 @@ const Landing = () => {
                     >
                       {plan.cta}
                     </Button>
+
+                    {plan.featured && (
+                      <div className="mt-6 pt-6 border-t border-border/50">
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#635BFF]/10 border border-[#635BFF]/20 transition-all hover:bg-[#635BFF]/15 hover:scale-105">
+                            <svg className="h-5 w-auto" viewBox="0 0 60 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M59.64 14.28C59.64 8.77 56.68 4.66 51.44 4.66C46.18 4.66 42.7 8.77 42.7 14.23C42.7 20.67 46.78 24 51.93 24C54.45 24 56.37 23.44 57.82 22.66V18.56C56.37 19.28 54.68 19.73 52.52 19.73C50.4 19.73 48.55 18.99 48.3 16.49H59.59C59.59 16.22 59.64 14.93 59.64 14.28ZM48.22 12.88C48.22 10.49 49.74 9.47 51.42 9.47C53.06 9.47 54.49 10.49 54.49 12.88H48.22Z" fill="#635BFF"/>
+                              <path d="M36.95 4.66C34.81 4.66 33.42 5.66 32.65 6.38L32.39 4.98H27.3V28L32.87 26.81L32.89 22.63C33.68 23.2 34.85 24 36.93 24C41.17 24 45.03 20.67 45.03 14.18C45.01 8.24 41.11 4.66 36.95 4.66ZM35.69 19.47C34.25 19.47 33.4 18.95 32.89 18.31L32.87 10.54C33.42 9.84 34.29 9.34 35.69 9.34C37.96 9.34 39.54 11.84 39.54 14.39C39.54 17 37.98 19.47 35.69 19.47Z" fill="#635BFF"/>
+                              <path d="M22.46 3.42L28.05 2.21V-2L22.46 -0.77V3.42Z" fill="#635BFF"/>
+                              <path d="M28.05 5.01H22.46V23.68H28.05V5.01Z" fill="#635BFF"/>
+                              <path d="M18.76 6.53L18.42 5.01H13.43V23.68H18.99V10.96C20.31 9.24 22.54 9.57 23.22 9.82V5.01C22.52 4.74 19.96 4.23 18.76 6.53Z" fill="#635BFF"/>
+                              <path d="M7.62 1.68L2.16 2.87L2.14 19.02C2.14 21.85 4.24 24 7.07 24C8.64 24 9.79 23.7 10.42 23.34V19.11C9.81 19.38 7.6 20.06 7.6 17.23V9.68H10.42V5.01H7.6L7.62 1.68Z" fill="#635BFF"/>
+                            </svg>
+                            <span className="text-xs font-medium text-[#635BFF]">Powered by Stripe</span>
+                          </div>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Lock className="h-3 w-3" />
+                              SSL 256-bit
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <ShieldCheck className="h-3 w-3" />
+                              100% Seguro
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
             ))}
           </div>
+
+          {/* Trust indicators below pricing */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            viewport={{ once: true }}
+            className="mt-12 flex flex-wrap items-center justify-center gap-6 md:gap-10 text-sm text-muted-foreground"
+          >
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                <ShieldCheck className="h-4 w-4 text-emerald-500" />
+              </div>
+              <span>7 dias de garantia</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <Zap className="h-4 w-4 text-primary" />
+              </div>
+              <span>Acesso imediato</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                <X className="h-4 w-4 text-secondary" />
+              </div>
+              <span>Cancele quando quiser</span>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -838,20 +924,29 @@ const Landing = () => {
                 ))}
               </ul>
 
-              {/* Stripe Badge */}
-              <div className="flex items-center gap-3 mt-4 pt-4 border-t border-border/50">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#635BFF]/10 border border-[#635BFF]/20">
-                  <svg className="h-5 w-auto" viewBox="0 0 60 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M59.64 14.28C59.64 8.77 56.68 4.66 51.44 4.66C46.18 4.66 42.7 8.77 42.7 14.23C42.7 20.67 46.78 24 51.93 24C54.45 24 56.37 23.44 57.82 22.66V18.56C56.37 19.28 54.68 19.73 52.52 19.73C50.4 19.73 48.55 18.99 48.3 16.49H59.59C59.59 16.22 59.64 14.93 59.64 14.28ZM48.22 12.88C48.22 10.49 49.74 9.47 51.42 9.47C53.06 9.47 54.49 10.49 54.49 12.88H48.22Z" fill="#635BFF"/>
-                    <path d="M36.95 4.66C34.81 4.66 33.42 5.66 32.65 6.38L32.39 4.98H27.3V28L32.87 26.81L32.89 22.63C33.68 23.2 34.85 24 36.93 24C41.17 24 45.03 20.67 45.03 14.18C45.01 8.24 41.11 4.66 36.95 4.66ZM35.69 19.47C34.25 19.47 33.4 18.95 32.89 18.31L32.87 10.54C33.42 9.84 34.29 9.34 35.69 9.34C37.96 9.34 39.54 11.84 39.54 14.39C39.54 17 37.98 19.47 35.69 19.47Z" fill="#635BFF"/>
-                    <path d="M22.46 3.42L28.05 2.21V-2L22.46 -0.77V3.42Z" fill="#635BFF"/>
-                    <path d="M28.05 5.01H22.46V23.68H28.05V5.01Z" fill="#635BFF"/>
-                    <path d="M18.76 6.53L18.42 5.01H13.43V23.68H18.99V10.96C20.31 9.24 22.54 9.57 23.22 9.82V5.01C22.52 4.74 19.96 4.23 18.76 6.53Z" fill="#635BFF"/>
-                    <path d="M7.62 1.68L2.16 2.87L2.14 19.02C2.14 21.85 4.24 24 7.07 24C8.64 24 9.79 23.7 10.42 23.34V19.11C9.81 19.38 7.6 20.06 7.6 17.23V9.68H10.42V5.01H7.6L7.62 1.68Z" fill="#635BFF"/>
-                  </svg>
-                  <span className="text-xs font-medium text-[#635BFF]">Powered by Stripe</span>
+              {/* Stripe Badge - Premium Design */}
+              <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 pt-4 border-t border-border/50">
+                <div className="group flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#635BFF]/10 to-[#635BFF]/5 border border-[#635BFF]/20 transition-all duration-300 hover:from-[#635BFF]/15 hover:to-[#635BFF]/10 hover:border-[#635BFF]/30 hover:shadow-lg hover:shadow-[#635BFF]/10">
+                  <div className="h-8 w-8 rounded-lg bg-[#635BFF] flex items-center justify-center shadow-md">
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z" fill="white"/>
+                    </svg>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-[#635BFF]">Powered by Stripe</span>
+                    <span className="text-[10px] text-muted-foreground">Pagamento 100% seguro</span>
+                  </div>
                 </div>
-                <span className="text-xs text-muted-foreground">Criptografia SSL 256-bit</span>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/50">
+                    <Lock className="h-3 w-3 text-emerald-500" />
+                    SSL 256-bit
+                  </span>
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted/50">
+                    <ShieldCheck className="h-3 w-3 text-emerald-500" />
+                    PCI DSS
+                  </span>
+                </div>
               </div>
             </div>
 
