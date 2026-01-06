@@ -1,5 +1,4 @@
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,6 +15,7 @@ Deno.serve(async (req) => {
     const { email, fullName, origin, priceId } = await req.json();
 
     if (!email || !origin) {
+      console.error("Missing required fields: email or origin");
       return new Response(
         JSON.stringify({ error: "Email and origin are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     const defaultPriceId = "price_1SmP6EEO389b8oKoU3686BlM";
     const finalPriceId = priceId || defaultPriceId;
 
-    console.log(`Creating checkout session for email: ${email}, origin: ${origin}`);
+    console.log(`Creating checkout session for email: ${email}, priceId: ${finalPriceId}, origin: ${origin}`);
 
     // Check if customer already exists
     const existingCustomers = await stripe.customers.list({ email, limit: 1 });
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      payment_method_collection: "always", // Force card collection even for trial
+      payment_method_collection: "always",
       customer: customerId,
       customer_email: customerId ? undefined : email,
       line_items: [
@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
       },
     });
 
-    console.log(`Checkout session created: ${session.id}, URL: ${session.url}`);
+    console.log(`Checkout session created successfully: ${session.id}, URL: ${session.url}`);
 
     return new Response(
       JSON.stringify({ url: session.url, sessionId: session.id }),
