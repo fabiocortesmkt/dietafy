@@ -172,6 +172,45 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          created_at: string
+          email_to: string
+          email_type: string
+          error_message: string | null
+          function_name: string
+          id: string
+          provider_response: Json | null
+          status: string
+          subject: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email_to: string
+          email_type: string
+          error_message?: string | null
+          function_name: string
+          id?: string
+          provider_response?: Json | null
+          status?: string
+          subject?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email_to?: string
+          email_type?: string
+          error_message?: string | null
+          function_name?: string
+          id?: string
+          provider_response?: Json | null
+          status?: string
+          subject?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       exercise_logs: {
         Row: {
           completed_at: string
