@@ -326,6 +326,22 @@ const Onboarding = () => {
         });
       }
 
+      // Send welcome email after onboarding completion (fire-and-forget)
+      supabase.functions.invoke("notify-new-signup", {
+        body: {
+          type: "INSERT",
+          table: "users",
+          record: {
+            id: userId,
+            email: userEmail,
+            created_at: new Date().toISOString(),
+            raw_user_meta_data: { full_name: values.full_name },
+          },
+        },
+      }).catch((err) => {
+        console.error("Failed to send welcome email:", err);
+      });
+
       // Show success screen
       setShowSuccess(true);
       
