@@ -306,7 +306,7 @@ const TrackTabs = ({ user }: TrackTabsProps) => {
         {/* Premium Tab List - Horizontal scroll on mobile */}
             <motion.div variants={itemVariants}>
               <div className="pb-2">
-                <TabsList className="grid grid-cols-3 md:inline-flex gap-2 bg-transparent p-2 w-full md:w-auto">
+                <TabsList className="grid grid-cols-3 md:inline-flex gap-2 bg-transparent p-2 w-full md:w-auto h-auto">
               {tabConfig.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = currentTab === tab.id;
