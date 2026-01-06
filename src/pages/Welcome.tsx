@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check, Sparkles, Clock, ArrowRight } from "lucide-react";
+import { Check, Sparkles, Clock, ArrowRight, Loader2 } from "lucide-react";
 import { launchConfetti } from "@/lib/confetti";
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 // Declaração para evitar erros TypeScript com Meta Pixel
 declare global {
@@ -14,6 +15,8 @@ declare global {
 
 const Welcome = () => {
   const navigate = useNavigate();
+  const [sendingNotifications, setSendingNotifications] = useState(false);
+  const notificationsSentRef = useRef(false);
 
   useEffect(() => {
     // Dispara evento de Purchase no Meta Pixel para otimização de campanhas
@@ -30,6 +33,70 @@ const Welcome = () => {
     launchConfetti();
     // Second burst for extra celebration
     const timer = setTimeout(() => launchConfetti(), 500);
+
+    // Send welcome notifications (email + WhatsApp) - only once
+    const sendNotifications = async () => {
+      if (notificationsSentRef.current) return;
+      notificationsSentRef.current = true;
+
+      setSendingNotifications(true);
+
+      try {
+        // Get onboarding data from localStorage
+        const onboardingDataStr = localStorage.getItem('onboarding_data');
+        if (!onboardingDataStr) {
+          console.log('No onboarding data found in localStorage');
+          setSendingNotifications(false);
+          return;
+        }
+
+        const onboardingData = JSON.parse(onboardingDataStr);
+        const { full_name, whatsapp_phone, whatsapp_opt_in, user_id, email } = onboardingData;
+
+        // Send welcome email
+        if (email) {
+          supabase.functions.invoke("notify-new-signup", {
+            body: {
+              type: "INSERT",
+              table: "users",
+              record: {
+                id: user_id,
+                email: email,
+                created_at: new Date().toISOString(),
+                raw_user_meta_data: { full_name: full_name },
+              },
+            },
+          }).catch((err) => {
+            console.error("Failed to send welcome email:", err);
+          });
+          console.log('Welcome email triggered');
+        }
+
+        // Send WhatsApp welcome message if user opted in
+        if (whatsapp_phone && whatsapp_opt_in) {
+          supabase.functions.invoke("whatsapp-welcome", {
+            body: {
+              phone: whatsapp_phone,
+              name: full_name,
+              user_id: user_id,
+            },
+          }).catch((err) => {
+            console.error("Failed to send WhatsApp welcome:", err);
+          });
+          console.log('WhatsApp welcome triggered');
+        }
+
+        // Clear the onboarding data from localStorage after sending
+        localStorage.removeItem('onboarding_data');
+      } catch (error) {
+        console.error('Error sending notifications:', error);
+      } finally {
+        setSendingNotifications(false);
+      }
+    };
+
+    sendNotifications();
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -154,12 +221,22 @@ const Welcome = () => {
               className="pt-2"
             >
               <Button
-                onClick={() => navigate("/onboarding")}
+                onClick={() => navigate("/dashboard")}
+                disabled={sendingNotifications}
                 className="w-full h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02]"
                 size="lg"
               >
-                Começar agora
-                <ArrowRight className="ml-2 w-5 h-5" />
+                {sendingNotifications ? (
+                  <>
+                    <Loader2 className="mr-2 w-5 h-5 animate-spin" />
+                    Preparando...
+                  </>
+                ) : (
+                  <>
+                    Acessar meu painel
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </>
+                )}
               </Button>
             </motion.div>
 

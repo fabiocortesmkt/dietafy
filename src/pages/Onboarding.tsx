@@ -313,43 +313,34 @@ const Onboarding = () => {
 
       if (error) throw error;
 
-      // Send WhatsApp welcome message if user opted in (fire-and-forget)
-      if (values.whatsapp_phone && values.whatsapp_opt_in) {
-        supabase.functions.invoke("whatsapp-welcome", {
-          body: {
-            phone: values.whatsapp_phone,
-            name: values.full_name,
-            user_id: userId,
-          },
-        }).catch((err) => {
-          console.error("Failed to send WhatsApp welcome:", err);
+      // Dispara evento InitiateCheckout no Meta Pixel antes de ir pro Stripe
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'InitiateCheckout', {
+          value: 29.90,
+          currency: 'BRL',
+          content_name: 'Dietafy Premium Trial',
+          content_type: 'subscription',
         });
+        console.log('Meta Pixel: InitiateCheckout event fired');
       }
 
-      // Send welcome email after onboarding completion (fire-and-forget)
-      supabase.functions.invoke("notify-new-signup", {
-        body: {
-          type: "INSERT",
-          table: "users",
-          record: {
-            id: userId,
-            email: userEmail,
-            created_at: new Date().toISOString(),
-            raw_user_meta_data: { full_name: values.full_name },
-          },
-        },
-      }).catch((err) => {
-        console.error("Failed to send welcome email:", err);
+      // Store onboarding data in localStorage to use for notifications after Stripe
+      localStorage.setItem('onboarding_data', JSON.stringify({
+        full_name: values.full_name,
+        whatsapp_phone: values.whatsapp_phone,
+        whatsapp_opt_in: values.whatsapp_opt_in,
+        user_id: userId,
+        email: userEmail,
+      }));
+
+      toast({
+        title: "Perfil salvo!",
+        description: "Redirecionando para o checkout...",
       });
 
-      // Show success screen
-      setShowSuccess(true);
-      
-      // Launch single premium confetti from top!
-      setTimeout(() => launchConfettiPremium(), 500);
-
-      // Navigate to dashboard after animation
-      setTimeout(() => navigate("/dashboard"), 4000);
+      // Redirect to Stripe Payment Link with 3-day trial
+      const stripeCheckoutUrl = `https://buy.stripe.com/3cI5kD7NbeuH1yQ6kJ7bW01?prefilled_email=${encodeURIComponent(userEmail || '')}`;
+      window.location.href = stripeCheckoutUrl;
     } catch (error: any) {
       toast({
         title: "Erro ao salvar",

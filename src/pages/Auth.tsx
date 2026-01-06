@@ -62,29 +62,6 @@ const Auth = () => {
         return;
       }
 
-      // Check if stripe checkout is pending from user metadata
-      if (userMetadata?.stripe_checkout_pending === true) {
-        // Check if user has completed stripe checkout by looking at profile
-        const { data: profile } = await supabase
-          .from("user_profiles")
-          .select("stripe_checkout_pending, plan_type")
-          .eq("user_id", userId)
-          .maybeSingle();
-
-        // If profile exists and checkout is not pending, or plan is premium, proceed
-        if (profile && (profile.stripe_checkout_pending === false || profile.plan_type === "premium")) {
-          // Update user metadata to remove pending flag
-          await supabase.auth.updateUser({
-            data: { stripe_checkout_pending: false }
-          });
-        } else {
-          // Redirect back to Stripe Payment Link
-          const stripeCheckoutUrl = `https://buy.stripe.com/3cI5kD7NbeuH1yQ6kJ7bW01?prefilled_email=${encodeURIComponent(userEmail || '')}`;
-          window.location.href = stripeCheckoutUrl;
-          return;
-        }
-      }
-
       // Fluxo normal para usuários finais
       const { data, error } = await supabase
         .from("user_profiles")
@@ -190,35 +167,18 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/welcome`,
+            emailRedirectTo: `${window.location.origin}/onboarding`,
             data: {
               full_name: fullName.trim(),
-              stripe_checkout_pending: true,
             },
           },
         });
         if (error) throw error;
 
-        // Dispara evento InitiateCheckout no Meta Pixel
-        if (typeof window !== 'undefined' && window.fbq) {
-          window.fbq('track', 'InitiateCheckout', {
-            value: 29.90,
-            currency: 'BRL',
-            content_name: 'Dietafy Premium Trial',
-            content_type: 'subscription',
-          });
-          console.log('Meta Pixel: InitiateCheckout event fired');
-        }
-
         toast({
           title: "Conta criada!",
-          description: "Redirecionando para o checkout...",
+          description: "Redirecionando para o onboarding...",
         });
-
-        // Redirect to Stripe Payment Link with prefilled email
-        const stripeCheckoutUrl = `https://buy.stripe.com/3cI5kD7NbeuH1yQ6kJ7bW01?prefilled_email=${encodeURIComponent(email)}`;
-        window.location.href = stripeCheckoutUrl;
-        return;
       }
     } catch (error: any) {
       toast({
