@@ -5,10 +5,28 @@ import { Check, Sparkles, Clock, ArrowRight } from "lucide-react";
 import { launchConfetti } from "@/lib/confetti";
 import { useEffect } from "react";
 
+// Declaração para evitar erros TypeScript com Meta Pixel
+declare global {
+  interface Window {
+    fbq?: (...args: unknown[]) => void;
+  }
+}
+
 const Welcome = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Dispara evento de Purchase no Meta Pixel para otimização de campanhas
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'Purchase', {
+        value: 29.90,
+        currency: 'BRL',
+        content_name: 'Dietafy Premium Trial',
+        content_type: 'subscription',
+      });
+      console.log('Meta Pixel: Purchase event fired - R$ 29,90');
+    }
+
     launchConfetti();
     // Second burst for extra celebration
     const timer = setTimeout(() => launchConfetti(), 500);
