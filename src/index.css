@@ -198,6 +198,13 @@ All colors MUST be HSL.
     border-color: hsl(var(--border) / 0.6);
   }
 
+  /* Mobile: larger touch targets */
+  @media (max-width: 640px) {
+    .option-card {
+      @apply px-5 py-4 min-h-[56px];
+    }
+  }
+
   .option-card:hover {
     @apply border-primary/40;
     background: hsl(var(--primary) / 0.05);
