@@ -1505,6 +1505,7 @@ const SonoTab = ({ userId }: { userId: string }) => {
         return {
           dateLabel: format(new Date(log.date), "dd/MM"),
           hours: diff,
+          quality: log.quality_score,
         };
       }),
     [logs],
@@ -1517,6 +1518,18 @@ const SonoTab = ({ userId }: { userId: string }) => {
     { id: "descansei_bem", label: "Descansei bem", icon: "😌" },
   ];
 
+  // Calculate stats
+  const avgHours = chartData.length > 0 
+    ? chartData.reduce((acc, d) => acc + d.hours, 0) / chartData.length 
+    : null;
+  const avgQuality = chartData.length > 0 
+    ? chartData.reduce((acc, d) => acc + d.quality, 0) / chartData.length 
+    : null;
+  const lastLog = logs.length > 0 ? logs[logs.length - 1] : null;
+  const lastHours = lastLog 
+    ? (new Date(lastLog.wake_time).getTime() - new Date(lastLog.sleep_time).getTime()) / (1000 * 60 * 60)
+    : null;
+
   return (
     <motion.div 
       className="space-y-6"
@@ -1524,118 +1537,276 @@ const SonoTab = ({ userId }: { userId: string }) => {
       animate="visible"
       variants={containerVariants}
     >
-      <PremiumCard>
+      {/* Stats Cards Row */}
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+        {/* Last Night Card */}
+        <PremiumCard className="col-span-1">
+          <CardContent className="pt-5 pb-4">
+            <div className="text-center space-y-1.5">
+              <div className="h-11 w-11 mx-auto rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
+                <Moon className="h-5 w-5 text-indigo-500" />
+              </div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-2">Última noite</p>
+              <p className="text-xl sm:text-2xl font-bold">{lastHours?.toFixed(1) ?? "--"}<span className="text-sm font-normal text-muted-foreground">h</span></p>
+            </div>
+          </CardContent>
+        </PremiumCard>
+
+        {/* Quality Card */}
+        <PremiumCard className="col-span-1" delay={0.05}>
+          <CardContent className="pt-5 pb-4">
+            <div className="text-center space-y-1.5">
+              <div className="h-11 w-11 mx-auto rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-purple-500" />
+              </div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-2">Qualidade</p>
+              <p className="text-xl sm:text-2xl font-bold">{lastLog?.quality_score ?? "--"}<span className="text-sm font-normal text-muted-foreground">/10</span></p>
+            </div>
+          </CardContent>
+        </PremiumCard>
+
+        {/* Avg Hours Card */}
+        <PremiumCard className="col-span-1" delay={0.1}>
+          <CardContent className="pt-5 pb-4">
+            <div className="text-center space-y-1.5">
+              <div className="h-11 w-11 mx-auto rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
+                <Clock className="h-5 w-5 text-blue-500" />
+              </div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-2">Média 7d</p>
+              <p className="text-xl sm:text-2xl font-bold">{avgHours?.toFixed(1) ?? "--"}<span className="text-sm font-normal text-muted-foreground">h</span></p>
+            </div>
+          </CardContent>
+        </PremiumCard>
+
+        {/* Avg Quality Card */}
+        <PremiumCard className="col-span-1" delay={0.15}>
+          <CardContent className="pt-5 pb-4">
+            <div className="text-center space-y-1.5">
+              <div className="h-11 w-11 mx-auto rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center">
+                <Brain className="h-5 w-5 text-emerald-500" />
+              </div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-2">Bem-estar</p>
+              <div className={cn(
+                "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium mt-1",
+                avgQuality && avgQuality >= 7 ? "bg-emerald-500/10 text-emerald-600" : 
+                avgQuality && avgQuality >= 5 ? "bg-amber-500/10 text-amber-600" : 
+                avgQuality ? "bg-rose-500/10 text-rose-600" : "bg-muted text-muted-foreground"
+              )}>
+                {avgQuality ? (avgQuality >= 7 ? "Ótimo" : avgQuality >= 5 ? "Regular" : "Baixo") : "--"}
+              </div>
+            </div>
+          </CardContent>
+        </PremiumCard>
+      </div>
+
+      {/* Main Form Card */}
+      <PremiumCard delay={0.2}>
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
               <Moon className="h-5 w-5 text-indigo-500" />
             </div>
             <div>
-              <CardTitle className="text-base">Registro de sono</CardTitle>
-              <CardDescription className="text-xs">Entenda como a qualidade do sono influencia seus resultados</CardDescription>
+              <CardTitle className="text-base">Registrar sono</CardTitle>
+              <CardDescription className="text-xs">A qualidade do sono influencia diretamente seus resultados</CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground">Data</label>
-                <Input 
-                  type="date" 
-                  value={date} 
-                  onChange={(e) => setDate(e.target.value)}
-                  className="rounded-xl border-border/50"
+        <CardContent className="space-y-5">
+          {/* Date Picker */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">Data</label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal rounded-xl border-border/50 bg-background/50 hover:bg-muted/50",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center mr-3">
+                    <CalendarIcon className="h-4 w-4 text-indigo-500" />
+                  </div>
+                  {date 
+                    ? format(new Date(date + "T12:00:00"), "dd 'de' MMM, yyyy", { locale: ptBR }) 
+                    : "Selecionar data"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-card/95 backdrop-blur-xl border-border/50" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date ? new Date(date + "T12:00:00") : undefined}
+                  onSelect={(d) => d && setDate(format(d, "yyyy-MM-dd"))}
+                  disabled={(d) => d > new Date()}
+                  initialFocus
+                  locale={ptBR}
+                  className="pointer-events-auto"
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                    <Moon className="h-3 w-3" /> Dormiu
-                  </label>
-                  <Input 
-                    type="time" 
-                    value={sleepTime} 
-                    onChange={(e) => setSleepTime(e.target.value)}
-                    className="rounded-xl border-border/50"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                    <Clock className="h-3 w-3" /> Acordou
-                  </label>
-                  <Input 
-                    type="time" 
-                    value={wakeTime} 
-                    onChange={(e) => setWakeTime(e.target.value)}
-                    className="rounded-xl border-border/50"
-                  />
-                </div>
-              </div>
-              <div className="p-3 rounded-xl bg-indigo-500/10 text-center">
-                <p className="text-xs text-muted-foreground">Total estimado</p>
-                <p className="text-2xl font-bold text-indigo-600">{hours.toFixed(1)}h</p>
-              </div>
-            </div>
+              </PopoverContent>
+            </Popover>
+          </div>
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground flex items-center justify-between">
-                  <span>Qualidade do sono</span>
-                  <span className="text-lg font-bold text-indigo-600">{quality}/10</span>
-                </label>
-                <Slider
-                  min={0}
-                  max={10}
-                  step={1}
-                  value={[quality]}
-                  onValueChange={(value: number[]) => setQuality(value[0] ?? 0)}
-                  className="py-2"
-                />
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">Como você se sentiu?</p>
-                <div className="flex flex-wrap gap-2">
-                  {tagOptions.map((tag) => {
-                    const active = selectedTags.includes(tag.id);
-                    return (
-                      <motion.button
-                        key={tag.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedTags((prev) =>
-                            prev.includes(tag.id) ? prev.filter((t) => t !== tag.id) : [...prev, tag.id],
-                          );
-                        }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={cn(
-                          "px-3 py-1.5 rounded-xl border text-xs flex items-center gap-1.5 transition-all",
-                          active 
-                            ? "bg-indigo-500/20 border-indigo-500/30 text-indigo-600" 
-                            : "bg-muted/30 border-border/30 text-muted-foreground hover:bg-muted/50"
-                        )}
-                      >
-                        <span>{tag.icon}</span>
-                        {tag.label}
-                      </motion.button>
-                    );
-                  })}
+          {/* Time Inputs with Premium Styling */}
+          <div className="grid grid-cols-2 gap-4">
+            <motion.div
+              className="relative overflow-hidden rounded-2xl border-2 p-4 transition-all duration-300 border-indigo-500/30 bg-gradient-to-br from-indigo-500/5 to-purple-500/5"
+              whileHover={{ scale: 1.01 }}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500/30 to-purple-500/30 flex items-center justify-center">
+                  <Moon className="h-4 w-4 text-indigo-500" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium">Dormiu às</p>
+                  <p className="text-[10px] text-muted-foreground">Início do sono</p>
                 </div>
               </div>
-              <Button onClick={saveSleep} className="w-full rounded-xl">
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                Salvar sono
-              </Button>
+              <Input 
+                type="time" 
+                value={sleepTime} 
+                onChange={(e) => setSleepTime(e.target.value)}
+                className="rounded-xl border-indigo-500/20 bg-indigo-500/5 text-center text-lg font-semibold focus:border-indigo-500/50"
+              />
+            </motion.div>
+
+            <motion.div
+              className="relative overflow-hidden rounded-2xl border-2 p-4 transition-all duration-300 border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-orange-500/5"
+              whileHover={{ scale: 1.01 }}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-500/30 to-orange-500/30 flex items-center justify-center">
+                  <Clock className="h-4 w-4 text-amber-500" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium">Acordou às</p>
+                  <p className="text-[10px] text-muted-foreground">Fim do sono</p>
+                </div>
+              </div>
+              <Input 
+                type="time" 
+                value={wakeTime} 
+                onChange={(e) => setWakeTime(e.target.value)}
+                className="rounded-xl border-amber-500/20 bg-amber-500/5 text-center text-lg font-semibold focus:border-amber-500/50"
+              />
+            </motion.div>
+          </div>
+
+          {/* Total Hours Display */}
+          <motion.div 
+            className="p-4 rounded-2xl bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 border border-indigo-500/20 text-center"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <p className="text-xs text-muted-foreground mb-1">Total de sono</p>
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-3xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
+                {hours.toFixed(1)}
+              </span>
+              <span className="text-lg text-muted-foreground">horas</span>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              {hours >= 7 && hours <= 9 ? "✨ Dentro do ideal!" : hours < 7 ? "💤 Tente dormir mais" : "😴 Sono excessivo"}
+            </p>
+          </motion.div>
+
+          {/* Quality Slider */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-muted-foreground">Qualidade do sono</label>
+              <motion.span 
+                key={quality}
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                className={cn(
+                  "text-lg font-bold px-3 py-1 rounded-full",
+                  quality >= 8 ? "text-emerald-600 bg-emerald-500/10" :
+                  quality >= 5 ? "text-amber-600 bg-amber-500/10" :
+                  "text-rose-600 bg-rose-500/10"
+                )}
+              >
+                {quality}/10
+              </motion.span>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
+                <span className="text-[10px] text-muted-foreground">Péssimo</span>
+                <span className="text-[10px] text-muted-foreground">Excelente</span>
+              </div>
+              <Slider
+                min={0}
+                max={10}
+                step={1}
+                value={[quality]}
+                onValueChange={(value: number[]) => setQuality(value[0] ?? 0)}
+                className="py-6"
+              />
             </div>
           </div>
+
+          {/* Tags Section */}
+          <div className="space-y-3">
+            <p className="text-xs font-medium text-muted-foreground">Como você se sentiu ao acordar?</p>
+            <div className="flex flex-wrap gap-2">
+              {tagOptions.map((tag) => {
+                const active = selectedTags.includes(tag.id);
+                return (
+                  <motion.button
+                    key={tag.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedTags((prev) =>
+                        prev.includes(tag.id) ? prev.filter((t) => t !== tag.id) : [...prev, tag.id],
+                      );
+                    }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={cn(
+                      "px-3 py-2 rounded-xl border text-xs flex items-center gap-2 transition-all duration-300",
+                      active 
+                        ? "bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border-indigo-500/40 text-indigo-600 dark:text-indigo-400 shadow-sm" 
+                        : "bg-muted/30 border-border/30 text-muted-foreground hover:bg-muted/50 hover:border-border/50"
+                    )}
+                  >
+                    <span className="text-base">{tag.icon}</span>
+                    {tag.label}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <Button 
+            onClick={saveSleep} 
+            className="w-full rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-lg shadow-indigo-500/25"
+          >
+            <CheckCircle2 className="h-4 w-4 mr-2" />
+            Salvar registro de sono
+          </Button>
         </CardContent>
       </PremiumCard>
 
       {/* Chart Section */}
       <section className="space-y-4">
-        <SectionHeader title="Padrão semanal" />
-        <PremiumCard>
+        <SectionHeader 
+          title="Padrão da última semana"
+          action={
+            avgHours !== null && (
+              <span className={cn(
+                "text-xs font-medium px-2 py-1 rounded-full",
+                avgHours >= 7 ? "bg-emerald-500/10 text-emerald-600" : 
+                avgHours >= 6 ? "bg-amber-500/10 text-amber-600" : 
+                "bg-rose-500/10 text-rose-600"
+              )}>
+                Média: {avgHours.toFixed(1)}h por noite
+              </span>
+            )
+          }
+        />
+        
+        <PremiumCard delay={0.3}>
           <CardContent className="pt-6">
             {loading ? (
               <Skeleton className="h-52 w-full rounded-xl" />
@@ -1644,15 +1815,22 @@ const SonoTab = ({ userId }: { userId: string }) => {
                 <div className="text-center">
                   <Moon className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
                   <p className="text-sm text-muted-foreground">Nenhum registro de sono ainda.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Comece registrando sua primeira noite acima.</p>
                 </div>
               </div>
             ) : (
               <div className="h-52 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="sleepGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(240, 60%, 60%)" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="hsl(240, 60%, 60%)" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted/30" />
-                    <XAxis dataKey="dateLabel" tick={{ fontSize: 10 }} />
-                    <YAxis tick={{ fontSize: 10 }} />
+                    <XAxis dataKey="dateLabel" tick={{ fontSize: 10 }} className="text-muted-foreground" />
+                    <YAxis tick={{ fontSize: 10 }} domain={[0, 12]} className="text-muted-foreground" />
                     <ReTooltip
                       content={({ active, payload }) => {
                         if (!active || !payload || payload.length === 0) return null;
@@ -1661,18 +1839,57 @@ const SonoTab = ({ userId }: { userId: string }) => {
                           <div className="rounded-xl border bg-background/95 backdrop-blur-sm px-3 py-2 shadow-lg">
                             <p className="text-xs text-muted-foreground">{item.payload.dateLabel}</p>
                             <p className="text-sm font-bold">{Number(item.value ?? 0).toFixed(1)}h de sono</p>
+                            <p className="text-xs text-muted-foreground">Qualidade: {item.payload.quality}/10</p>
                           </div>
                         );
                       }}
                     />
-                    <Bar dataKey="hours" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-                  </BarChart>
+                    <Area 
+                      type="monotone" 
+                      dataKey="hours" 
+                      stroke="hsl(240, 60%, 60%)" 
+                      strokeWidth={2.5} 
+                      fill="url(#sleepGradient)"
+                    />
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
             )}
           </CardContent>
         </PremiumCard>
       </section>
+
+      {/* Vita Tips Card */}
+      <PremiumCard delay={0.4}>
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-4">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center shrink-0">
+              <Sparkles className="h-5 w-5 text-indigo-500" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Dicas da Vita para melhorar seu sono</p>
+              <ul className="text-xs text-muted-foreground space-y-1.5">
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                  Mantenha horários consistentes de dormir e acordar
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+                  Evite telas 1h antes de dormir
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-pink-500" />
+                  Ambiente escuro e fresco favorece o sono profundo
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                  Exercícios regulares melhoram a qualidade do sono
+                </li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </PremiumCard>
     </motion.div>
   );
 };
