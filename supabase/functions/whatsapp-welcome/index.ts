@@ -119,7 +119,7 @@ Eu sou a *Vita*, sua assistente de nutrição e fitness. Estou aqui para te ajud
 ✅ Análises avançadas de nutrição
 ✅ Suporte prioritário
 
-👉 Faça upgrade agora: https://pay.kiwify.com.br/4DKAQbY
+👉 Faça upgrade agora: https://buy.stripe.com/4gMdR97Nb9angtKfVj7bW02
 
 Vamos começar? Me manda sua primeira mensagem! 🚀`;
 
