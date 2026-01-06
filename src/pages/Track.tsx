@@ -304,9 +304,9 @@ const TrackTabs = ({ user }: TrackTabsProps) => {
     >
       <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-4 sm:space-y-6">
         {/* Premium Tab List - Horizontal scroll on mobile */}
-            <motion.div variants={itemVariants}>
-              <div className="overflow-x-auto pb-2 scrollbar-hide">
-                <TabsList className="inline-flex gap-2 bg-transparent p-2 min-w-max">
+            <motion.div variants={itemVariants} className="-mx-4 md:-mx-8">
+              <div className="overflow-x-auto pb-2 px-4 md:px-8 scrollbar-hide">
+                <TabsList className="inline-flex gap-2 bg-transparent p-2 w-max">
               {tabConfig.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = currentTab === tab.id;
