@@ -9,6 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
+// Declaração para evitar erros TypeScript com Meta Pixel
+declare global {
+  interface Window {
+    fbq?: (...args: unknown[]) => void;
+  }
+}
+
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -191,6 +198,17 @@ const Auth = () => {
           },
         });
         if (error) throw error;
+
+        // Dispara evento InitiateCheckout no Meta Pixel
+        if (typeof window !== 'undefined' && window.fbq) {
+          window.fbq('track', 'InitiateCheckout', {
+            value: 29.90,
+            currency: 'BRL',
+            content_name: 'Dietafy Premium Trial',
+            content_type: 'subscription',
+          });
+          console.log('Meta Pixel: InitiateCheckout event fired');
+        }
 
         toast({
           title: "Conta criada!",
