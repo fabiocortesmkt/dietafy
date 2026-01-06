@@ -123,94 +123,19 @@ export default function AdminPanel() {
 
     const loadDashboardData = async () => {
       try {
-        // Total de usuários
-        const { count: totalUsers } = await supabase
-          .from("user_profiles")
-          .select("*", { count: "exact", head: true });
+        // Usar edge function que bypassa RLS para obter dados reais de todos os usuários
+        const { data, error } = await supabase.functions.invoke("admin-dashboard");
 
-        // Usuários premium e free
-        const { count: premiumUsers } = await supabase
-          .from("user_profiles")
-          .select("*", { count: "exact", head: true })
-          .eq("plan_type", "premium");
+        if (error) {
+          console.error("Erro ao carregar dados do dashboard:", error);
+          throw error;
+        }
 
-        const { count: freeUsers } = await supabase
-          .from("user_profiles")
-          .select("*", { count: "exact", head: true })
-          .eq("plan_type", "free");
-
-        // Novos usuários últimos 7 dias
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        const { count: newUsersLast7Days } = await supabase
-          .from("user_profiles")
-          .select("*", { count: "exact", head: true })
-          .gte("created_at", sevenDaysAgo.toISOString());
-
-        // Novos usuários últimos 30 dias
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const { count: newUsersLast30Days } = await supabase
-          .from("user_profiles")
-          .select("*", { count: "exact", head: true })
-          .gte("created_at", thirtyDaysAgo.toISOString());
-
-        // Total de refeições
-        const { count: totalMeals } = await supabase
-          .from("meals")
-          .select("*", { count: "exact", head: true });
-
-        // Total de treinos
-        const { count: totalWorkouts } = await supabase
-          .from("workout_logs")
-          .select("*", { count: "exact", head: true });
-
-        // Total de mensagens
-        const { count: totalMessages } = await supabase
-          .from("chat_messages")
-          .select("*", { count: "exact", head: true });
-
-        // Dados de crescimento (últimos 30 dias)
-        const { data: profilesData } = await supabase
-          .from("user_profiles")
-          .select("created_at")
-          .gte("created_at", thirtyDaysAgo.toISOString())
-          .order("created_at");
-
-        // Agrupar por dia
-        const growthMap = new Map<string, number>();
-        profilesData?.forEach((profile) => {
-          const date = new Date(profile.created_at).toLocaleDateString("pt-BR");
-          growthMap.set(date, (growthMap.get(date) || 0) + 1);
-        });
-
-        const growthArray: UserGrowthData[] = Array.from(growthMap.entries()).map(([date, users]) => ({
-          date,
-          users,
-        }));
-
-        // Usuários recentes
-        const { data: recentUsersData } = await supabase
-          .from("user_profiles")
-          .select("id, full_name, plan_type, created_at, onboarding_completed")
-          .order("created_at", { ascending: false })
-          .limit(5);
-
-        setStats({
-          totalUsers: totalUsers || 0,
-          premiumUsers: premiumUsers || 0,
-          freeUsers: freeUsers || 0,
-          newUsersLast7Days: newUsersLast7Days || 0,
-          newUsersLast30Days: newUsersLast30Days || 0,
-          totalMeals: totalMeals || 0,
-          totalWorkouts: totalWorkouts || 0,
-          totalMessages: totalMessages || 0,
-          avgMealsPerUser: totalUsers ? Math.round((totalMeals || 0) / totalUsers) : 0,
-          avgWorkoutsPerUser: totalUsers ? Math.round((totalWorkouts || 0) / totalUsers) : 0,
-        });
-
-        setGrowthData(growthArray);
-        setRecentUsers(recentUsersData || []);
+        if (data) {
+          setStats(data.stats);
+          setGrowthData(data.growthData || []);
+          setRecentUsers(data.recentUsers || []);
+        }
       } catch (error) {
         console.error("Erro ao carregar dados do dashboard:", error);
       } finally {
