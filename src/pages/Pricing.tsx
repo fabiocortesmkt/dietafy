@@ -121,7 +121,7 @@ const Pricing = () => {
               <li>✓ Planos personalizados e suporte prioritário</li>
               <li>✓ Sem anúncios</li>
             </ul>
-            <Button className="w-full mt-2" onClick={() => window.open("https://pay.kiwify.com.br/4DKAQbY", "_blank")}>
+            <Button className="w-full mt-2" onClick={() => window.open("https://buy.stripe.com/4gMdR97Nb9angtKfVj7bW02", "_blank")}>
                Assinar agora
              </Button>
              <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
