@@ -814,7 +814,7 @@ const Landing = () => {
             <div className="flex-1 space-y-4 text-center md:text-left">
               <div className="inline-flex items-center gap-2 flex-wrap justify-center md:justify-start rounded-full bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1">
                 <ShieldCheck className="h-4 w-4" />
-                <span>Garantia de 7 dias • Compra segura pela Kiwify</span>
+                <span>Garantia de 7 dias • Compra 100% segura</span>
               </div>
 
               <h3 className="text-2xl md:text-3xl font-bold">
@@ -828,7 +828,7 @@ const Landing = () => {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 {[
                   { icon: Check, text: "Garantia incondicional de 7 dias" },
-                  { icon: Lock, text: "Pagamento seguro pela Kiwify" },
+                  { icon: Lock, text: "Pagamento seguro via Stripe" },
                   { icon: Zap, text: "Acesso imediato após confirmação" },
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
@@ -837,6 +837,22 @@ const Landing = () => {
                   </li>
                 ))}
               </ul>
+
+              {/* Stripe Badge */}
+              <div className="flex items-center gap-3 mt-4 pt-4 border-t border-border/50">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#635BFF]/10 border border-[#635BFF]/20">
+                  <svg className="h-5 w-auto" viewBox="0 0 60 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M59.64 14.28C59.64 8.77 56.68 4.66 51.44 4.66C46.18 4.66 42.7 8.77 42.7 14.23C42.7 20.67 46.78 24 51.93 24C54.45 24 56.37 23.44 57.82 22.66V18.56C56.37 19.28 54.68 19.73 52.52 19.73C50.4 19.73 48.55 18.99 48.3 16.49H59.59C59.59 16.22 59.64 14.93 59.64 14.28ZM48.22 12.88C48.22 10.49 49.74 9.47 51.42 9.47C53.06 9.47 54.49 10.49 54.49 12.88H48.22Z" fill="#635BFF"/>
+                    <path d="M36.95 4.66C34.81 4.66 33.42 5.66 32.65 6.38L32.39 4.98H27.3V28L32.87 26.81L32.89 22.63C33.68 23.2 34.85 24 36.93 24C41.17 24 45.03 20.67 45.03 14.18C45.01 8.24 41.11 4.66 36.95 4.66ZM35.69 19.47C34.25 19.47 33.4 18.95 32.89 18.31L32.87 10.54C33.42 9.84 34.29 9.34 35.69 9.34C37.96 9.34 39.54 11.84 39.54 14.39C39.54 17 37.98 19.47 35.69 19.47Z" fill="#635BFF"/>
+                    <path d="M22.46 3.42L28.05 2.21V-2L22.46 -0.77V3.42Z" fill="#635BFF"/>
+                    <path d="M28.05 5.01H22.46V23.68H28.05V5.01Z" fill="#635BFF"/>
+                    <path d="M18.76 6.53L18.42 5.01H13.43V23.68H18.99V10.96C20.31 9.24 22.54 9.57 23.22 9.82V5.01C22.52 4.74 19.96 4.23 18.76 6.53Z" fill="#635BFF"/>
+                    <path d="M7.62 1.68L2.16 2.87L2.14 19.02C2.14 21.85 4.24 24 7.07 24C8.64 24 9.79 23.7 10.42 23.34V19.11C9.81 19.38 7.6 20.06 7.6 17.23V9.68H10.42V5.01H7.6L7.62 1.68Z" fill="#635BFF"/>
+                  </svg>
+                  <span className="text-xs font-medium text-[#635BFF]">Powered by Stripe</span>
+                </div>
+                <span className="text-xs text-muted-foreground">Criptografia SSL 256-bit</span>
+              </div>
             </div>
 
             <div className="w-full md:w-72 space-y-4">
@@ -859,7 +875,7 @@ const Landing = () => {
               </Button>
 
               <p className="text-xs text-muted-foreground text-center">
-                Pagamento seguro • 7 dias de garantia • Sem fidelidade
+                Pagamento seguro via Stripe • 7 dias de garantia • Sem fidelidade
               </p>
             </div>
           </motion.div>
