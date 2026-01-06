@@ -78,24 +78,9 @@ const Auth = () => {
             data: { stripe_checkout_pending: false }
           });
         } else {
-          // Redirect back to Stripe using dynamic checkout session
-          try {
-            const response = await supabase.functions.invoke('create-checkout-session', {
-              body: {
-                email: userEmail,
-                origin: window.location.origin,
-              },
-            });
-
-            if (response.data?.url) {
-              window.location.href = response.data.url;
-              return;
-            }
-          } catch (err) {
-            console.error('Error creating checkout session:', err);
-          }
-          // Fallback to dashboard if checkout fails
-          navigate("/dashboard");
+          // Redirect back to Stripe Payment Link
+          const stripeCheckoutUrl = `https://buy.stripe.com/3cI5kD7NbeuH1yQ6kJ7bW01?prefilled_email=${encodeURIComponent(userEmail || '')}`;
+          window.location.href = stripeCheckoutUrl;
           return;
         }
       }
@@ -230,35 +215,9 @@ const Auth = () => {
           description: "Redirecionando para o checkout...",
         });
 
-        // Create dynamic checkout session via edge function
-        try {
-          const response = await supabase.functions.invoke('create-checkout-session', {
-            body: {
-              email,
-              fullName: fullName.trim(),
-              origin: window.location.origin,
-            },
-          });
-
-          if (response.error) {
-            console.error('Error creating checkout session:', response.error);
-            throw new Error('Não foi possível criar a sessão de pagamento');
-          }
-
-          const { url } = response.data;
-          if (url) {
-            window.location.href = url;
-          } else {
-            throw new Error('URL de checkout não retornada');
-          }
-        } catch (checkoutError: any) {
-          console.error('Checkout session error:', checkoutError);
-          toast({
-            title: "Erro no checkout",
-            description: "Não foi possível redirecionar para o pagamento. Tente novamente.",
-            variant: "destructive",
-          });
-        }
+        // Redirect to Stripe Payment Link with prefilled email
+        const stripeCheckoutUrl = `https://buy.stripe.com/3cI5kD7NbeuH1yQ6kJ7bW01?prefilled_email=${encodeURIComponent(email)}`;
+        window.location.href = stripeCheckoutUrl;
         return;
       }
     } catch (error: any) {
