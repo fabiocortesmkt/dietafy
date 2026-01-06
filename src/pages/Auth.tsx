@@ -199,30 +199,6 @@ const Auth = () => {
         });
         if (error) throw error;
 
-        // Enviar email de boas-vindas via edge function
-        try {
-          const { data: sessionData } = await supabase.auth.getSession();
-          const userId = sessionData?.session?.user?.id;
-          
-          if (userId) {
-            await supabase.functions.invoke('notify-new-signup', {
-              body: {
-                type: 'INSERT',
-                table: 'users',
-                record: {
-                  id: userId,
-                  email: email,
-                  created_at: new Date().toISOString(),
-                  raw_user_meta_data: { full_name: fullName.trim() }
-                }
-              }
-            });
-            console.log('Welcome email triggered');
-          }
-        } catch (emailError) {
-          console.error('Failed to send welcome email:', emailError);
-        }
-
         // Dispara evento InitiateCheckout no Meta Pixel
         if (typeof window !== 'undefined' && window.fbq) {
           window.fbq('track', 'InitiateCheckout', {
