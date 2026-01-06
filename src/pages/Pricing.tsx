@@ -130,9 +130,9 @@ const Pricing = () => {
                  <span>7 dias de garantia</span>
                </span>
                <span className="inline-flex items-center gap-1">
-                 <Lock className="h-3 w-3 text-primary" />
-                 <span>Pagamento seguro pela Kiwify</span>
-               </span>
+                  <Lock className="h-3 w-3 text-primary" />
+                  <span>Pagamento seguro via Stripe</span>
+                </span>
                <span className="inline-flex items-center gap-1">
                  <Check className="h-3 w-3 text-primary" />
                  <span>Sem fidelidade</span>
