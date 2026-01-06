@@ -385,6 +385,7 @@ export type Database = {
           plan_expires_at: string | null
           plan_started_at: string | null
           plan_type: Database["public"]["Enums"]["plan_type"]
+          stripe_checkout_pending: boolean | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           target_timeframe: string | null
@@ -418,6 +419,7 @@ export type Database = {
           plan_expires_at?: string | null
           plan_started_at?: string | null
           plan_type?: Database["public"]["Enums"]["plan_type"]
+          stripe_checkout_pending?: boolean | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           target_timeframe?: string | null
@@ -451,6 +453,7 @@ export type Database = {
           plan_expires_at?: string | null
           plan_started_at?: string | null
           plan_type?: Database["public"]["Enums"]["plan_type"]
+          stripe_checkout_pending?: boolean | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           target_timeframe?: string | null
