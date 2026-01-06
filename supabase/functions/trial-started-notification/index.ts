@@ -97,7 +97,7 @@ async function sendEmail(to: string, name: string) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'Dietafy <noreply@dietafy.app>',
+      from: 'Dietafy <noreply@dietafy.site>',
       to: [to],
       subject: '🎉 Seu teste grátis de 3 dias começou!',
       html,

@@ -97,7 +97,7 @@ async function sendActivatedEmail(to: string, name: string) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'Dietafy <noreply@dietafy.app>',
+      from: 'Dietafy <noreply@dietafy.site>',
       to: [to],
       subject: '✨ Bem-vindo(a) ao Dietafy Premium!',
       html,
