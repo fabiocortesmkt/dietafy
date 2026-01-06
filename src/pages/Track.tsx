@@ -47,7 +47,11 @@ import {
   Heart,
   Brain,
   Target,
+  CalendarIcon,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import {
   LineChart as ReLineChart,
   Line,
@@ -301,8 +305,8 @@ const TrackTabs = ({ user }: TrackTabsProps) => {
       <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-4 sm:space-y-6">
         {/* Premium Tab List - Horizontal scroll on mobile */}
         <motion.div variants={itemVariants}>
-          <div className="overflow-visible sm:overflow-visible">
-            <TabsList className="flex flex-wrap justify-start gap-1.5 sm:gap-2 bg-transparent p-0 py-1">
+          <div className="overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+            <TabsList className="flex gap-2 bg-transparent p-0 min-w-max">
               {tabConfig.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = currentTab === tab.id;
@@ -311,7 +315,7 @@ const TrackTabs = ({ user }: TrackTabsProps) => {
                     key={tab.id}
                     value={tab.id}
                     className={cn(
-                      "filter-chip flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border transition-all duration-300",
+                      "filter-chip flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border transition-all duration-300 shrink-0",
                       isActive 
                         ? "filter-chip active bg-primary/10 border-primary/30 text-foreground shadow-sm" 
                         : "bg-muted/30 border-transparent hover:bg-muted/50 text-muted-foreground"
@@ -323,7 +327,7 @@ const TrackTabs = ({ user }: TrackTabsProps) => {
                     )}>
                       <Icon className={cn("h-3 w-3 sm:h-3.5 sm:w-3.5", isActive ? tab.color : "text-muted-foreground")} />
                     </div>
-                    <span className="text-xs sm:text-sm font-medium">{tab.label}</span>
+                    <span className="text-xs sm:text-sm font-medium whitespace-nowrap">{tab.label}</span>
                   </TabsTrigger>
                 );
               })}
@@ -1024,24 +1028,83 @@ const PesoTab = ({ userId }: { userId: string }) => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-muted-foreground">Data</label>
-                  <Input 
-                    type="date" 
-                    className="rounded-xl border-border/50"
-                    {...form.register("date")} 
-                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal rounded-xl border-border/50 bg-background/50 hover:bg-muted/50",
+                          !form.watch("date") && "text-muted-foreground"
+                        )}
+                      >
+                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center mr-3">
+                          <CalendarIcon className="h-4 w-4 text-blue-500" />
+                        </div>
+                        {form.watch("date") 
+                          ? format(new Date(form.watch("date") + "T12:00:00"), "dd 'de' MMM, yyyy", { locale: ptBR }) 
+                          : "Selecionar data"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-card/95 backdrop-blur-xl border-border/50" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={form.watch("date") ? new Date(form.watch("date") + "T12:00:00") : undefined}
+                        onSelect={(date) => date && form.setValue("date", format(date, "yyyy-MM-dd"))}
+                        disabled={(date) => date > new Date()}
+                        initialFocus
+                        locale={ptBR}
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
               
-              <label className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border/30 cursor-pointer hover:bg-muted/50 transition-colors">
-                <Checkbox
-                  checked={form.watch("fasting")}
-                  onCheckedChange={(checked) => form.setValue("fasting", Boolean(checked))}
-                />
-                <div>
-                  <span className="text-sm font-medium">Medição em jejum</span>
-                  <p className="text-xs text-muted-foreground">Mais preciso para acompanhamento</p>
+              <motion.div
+                onClick={() => form.setValue("fasting", !form.watch("fasting"))}
+                className={cn(
+                  "relative overflow-hidden cursor-pointer rounded-2xl border-2 p-4 transition-all duration-300",
+                  form.watch("fasting") 
+                    ? "border-amber-500/50 bg-gradient-to-br from-amber-500/10 to-orange-500/10" 
+                    : "border-border/30 bg-muted/20 hover:bg-muted/40"
+                )}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-300",
+                      form.watch("fasting") 
+                        ? "bg-gradient-to-br from-amber-500/30 to-orange-500/30" 
+                        : "bg-muted/50"
+                    )}>
+                      <Clock className={cn(
+                        "h-5 w-5 transition-colors duration-300",
+                        form.watch("fasting") ? "text-amber-500" : "text-muted-foreground"
+                      )} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Medição em jejum</p>
+                      <p className="text-xs text-muted-foreground">Mais preciso para acompanhamento</p>
+                    </div>
+                  </div>
+                  <Switch 
+                    checked={form.watch("fasting")} 
+                    onCheckedChange={(checked) => form.setValue("fasting", checked)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
                 </div>
-              </label>
+                {form.watch("fasting") && (
+                  <motion.p 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-3 text-xs text-amber-600 dark:text-amber-400 pl-[52px]"
+                  >
+                    ✨ Ótima escolha! Medições em jejum são mais consistentes.
+                  </motion.p>
+                )}
+              </motion.div>
               
               <Button type="submit" className="w-full sm:w-auto rounded-xl">
                 <CheckCircle2 className="h-4 w-4 mr-2" />
