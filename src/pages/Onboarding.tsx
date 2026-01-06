@@ -313,6 +313,19 @@ const Onboarding = () => {
 
       if (error) throw error;
 
+      // Send WhatsApp welcome message if user opted in (fire-and-forget)
+      if (values.whatsapp_phone && values.whatsapp_opt_in) {
+        supabase.functions.invoke("whatsapp-welcome", {
+          body: {
+            phone: values.whatsapp_phone,
+            name: values.full_name,
+            user_id: userId,
+          },
+        }).catch((err) => {
+          console.error("Failed to send WhatsApp welcome:", err);
+        });
+      }
+
       // Show success screen
       setShowSuccess(true);
       
