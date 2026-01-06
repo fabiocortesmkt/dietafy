@@ -45,7 +45,9 @@ import {
   ChevronRight,
   Sparkles,
   Crown,
-  Check
+  Check,
+  CreditCard,
+  ExternalLink
 } from "lucide-react";
 
 interface UserProfile {
@@ -60,6 +62,9 @@ interface UserProfile {
   dietary_other: string | null;
   notify_water: boolean;
   notify_workout: boolean;
+  plan_type: string | null;
+  plan_expires_at: string | null;
+  stripe_customer_id: string | null;
 }
 
 const accountSchema = z.object({
@@ -292,6 +297,7 @@ const Profile = () => {
   const [dietaryOther, setDietaryOther] = useState("");
   const [notifyWater, setNotifyWater] = useState(false);
   const [notifyWorkout, setNotifyWorkout] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -300,7 +306,7 @@ const Profile = () => {
       const { data, error } = await supabase
         .from("user_profiles")
         .select(
-          "full_name, avatar_url, height_cm, weight_kg, goals, activity_level, training_preference, dietary_restrictions, dietary_other, notify_water, notify_workout",
+          "full_name, avatar_url, height_cm, weight_kg, goals, activity_level, training_preference, dietary_restrictions, dietary_other, notify_water, notify_workout, plan_type, plan_expires_at, stripe_customer_id",
         )
         .eq("user_id", userId)
         .maybeSingle();
@@ -583,6 +589,46 @@ const Profile = () => {
         description: error?.message ?? "Tente novamente em instantes.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleOpenCustomerPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const response = await supabase.functions.invoke('create-customer-portal', {
+        body: {
+          returnUrl: window.location.href,
+        },
+      });
+
+      if (response.error) {
+        console.error('Portal error:', response.error);
+        throw new Error(response.error.message || 'Erro ao abrir portal');
+      }
+
+      const { url, error } = response.data;
+      
+      if (error) {
+        toast({
+          title: "Assinatura não encontrada",
+          description: error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (url) {
+        window.location.href = url;
+      }
+    } catch (error: any) {
+      console.error('Error opening customer portal:', error);
+      toast({
+        title: "Erro ao abrir portal",
+        description: "Não foi possível acessar o gerenciamento de assinatura.",
+        variant: "destructive",
+      });
+    } finally {
+      setPortalLoading(false);
     }
   };
 
@@ -911,6 +957,78 @@ const Profile = () => {
                 <PremiumButton onClick={handleSaveNotifications} className="w-full md:w-auto mt-2">
                   Salvar notificações
                 </PremiumButton>
+              </SectionCard>
+
+              {/* Subscription Section */}
+              <SectionCard
+                icon={CreditCard}
+                title="Assinatura"
+                description="Gerencie seu plano e pagamento"
+                iconColor="text-indigo-500"
+                iconBg="bg-indigo-500/10"
+                badge={profile?.plan_type === 'premium' ? 'Premium' : 'Gratuito'}
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/40">
+                    <div className="space-y-1">
+                      <p className="font-medium">
+                        Plano {profile?.plan_type === 'premium' ? 'Premium' : 'Gratuito'}
+                      </p>
+                      {profile?.plan_type === 'premium' && profile?.plan_expires_at && (
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(profile.plan_expires_at) > new Date() 
+                            ? `Próxima renovação: ${new Date(profile.plan_expires_at).toLocaleDateString('pt-BR')}`
+                            : 'Assinatura expirada'}
+                        </p>
+                      )}
+                      {profile?.plan_type !== 'premium' && (
+                        <p className="text-xs text-muted-foreground">
+                          Faça upgrade para acessar todos os recursos
+                        </p>
+                      )}
+                    </div>
+                    <div className={`px-3 py-1.5 rounded-full text-xs font-medium ${
+                      profile?.plan_type === 'premium' 
+                        ? 'bg-primary/10 text-primary' 
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {profile?.plan_type === 'premium' ? 'Ativo' : 'Básico'}
+                    </div>
+                  </div>
+
+                  {profile?.plan_type === 'premium' ? (
+                    <PremiumButton 
+                      premiumVariant="outline" 
+                      onClick={handleOpenCustomerPortal} 
+                      disabled={portalLoading}
+                      className="w-full"
+                    >
+                      {portalLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Abrindo portal...
+                        </>
+                      ) : (
+                        <>
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Gerenciar assinatura
+                        </>
+                      )}
+                    </PremiumButton>
+                  ) : (
+                    <PremiumButton 
+                      onClick={() => navigate('/auth?mode=signup')} 
+                      className="w-full"
+                    >
+                      <Crown className="h-4 w-4 mr-2" />
+                      Fazer upgrade para Premium
+                    </PremiumButton>
+                  )}
+
+                  <p className="text-xs text-muted-foreground text-center">
+                    Pagamento seguro via Stripe. Cancele quando quiser.
+                  </p>
+                </div>
               </SectionCard>
             </div>
 
