@@ -231,7 +231,7 @@ const Landing = () => {
             >
               {[
                 { icon: ShieldCheck, text: "7 dias de garantia" },
-                { icon: Users, text: "+2.500 pessoas transformadas" },
+                { icon: Users, text: "Comece seu 2026 muito mais saudável" },
                 { icon: Check, text: "Sem fidelidade" },
               ].map((item, i) => (
                 <span key={i} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
