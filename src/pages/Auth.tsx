@@ -29,7 +29,7 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
-  const handlePostLoginRedirect = async (userId: string, userEmail?: string | null) => {
+  const handlePostLoginRedirect = async (userId: string, userEmail?: string | null, userMetadata?: Record<string, unknown>) => {
     try {
       // Conta master admin sempre vai direto para o painel administrativo
       if (userEmail && userEmail.toLowerCase() === "admin@dev.local") {
@@ -55,6 +55,29 @@ const Auth = () => {
         return;
       }
 
+      // Check if stripe checkout is pending from user metadata
+      if (userMetadata?.stripe_checkout_pending === true) {
+        // Check if user has completed stripe checkout by looking at profile
+        const { data: profile } = await supabase
+          .from("user_profiles")
+          .select("stripe_checkout_pending, plan_type")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        // If profile exists and checkout is not pending, or plan is premium, proceed
+        if (profile && (profile.stripe_checkout_pending === false || profile.plan_type === "premium")) {
+          // Update user metadata to remove pending flag
+          await supabase.auth.updateUser({
+            data: { stripe_checkout_pending: false }
+          });
+        } else {
+          // Redirect back to Stripe
+          const stripeUrl = `https://buy.stripe.com/3cI5kD7NbeuH1yQ6kJ7bW01?prefilled_email=${encodeURIComponent(userEmail || "")}`;
+          window.location.href = stripeUrl;
+          return;
+        }
+      }
+
       // Fluxo normal para usuários finais
       const { data, error } = await supabase
         .from("user_profiles")
@@ -63,7 +86,7 @@ const Auth = () => {
         .maybeSingle();
 
       if (error) {
-        console.error("Erro ao verificar onboarding do usuário:", error);
+        console.error("Erro ao verificar perfil do usuário:", error);
         navigate("/onboarding");
         return;
       }
@@ -97,14 +120,14 @@ const Auth = () => {
 
       if (session?.user) {
         setTimeout(() => {
-          handlePostLoginRedirect(session.user.id, session.user.email);
+          handlePostLoginRedirect(session.user.id, session.user.email, session.user.user_metadata);
         }, 0);
       }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        handlePostLoginRedirect(session.user.id, session.user.email);
+        handlePostLoginRedirect(session.user.id, session.user.email, session.user.user_metadata);
       }
     });
 
@@ -160,17 +183,24 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/onboarding`,
+            emailRedirectTo: `${window.location.origin}/welcome`,
             data: {
               full_name: fullName.trim(),
+              stripe_checkout_pending: true,
             },
           },
         });
         if (error) throw error;
+
         toast({
           title: "Conta criada!",
-          description: "Verifique seu email para confirmar sua conta",
+          description: "Redirecionando para o checkout...",
         });
+
+        // Redirect to Stripe checkout with prefilled email
+        const stripeUrl = `https://buy.stripe.com/3cI5kD7NbeuH1yQ6kJ7bW01?prefilled_email=${encodeURIComponent(email)}`;
+        window.location.href = stripeUrl;
+        return;
       }
     } catch (error: any) {
       toast({

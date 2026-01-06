@@ -24,7 +24,7 @@ import AdminPanel from "./pages/AdminPanel";
 import Sobre from "./pages/Sobre";
 import Privacidade from "./pages/Privacidade";
 import Contato from "./pages/Contato";
-
+import Welcome from "./pages/Welcome";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -56,6 +56,7 @@ const App = () => (
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/privacidade" element={<Privacidade />} />
           <Route path="/contato" element={<Contato />} />
+          <Route path="/welcome" element={<Welcome />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
