@@ -23,6 +23,7 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   // Fluxo de recuperação de senha
   const [isRecoverMode, setIsRecoverMode] = useState(false);
@@ -91,27 +92,41 @@ const Auth = () => {
       setIsLogin(false);
     }
 
+    const handleAuthCheck = async () => {
+      // Se está em modo signup, faz logout para garantir formulário limpo
+      if (mode === "signup") {
+        await supabase.auth.signOut();
+        setIsInitializing(false);
+        return;
+      }
+
+      // Para modo login, verifica sessão existente
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        handlePostLoginRedirect(session.user.id, session.user.email, session.user.user_metadata);
+      } else {
+        setIsInitializing(false);
+      }
+    };
+
+    handleAuthCheck();
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY" && session?.user) {
-        // Usuário acessou o link de recuperação de senha
         setIsRecoverMode(true);
         setIsResetStage(true);
         setResetEmail(session.user.email ?? "");
+        setIsInitializing(false);
         return;
       }
 
-      if (session?.user) {
+      // Só redireciona após SIGNED_IN (login/signup bem-sucedido)
+      if (event === "SIGNED_IN" && session?.user) {
         setTimeout(() => {
           handlePostLoginRedirect(session.user.id, session.user.email, session.user.user_metadata);
         }, 0);
-      }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        handlePostLoginRedirect(session.user.id, session.user.email, session.user.user_metadata);
       }
     });
 
@@ -293,6 +308,14 @@ const Auth = () => {
       setResetLoading(false);
     }
   };
+
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
