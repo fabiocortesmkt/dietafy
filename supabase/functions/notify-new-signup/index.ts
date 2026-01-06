@@ -147,89 +147,243 @@ const handler = async (req: Request): Promise<Response> => {
         subject: welcomeSubject,
         html: `
           <!DOCTYPE html>
-          <html>
+          <html lang="pt-BR">
           <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Bem-vindo ao DietaFY</title>
           </head>
-          <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+          <body style="margin: 0; padding: 0; background-color: #0f172a; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            
+            <!-- Container Principal -->
+            <div style="max-width: 640px; margin: 0 auto; background-color: #1e293b;">
               
-              <!-- Header com gradiente verde -->
-              <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center;">
-                <h1 style="color: white; font-size: 32px; margin: 0 0 10px 0; font-weight: 700;">🍉 Bem-vindo(a) ao DietaFY!</h1>
-                <p style="color: rgba(255,255,255,0.95); font-size: 18px; margin: 0;">Olá, ${userName}! Sua jornada de transformação começa agora.</p>
-              </div>
-              
-              <!-- Introdução -->
-              <div style="padding: 30px;">
-                <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                  Você acaba de dar o primeiro passo para transformar sua saúde e alcançar seus objetivos! 💪
-                </p>
-                <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                  A <strong style="color: #10b981;">Vita</strong>, nossa assistente de IA especializada em nutrição e fitness, está pronta para te acompanhar 24 horas por dia, 7 dias por semana. Ela vai te ajudar com dicas personalizadas, análise das suas refeições e muito mais!
-                </p>
-              </div>
-              
-              <!-- O que você já pode fazer (Free) -->
-              <div style="background-color: #f0fdf4; padding: 25px 30px; margin: 0 20px; border-radius: 12px; border-left: 4px solid #10b981;">
-                <h2 style="color: #065f46; font-size: 20px; margin: 0 0 15px 0;">✅ O que você já pode fazer:</h2>
-                <ul style="color: #374151; font-size: 15px; line-height: 1.8; margin: 0; padding-left: 20px;">
-                  <li>Registrar até <strong>5 refeições por dia</strong> com análise da Vita</li>
-                  <li>Enviar até <strong>10 mensagens diárias</strong> para a Vita</li>
-                  <li>Acessar <strong>3 treinos básicos</strong> para começar</li>
-                  <li>Acompanhar seu <strong>progresso</strong> de peso e água</li>
-                </ul>
-              </div>
-              
-              <!-- Benefícios Premium (destaque principal) -->
-              <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; margin: 25px 20px; border-radius: 16px; text-align: center;">
-                <h2 style="color: white; font-size: 24px; margin: 0 0 20px 0;">⭐ Desbloqueie todo o potencial com o Premium</h2>
-                
-                <div style="text-align: left; background: rgba(255,255,255,0.15); padding: 20px; border-radius: 12px; margin-bottom: 25px;">
-                  <ul style="color: white; font-size: 15px; line-height: 2; margin: 0; padding-left: 20px; list-style: none;">
-                    <li style="margin-bottom: 8px;">✨ <strong>Refeições e mensagens ILIMITADAS</strong> com a Vita</li>
-                    <li style="margin-bottom: 8px;">🏋️ <strong>Biblioteca completa</strong> com todos os treinos premium</li>
-                    <li style="margin-bottom: 8px;">📅 <strong>Blocos de treino organizados</strong> de 4 a 8 semanas</li>
-                    <li style="margin-bottom: 8px;">📱 <strong>WhatsApp ativo 24/7</strong> com a Vita</li>
-                    <li style="margin-bottom: 8px;">📊 <strong>Análises avançadas</strong> e relatórios completos</li>
-                    <li style="margin-bottom: 8px;">🎯 <strong>Planos personalizados</strong> e suporte prioritário</li>
-                  </ul>
+              <!-- Header Premium com Badge -->
+              <div style="background: linear-gradient(145deg, #059669 0%, #047857 50%, #065f46 100%); padding: 50px 40px; text-align: center; position: relative;">
+                <!-- Logo/Ícone -->
+                <div style="margin-bottom: 20px;">
+                  <span style="font-size: 60px;">🍉</span>
                 </div>
                 
-                <p style="color: white; font-size: 28px; font-weight: 700; margin: 0 0 5px 0;">Por apenas R$ 29,90/mês</p>
-                <p style="color: rgba(255,255,255,0.85); font-size: 14px; margin: 0 0 20px 0;">ou R$ 197/ano (economia de R$ 161!)</p>
+                <!-- Badge Membro Oficial -->
+                <div style="display: inline-block; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); padding: 8px 20px; border-radius: 50px; margin-bottom: 20px;">
+                  <span style="color: #fcd34d; font-size: 14px; font-weight: 600; letter-spacing: 1px;">⭐ MEMBRO OFICIAL</span>
+                </div>
                 
-                <a href="https://dietafy.com.br/auth?mode=signup" style="display: inline-block; background: white; color: #059669; padding: 16px 45px; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-                  Quero ser Premium! 🚀
-                </a>
-              </div>
-              
-              <!-- Próximos passos -->
-              <div style="padding: 30px;">
-                <h3 style="color: #1f2937; font-size: 18px; margin: 0 0 15px 0;">🎯 Seus próximos passos:</h3>
-                <ol style="color: #374151; font-size: 15px; line-height: 1.8; margin: 0; padding-left: 20px;">
-                  <li>Complete seu <strong>perfil</strong> para receber dicas personalizadas</li>
-                  <li>Registre sua <strong>primeira refeição</strong> e veja a mágica acontecer</li>
-                  <li>Converse com a <strong>Vita</strong> e tire todas as suas dúvidas</li>
-                </ol>
-              </div>
-              
-              <!-- CTA secundário -->
-              <div style="text-align: center; padding: 0 30px 30px 30px;">
-                <a href="https://dietafy.com.br/dashboard" style="display: inline-block; background: #10b981; color: white; padding: 14px 35px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
-                  Acessar minha conta →
-                </a>
-              </div>
-              
-              <!-- Footer -->
-              <div style="background-color: #f9fafb; padding: 25px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
-                <p style="color: #6b7280; font-size: 14px; margin: 0 0 10px 0;">
-                  Precisando de ajuda? Responda este e-mail ou fale com a Vita no app.
+                <h1 style="color: white; font-size: 36px; margin: 0 0 15px 0; font-weight: 800; line-height: 1.2;">
+                  Bem-vindo(a) ao DietaFY!
+                </h1>
+                <p style="color: rgba(255,255,255,0.9); font-size: 20px; margin: 0; font-weight: 400;">
+                  Olá, <strong>${userName}</strong>! Sua transformação começa agora.
                 </p>
-                <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                  © 2025 DietaFY. Todos os direitos reservados.<br>
-                  Você está recebendo este e-mail porque se cadastrou no DietaFY.
+              </div>
+              
+              <!-- Mensagem de Boas-Vindas -->
+              <div style="padding: 45px 40px 35px 40px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);">
+                <div style="background: linear-gradient(145deg, #1e3a5f 0%, #1e293b 100%); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 20px; padding: 35px; margin-bottom: 30px;">
+                  <p style="color: #e2e8f0; font-size: 17px; line-height: 1.8; margin: 0 0 20px 0;">
+                    Você acaba de dar o passo mais importante da sua jornada de transformação! 🎯
+                  </p>
+                  <p style="color: #cbd5e1; font-size: 16px; line-height: 1.8; margin: 0;">
+                    A <span style="color: #10b981; font-weight: 700;">Vita</span>, nossa nutricionista com inteligência artificial, está pronta para te acompanhar <strong style="color: #fcd34d;">24 horas por dia, 7 dias por semana</strong>. Ela vai analisar suas refeições, responder suas dúvidas e te guiar rumo aos seus objetivos!
+                  </p>
+                </div>
+              </div>
+              
+              <!-- Card: O que você já pode fazer -->
+              <div style="padding: 0 40px 35px 40px; background-color: #0f172a;">
+                <div style="background: linear-gradient(145deg, #064e3b 0%, #065f46 100%); border-radius: 20px; padding: 35px; border: 1px solid rgba(16, 185, 129, 0.4);">
+                  <div style="display: flex; align-items: center; margin-bottom: 25px;">
+                    <span style="font-size: 28px; margin-right: 12px;">✅</span>
+                    <h2 style="color: #ecfdf5; font-size: 22px; margin: 0; font-weight: 700;">O que você já pode fazer:</h2>
+                  </div>
+                  
+                  <table style="width: 100%;">
+                    <tr>
+                      <td style="padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <span style="color: #34d399; font-size: 18px; margin-right: 10px;">📸</span>
+                        <span style="color: #d1fae5; font-size: 15px;">Registrar até <strong>5 refeições por dia</strong> com análise da Vita</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <span style="color: #34d399; font-size: 18px; margin-right: 10px;">💬</span>
+                        <span style="color: #d1fae5; font-size: 15px;">Enviar até <strong>10 mensagens diárias</strong> para a Vita</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <span style="color: #34d399; font-size: 18px; margin-right: 10px;">🏋️</span>
+                        <span style="color: #d1fae5; font-size: 15px;">Acessar <strong>3 treinos básicos</strong> para começar</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 12px 0;">
+                        <span style="color: #34d399; font-size: 18px; margin-right: 10px;">📊</span>
+                        <span style="color: #d1fae5; font-size: 15px;">Acompanhar seu <strong>progresso</strong> de peso e hidratação</span>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              
+              <!-- Card Premium (Destaque Principal) -->
+              <div style="padding: 0 40px 40px 40px; background-color: #0f172a;">
+                <div style="background: linear-gradient(145deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%); border-radius: 24px; padding: 40px; text-align: center; box-shadow: 0 20px 60px rgba(251, 191, 36, 0.3);">
+                  
+                  <!-- Coroa Premium -->
+                  <div style="margin-bottom: 15px;">
+                    <span style="font-size: 50px;">👑</span>
+                  </div>
+                  
+                  <h2 style="color: #1f2937; font-size: 28px; margin: 0 0 25px 0; font-weight: 800;">
+                    Desbloqueie Todo o Potencial
+                  </h2>
+                  
+                  <div style="background: rgba(255,255,255,0.95); border-radius: 16px; padding: 25px; margin-bottom: 30px; text-align: left;">
+                    <table style="width: 100%;">
+                      <tr>
+                        <td style="padding: 10px 0;">
+                          <span style="color: #059669; font-weight: 700;">✨</span>
+                          <span style="color: #374151; font-size: 15px; margin-left: 8px;">Refeições e mensagens <strong>ILIMITADAS</strong></span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0;">
+                          <span style="color: #059669; font-weight: 700;">🏆</span>
+                          <span style="color: #374151; font-size: 15px; margin-left: 8px;">Biblioteca completa com <strong>todos os treinos</strong></span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0;">
+                          <span style="color: #059669; font-weight: 700;">📅</span>
+                          <span style="color: #374151; font-size: 15px; margin-left: 8px;">Blocos de treino de <strong>4 a 8 semanas</strong></span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0;">
+                          <span style="color: #059669; font-weight: 700;">📱</span>
+                          <span style="color: #374151; font-size: 15px; margin-left: 8px;">WhatsApp <strong>24/7</strong> com a Vita</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0;">
+                          <span style="color: #059669; font-weight: 700;">📈</span>
+                          <span style="color: #374151; font-size: 15px; margin-left: 8px;">Análises <strong>avançadas</strong> e relatórios</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px 0;">
+                          <span style="color: #059669; font-weight: 700;">🎯</span>
+                          <span style="color: #374151; font-size: 15px; margin-left: 8px;">Planos <strong>personalizados</strong> + suporte VIP</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                  
+                  <!-- Preço -->
+                  <div style="margin-bottom: 25px;">
+                    <p style="color: #1f2937; font-size: 16px; margin: 0 0 5px 0; text-decoration: line-through; opacity: 0.7;">De R$ 59,90/mês</p>
+                    <p style="color: #1f2937; font-size: 42px; font-weight: 800; margin: 0;">R$ 29,90<span style="font-size: 18px; font-weight: 600;">/mês</span></p>
+                    <p style="color: #374151; font-size: 14px; margin: 8px 0 0 0;">ou R$ 197/ano <span style="background: #059669; color: white; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;">ECONOMIA DE R$ 161</span></p>
+                  </div>
+                  
+                  <!-- CTA Premium -->
+                  <a href="https://dietafy.com.br/upgrade" style="display: inline-block; background: linear-gradient(145deg, #059669 0%, #047857 100%); color: white; padding: 18px 50px; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 18px; box-shadow: 0 8px 30px rgba(5, 150, 105, 0.4); transition: all 0.3s;">
+                    Quero ser Premium! 🚀
+                  </a>
+                </div>
+              </div>
+              
+              <!-- Seção: Primeiros Passos -->
+              <div style="padding: 0 40px 40px 40px; background-color: #0f172a;">
+                <div style="background: #1e293b; border-radius: 20px; padding: 35px; border: 1px solid rgba(255,255,255,0.1);">
+                  <h3 style="color: #f1f5f9; font-size: 20px; margin: 0 0 25px 0; font-weight: 700;">
+                    🎯 Seus Próximos Passos
+                  </h3>
+                  
+                  <!-- Timeline -->
+                  <table style="width: 100%;">
+                    <tr>
+                      <td style="width: 50px; vertical-align: top; padding-bottom: 20px;">
+                        <div style="width: 36px; height: 36px; background: linear-gradient(145deg, #10b981, #059669); border-radius: 50%; text-align: center; line-height: 36px; color: white; font-weight: 700;">1</div>
+                      </td>
+                      <td style="padding-bottom: 20px; padding-left: 15px;">
+                        <p style="color: #e2e8f0; font-size: 15px; margin: 0; line-height: 1.6;">
+                          <strong>Complete seu perfil</strong><br>
+                          <span style="color: #94a3b8;">Assim a Vita pode personalizar suas recomendações</span>
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="width: 50px; vertical-align: top; padding-bottom: 20px;">
+                        <div style="width: 36px; height: 36px; background: linear-gradient(145deg, #10b981, #059669); border-radius: 50%; text-align: center; line-height: 36px; color: white; font-weight: 700;">2</div>
+                      </td>
+                      <td style="padding-bottom: 20px; padding-left: 15px;">
+                        <p style="color: #e2e8f0; font-size: 15px; margin: 0; line-height: 1.6;">
+                          <strong>Registre sua primeira refeição</strong><br>
+                          <span style="color: #94a3b8;">Tire uma foto e veja a mágica acontecer</span>
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="width: 50px; vertical-align: top;">
+                        <div style="width: 36px; height: 36px; background: linear-gradient(145deg, #10b981, #059669); border-radius: 50%; text-align: center; line-height: 36px; color: white; font-weight: 700;">3</div>
+                      </td>
+                      <td style="padding-left: 15px;">
+                        <p style="color: #e2e8f0; font-size: 15px; margin: 0; line-height: 1.6;">
+                          <strong>Converse com a Vita</strong><br>
+                          <span style="color: #94a3b8;">Ela está pronta para responder qualquer dúvida</span>
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              
+              <!-- Depoimento / Social Proof -->
+              <div style="padding: 0 40px 40px 40px; background-color: #0f172a;">
+                <div style="background: linear-gradient(145deg, #1e3a5f, #1e293b); border-radius: 20px; padding: 30px; border-left: 4px solid #10b981;">
+                  <p style="color: #e2e8f0; font-size: 16px; line-height: 1.7; margin: 0 0 15px 0; font-style: italic;">
+                    "A Vita mudou completamente minha relação com a comida. Em 3 meses, perdi 8kg e ganhei muito mais energia!"
+                  </p>
+                  <p style="color: #10b981; font-size: 14px; margin: 0; font-weight: 600;">
+                    — Maria S., usuária Premium
+                  </p>
+                </div>
+              </div>
+              
+              <!-- CTA Principal -->
+              <div style="padding: 0 40px 50px 40px; background-color: #0f172a; text-align: center;">
+                <a href="https://dietafy.com.br/dashboard" style="display: inline-block; background: linear-gradient(145deg, #10b981 0%, #059669 100%); color: white; padding: 18px 45px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 17px; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35);">
+                  Acessar Minha Conta →
+                </a>
+                <p style="color: #64748b; font-size: 14px; margin: 20px 0 0 0;">
+                  Ou fale diretamente com a Vita no app 💬
+                </p>
+              </div>
+              
+              <!-- Footer Premium -->
+              <div style="background: linear-gradient(180deg, #0f172a 0%, #020617 100%); padding: 40px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1);">
+                <!-- Logo Footer -->
+                <p style="font-size: 28px; margin: 0 0 15px 0;">🍉</p>
+                <p style="color: #94a3b8; font-size: 16px; margin: 0 0 20px 0; font-weight: 600;">DietaFY</p>
+                
+                <!-- Links Sociais -->
+                <div style="margin-bottom: 25px;">
+                  <a href="https://instagram.com/dietafy" style="display: inline-block; color: #64748b; text-decoration: none; margin: 0 15px; font-size: 14px;">Instagram</a>
+                  <span style="color: #334155;">•</span>
+                  <a href="https://wa.me/5511999999999" style="display: inline-block; color: #64748b; text-decoration: none; margin: 0 15px; font-size: 14px;">WhatsApp</a>
+                </div>
+                
+                <p style="color: #475569; font-size: 13px; margin: 0 0 10px 0;">
+                  Precisa de ajuda? Responda este e-mail ou fale com a Vita.
+                </p>
+                
+                <p style="color: #334155; font-size: 12px; margin: 0;">
+                  © 2026 DietaFY. Todos os direitos reservados.<br>
+                  Você recebeu este e-mail porque se cadastrou no DietaFY.<br><br>
+                  <a href="https://dietafy.com.br/privacidade" style="color: #475569; text-decoration: underline;">Política de Privacidade</a>
                 </p>
               </div>
               
