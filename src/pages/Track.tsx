@@ -245,10 +245,10 @@ const Track = () => {
           </div>
         </motion.header>
 
-        <main className="flex-1 px-4 py-4 md:px-8 md:py-6 overflow-y-auto">
-          <div className="max-w-6xl mx-auto">
-            <TrackTabs user={user} />
-          </div>
+      <main className="flex-1 py-4 md:py-6 overflow-y-auto">
+        <div className="max-w-6xl mx-auto px-4 md:px-8">
+          <TrackTabs user={user} />
+        </div>
         </main>
       </div>
     </AuthenticatedLayout>
@@ -304,9 +304,9 @@ const TrackTabs = ({ user }: TrackTabsProps) => {
     >
       <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-4 sm:space-y-6">
         {/* Premium Tab List - Horizontal scroll on mobile */}
-        <motion.div variants={itemVariants}>
-          <div className="overflow-x-auto pb-3 -mx-4 px-4 scrollbar-hide">
-            <TabsList className="flex gap-2 bg-transparent p-1 min-w-max pr-8">
+            <motion.div variants={itemVariants}>
+              <div className="overflow-x-auto pb-2 scrollbar-hide">
+                <TabsList className="inline-flex gap-2 bg-transparent p-2 min-w-max">
               {tabConfig.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = currentTab === tab.id;
