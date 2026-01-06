@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.48.0";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.48.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,6 +17,28 @@ function createSupabaseClient() {
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
   });
+}
+
+async function logWhatsAppMessage(
+  supabase: SupabaseClient,
+  userId: string,
+  phone: string,
+  status: "sent" | "failed",
+  errorMessage?: string
+) {
+  const { error } = await supabase.from("email_logs").insert({
+    user_id: userId,
+    email_to: phone,
+    email_type: "whatsapp_welcome",
+    function_name: "whatsapp-welcome",
+    subject: "Mensagem de Boas-vindas WhatsApp",
+    status: status,
+    error_message: errorMessage || null,
+  });
+
+  if (error) {
+    console.error("Error logging WhatsApp message:", error);
+  }
 }
 
 function formatPhoneNumber(phone: string): string {
@@ -124,10 +146,13 @@ Eu sou a *Vita*, sua assistente de nutrição e fitness. Estou aqui para te ajud
 Vamos começar? Me manda sua primeira mensagem! 🚀`;
 
   const sent = await sendWhatsAppMessage(formattedPhone, welcomeMessage);
+  const supabase = createSupabaseClient();
 
   if (sent) {
+    // Log success to email_logs table for admin visibility
+    await logWhatsAppMessage(supabase, user_id, formattedPhone, "sent");
+
     // Log the message to whatsapp_messages table
-    const supabase = createSupabaseClient();
     const now = new Date().toISOString();
 
     const { error: logError } = await supabase.from("whatsapp_messages").insert({
@@ -159,6 +184,9 @@ Vamos começar? Me manda sua primeira mensagem! 🚀`;
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
+
+  // Log failure to email_logs table for admin visibility
+  await logWhatsAppMessage(supabase, user_id, formattedPhone, "failed", "Twilio API failed to send message");
 
   return new Response(
     JSON.stringify({ success: false, message: "Failed to send welcome message" }),
