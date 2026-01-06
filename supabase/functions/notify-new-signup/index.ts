@@ -42,7 +42,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // 1. Send email notification to admin
     const adminEmailResponse = await resend.emails.send({
-      from: "DietaFY Notificações <onboarding@resend.dev>",
+      from: "DietaFY <noreply@dietafy.site>",
       to: ["fabiocortesmkt@gmail.com"],
       subject: `🎉 Novo cadastro no DietaFY!`,
       html: `
@@ -83,7 +83,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // 2. Send welcome email to new user
     const welcomeEmailResponse = await resend.emails.send({
-      from: "DietaFY <onboarding@resend.dev>",
+      from: "DietaFY <noreply@dietafy.site>",
       to: [userEmail],
       subject: `🍉 Bem-vindo(a) ao DietaFY, ${userName}! Sua jornada começa agora`,
       html: `

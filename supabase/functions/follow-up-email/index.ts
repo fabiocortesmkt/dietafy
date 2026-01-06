@@ -77,7 +77,7 @@ const handler = async (req: Request): Promise<Response> => {
       console.log(`Sending follow-up email to ${userEmail}`);
 
       const emailResponse = await resend.emails.send({
-        from: "DietaFY <onboarding@resend.dev>",
+        from: "DietaFY <noreply@dietafy.site>",
         to: [userEmail],
         subject: `${userName}, como estão seus primeiros dias no DietaFY? 🍉`,
         html: `
