@@ -121,7 +121,7 @@ const Pricing = () => {
               <li>✓ Planos personalizados e suporte prioritário</li>
               <li>✓ Sem anúncios</li>
             </ul>
-            <Button className="w-full mt-2" onClick={() => navigate("/auth?mode=signup")}>
+            <Button className="w-full mt-2" onClick={() => window.open("https://buy.stripe.com/3cI5kD7NbeuH1yQ6kJ7bW01", "_blank")}>
                Assinar agora
              </Button>
              <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
