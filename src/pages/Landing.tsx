@@ -179,7 +179,7 @@ const Landing = () => {
 
             <motion.p
               variants={itemVariants}
-              className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-2xl mx-auto"
+              className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-muted-foreground max-w-2xl mx-auto"
             >
               Tenha um assistente que te orienta todos os dias, com saúde e sem dietas malucas.
             </motion.p>
@@ -225,7 +225,7 @@ const Landing = () => {
             >
               {[
                 { icon: ShieldCheck, text: "7 dias de garantia" },
-                { icon: Lock, text: "Não precisa de cartão" },
+                { icon: Lock, text: "Pagamento 100% seguro" },
                 { icon: Check, text: "Sem fidelidade" },
               ].map((item, i) => (
                 <span key={i} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -338,7 +338,7 @@ const Landing = () => {
 
                   <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
                     <span className="px-3 py-1.5 rounded-full bg-muted/60 border border-border/50">5 mensagens grátis</span>
-                    <span className="px-3 py-1.5 rounded-full bg-muted/60 border border-border/50">Sem cartão</span>
+                    <span className="px-3 py-1.5 rounded-full bg-muted/60 border border-border/50">100% seguro</span>
                     <span className="px-3 py-1.5 rounded-full bg-muted/60 border border-border/50">Sem compromisso</span>
                   </div>
 
