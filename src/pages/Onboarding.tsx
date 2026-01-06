@@ -8,7 +8,7 @@ import { Loader2, User, Ruler, Weight, Target, Dumbbell, MessageCircle, ChevronR
 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { launchConfetti } from "@/lib/confetti";
+import { launchConfettiPremium } from "@/lib/confetti";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -329,10 +329,8 @@ const Onboarding = () => {
       // Show success screen
       setShowSuccess(true);
       
-      // Launch confetti celebration!
-      setTimeout(() => launchConfetti(), 300);
-      setTimeout(() => launchConfetti(), 600);
-      setTimeout(() => launchConfetti(), 1200);
+      // Launch single premium confetti from top!
+      setTimeout(() => launchConfettiPremium(), 500);
 
       // Navigate to dashboard after animation
       setTimeout(() => navigate("/dashboard"), 4000);
@@ -666,10 +664,10 @@ const Onboarding = () => {
       <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-border/50">
         <div className="w-full max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <span className="text-sm md:text-xs font-medium text-muted-foreground uppercase tracking-wider">
               {stepTitles[step]}
             </span>
-            <span className="text-xs font-medium text-primary">
+            <span className="text-sm md:text-xs font-medium text-primary">
               {step}/{totalSteps}
             </span>
           </div>
@@ -702,10 +700,10 @@ const Onboarding = () => {
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-foreground text-sm">
+                <p className="font-semibold text-foreground text-base md:text-sm">
                   {vitaMessages[step].title}
                 </p>
-                <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">
+                <p className="text-base md:text-sm text-muted-foreground mt-0.5 leading-relaxed">
                   {vitaMessages[step].text}
                 </p>
               </div>
@@ -745,10 +743,10 @@ const Onboarding = () => {
                           </motion.span>
                         </div>
                         <div className="space-y-2">
-                          <h2 className="text-xl font-bold text-foreground">
+                          <h2 className="text-2xl md:text-xl font-bold text-foreground">
                             Bem-vindo ao Dietafy
                           </h2>
-                          <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+                          <p className="text-muted-foreground text-base md:text-sm max-w-sm mx-auto">
                             Em poucos minutos, vou criar um plano personalizado baseado nos seus objetivos e rotina.
                           </p>
                         </div>
@@ -764,7 +762,7 @@ const Onboarding = () => {
                             name="full_name"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                                <FormLabel className="flex items-center gap-2 text-base md:text-sm font-medium">
                                   <User className="w-4 h-4 text-primary" />
                                   Nome completo
                                 </FormLabel>
@@ -787,7 +785,7 @@ const Onboarding = () => {
                             name="date_of_birth"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-sm font-medium">
+                                <FormLabel className="text-base md:text-sm font-medium">
                                   Data de nascimento
                                 </FormLabel>
                                 <FormControl>
@@ -808,7 +806,7 @@ const Onboarding = () => {
                             name="biological_sex"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-sm font-medium">
+                                <FormLabel className="text-base md:text-sm font-medium">
                                   Sexo biológico
                                 </FormLabel>
                                 <div className="grid grid-cols-3 gap-2">
@@ -822,7 +820,7 @@ const Onboarding = () => {
                                       type="button"
                                       onClick={() => field.onChange(option.value)}
                                       className={cn(
-                                        "option-card flex items-center justify-center py-3 text-sm font-medium",
+                                        "option-card flex items-center justify-center py-3 text-base md:text-sm font-medium",
                                         field.value === option.value && "selected"
                                       )}
                                     >
@@ -842,7 +840,7 @@ const Onboarding = () => {
                             name="height_cm"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                                <FormLabel className="flex items-center gap-2 text-base md:text-sm font-medium">
                                   <Ruler className="w-4 h-4 text-primary" />
                                   Altura
                                 </FormLabel>
@@ -860,7 +858,7 @@ const Onboarding = () => {
                                         )
                                       }
                                     />
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-base md:text-sm text-muted-foreground">
                                       cm
                                     </span>
                                   </div>
@@ -875,7 +873,7 @@ const Onboarding = () => {
                             name="weight_kg"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                                <FormLabel className="flex items-center gap-2 text-base md:text-sm font-medium">
                                   <Weight className="w-4 h-4 text-primary" />
                                   Peso atual
                                 </FormLabel>
@@ -894,7 +892,7 @@ const Onboarding = () => {
                                         )
                                       }
                                     />
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-base md:text-sm text-muted-foreground">
                                       kg
                                     </span>
                                   </div>
@@ -916,7 +914,7 @@ const Onboarding = () => {
                             name="goals"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                                <FormLabel className="flex items-center gap-2 text-base md:text-sm font-medium">
                                   <Target className="w-4 h-4 text-primary" />
                                   Seus objetivos principais
                                 </FormLabel>
@@ -947,7 +945,7 @@ const Onboarding = () => {
                                         )}
                                       >
                                         <span className="text-lg">{option.emoji}</span>
-                                        <span className="text-sm font-medium">{option.label}</span>
+                                        <span className="text-base md:text-sm font-medium">{option.label}</span>
                                         {checked && (
                                           <div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                                             <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -971,7 +969,7 @@ const Onboarding = () => {
                             name="target_weight_kg"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-sm font-medium">
+                                <FormLabel className="text-base md:text-sm font-medium">
                                   Meta de peso (opcional)
                                 </FormLabel>
                                 <FormControl>
@@ -989,7 +987,7 @@ const Onboarding = () => {
                                         )
                                       }
                                     />
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-base md:text-sm text-muted-foreground">
                                       kg
                                     </span>
                                   </div>
@@ -1006,7 +1004,7 @@ const Onboarding = () => {
                             name="target_timeframe"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-sm font-medium">Prazo desejado</FormLabel>
+                                <FormLabel className="text-base md:text-sm font-medium">Prazo desejado</FormLabel>
                                 <div className="grid grid-cols-2 gap-2">
                                   {[
                                     { value: "1_mes", label: "1 mês" },
@@ -1019,7 +1017,7 @@ const Onboarding = () => {
                                       type="button"
                                       onClick={() => field.onChange(option.value)}
                                       className={cn(
-                                        "option-card flex items-center justify-center py-3 text-sm font-medium",
+                                        "option-card flex items-center justify-center py-3 text-base md:text-sm font-medium",
                                         field.value === option.value && "selected"
                                       )}
                                     >
@@ -1044,7 +1042,7 @@ const Onboarding = () => {
                             name="activity_level"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="flex items-center gap-2 text-sm font-medium">
+                                <FormLabel className="flex items-center gap-2 text-base md:text-sm font-medium">
                                   <Dumbbell className="w-4 h-4 text-primary" />
                                   Nível de atividade física
                                 </FormLabel>
@@ -1064,8 +1062,8 @@ const Onboarding = () => {
                                         field.value === option.value && "selected"
                                       )}
                                     >
-                                      <span className="text-sm font-medium">{option.label}</span>
-                                      <span className="text-xs text-muted-foreground">{option.desc}</span>
+                                      <span className="text-base md:text-sm font-medium">{option.label}</span>
+                                      <span className="text-sm md:text-xs text-muted-foreground">{option.desc}</span>
                                     </button>
                                   ))}
                                 </div>
@@ -1081,7 +1079,7 @@ const Onboarding = () => {
                             name="training_preference"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-sm font-medium">Preferência de treino</FormLabel>
+                                <FormLabel className="text-base md:text-sm font-medium">Preferência de treino</FormLabel>
                                 <div className="grid gap-2">
                                   {[
                                     { value: "casa_sem_equip", label: "Em casa (sem equipamento)", emoji: "🏠" },
@@ -1107,7 +1105,7 @@ const Onboarding = () => {
                                         )}
                                       >
                                         <span className="text-lg">{option.emoji}</span>
-                                        <span className="text-sm font-medium">{option.label}</span>
+                                        <span className="text-base md:text-sm font-medium">{option.label}</span>
                                         {checked && (
                                           <div className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                                             <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1131,7 +1129,7 @@ const Onboarding = () => {
                             name="dietary_restrictions"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-sm font-medium">Restrições alimentares</FormLabel>
+                                <FormLabel className="text-base md:text-sm font-medium">Restrições alimentares</FormLabel>
                                 <div className="grid grid-cols-2 gap-2">
                                   {[
                                     { value: "nenhuma", label: "Nenhuma" },
@@ -1160,7 +1158,7 @@ const Onboarding = () => {
                                           }
                                         }}
                                         className={cn(
-                                          "option-card flex items-center justify-center py-2.5 text-sm font-medium",
+                                          "option-card flex items-center justify-center py-2.5 text-base md:text-sm font-medium",
                                           checked && "selected"
                                         )}
                                       >
@@ -1186,7 +1184,7 @@ const Onboarding = () => {
                               name="dietary_other"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-sm font-medium">Descreva sua restrição</FormLabel>
+                                  <FormLabel className="text-base md:text-sm font-medium">Descreva sua restrição</FormLabel>
                                   <FormControl>
                                     <Input
                                       placeholder="Ex: alergia a frutos do mar"
@@ -1211,7 +1209,7 @@ const Onboarding = () => {
                             <div className="w-16 h-16 mx-auto rounded-full bg-green-500/20 flex items-center justify-center mb-3">
                               <MessageCircle className="w-8 h-8 text-green-500" />
                             </div>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-base md:text-sm text-muted-foreground">
                               Receba dicas, lembretes e check-ins diretamente no seu WhatsApp.
                             </p>
                           </div>
@@ -1223,8 +1221,8 @@ const Onboarding = () => {
                             name="whatsapp_phone"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-sm font-medium">Número de WhatsApp</FormLabel>
-                                <FormDescription className="text-xs">
+                                <FormLabel className="text-base md:text-sm font-medium">Número de WhatsApp</FormLabel>
+                                <FormDescription className="text-sm md:text-xs">
                                   Formato brasileiro, com DDD
                                 </FormDescription>
                                 <FormControl>
@@ -1257,10 +1255,10 @@ const Onboarding = () => {
                                   />
                                 </FormControl>
                                 <div className="space-y-1 leading-none">
-                                  <FormLabel className="text-sm font-medium cursor-pointer">
+                                  <FormLabel className="text-base md:text-sm font-medium cursor-pointer">
                                     Aceito receber mensagens
                                   </FormLabel>
-                                  <FormDescription className="text-xs">
+                                  <FormDescription className="text-sm md:text-xs">
                                     Você pode cancelar a qualquer momento.
                                   </FormDescription>
                                 </div>
