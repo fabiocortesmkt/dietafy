@@ -327,6 +327,33 @@ export type Database = {
         }
         Relationships: []
       }
+      trial_notifications: {
+        Row: {
+          channel: string
+          created_at: string | null
+          id: string
+          notification_type: string
+          sent_at: string | null
+          user_id: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string | null
+          id?: string
+          notification_type: string
+          sent_at?: string | null
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string | null
+          id?: string
+          notification_type?: string
+          sent_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       upgrade_intents: {
         Row: {
           cpf: string
