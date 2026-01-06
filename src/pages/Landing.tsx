@@ -815,7 +815,7 @@ const Landing = () => {
                       onClick={() => {
                         if (plan.featured) {
                           launchConfetti();
-                          window.open("https://pay.kiwify.com.br/4DKAQbY", "_blank");
+                          window.open("https://buy.stripe.com/4gMdR97Nb9angtKfVj7bW02", "_blank");
                         } else {
                           navigate("/auth?mode=signup");
                         }
@@ -970,7 +970,7 @@ const Landing = () => {
                 size="lg"
                 onClick={() => {
                   launchConfetti();
-                  window.open("https://pay.kiwify.com.br/4DKAQbY", "_blank");
+                  window.open("https://buy.stripe.com/4gMdR97Nb9angtKfVj7bW02", "_blank");
                 }}
               >
                 Garantir meu acesso seguro
