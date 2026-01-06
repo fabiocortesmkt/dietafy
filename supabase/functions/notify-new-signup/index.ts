@@ -2,7 +2,12 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@4.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+
+console.log("notify-new-signup: Function loaded");
+console.log("notify-new-signup: RESEND_API_KEY configured:", !!RESEND_API_KEY);
+
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -50,8 +55,19 @@ async function logEmail(
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log("notify-new-signup: Request received, method:", req.method);
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Verificar se RESEND_API_KEY está configurado
+  if (!resend) {
+    console.error("notify-new-signup: RESEND_API_KEY is not configured!");
+    return new Response(
+      JSON.stringify({ error: "RESEND_API_KEY not configured" }),
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+    );
   }
 
   const supabase = createClient(
@@ -60,9 +76,12 @@ const handler = async (req: Request): Promise<Response> => {
   );
 
   try {
-    const payload: NewSignupPayload = await req.json();
+    const rawBody = await req.text();
+    console.log("notify-new-signup: Raw request body:", rawBody);
     
-    console.log("New signup detected:", payload);
+    const payload: NewSignupPayload = JSON.parse(rawBody);
+    
+    console.log("notify-new-signup: Parsed payload:", JSON.stringify(payload, null, 2));
 
     const userEmail = payload.record.email;
     const userName = payload.record.raw_user_meta_data?.full_name || "Usuário";

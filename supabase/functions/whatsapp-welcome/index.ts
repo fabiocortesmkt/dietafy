@@ -13,6 +13,12 @@ const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
 const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
 const TWILIO_WHATSAPP_NUMBER = Deno.env.get("TWILIO_WHATSAPP_NUMBER");
 
+console.log("whatsapp-welcome: Function loaded");
+console.log("whatsapp-welcome: TWILIO_ACCOUNT_SID configured:", !!TWILIO_ACCOUNT_SID);
+console.log("whatsapp-welcome: TWILIO_AUTH_TOKEN configured:", !!TWILIO_AUTH_TOKEN);
+console.log("whatsapp-welcome: TWILIO_WHATSAPP_NUMBER configured:", !!TWILIO_WHATSAPP_NUMBER);
+console.log("whatsapp-welcome: TWILIO_WHATSAPP_NUMBER value:", TWILIO_WHATSAPP_NUMBER);
+
 function createSupabaseClient() {
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
@@ -56,13 +62,26 @@ function formatPhoneNumber(phone: string): string {
 
 async function sendWhatsAppMessage(to: string, body: string): Promise<boolean> {
   if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_WHATSAPP_NUMBER) {
-    console.error("Twilio env vars are not configured");
+    console.error("whatsapp-welcome: Twilio env vars are not configured");
+    console.error("whatsapp-welcome: TWILIO_ACCOUNT_SID:", !!TWILIO_ACCOUNT_SID);
+    console.error("whatsapp-welcome: TWILIO_AUTH_TOKEN:", !!TWILIO_AUTH_TOKEN);
+    console.error("whatsapp-welcome: TWILIO_WHATSAPP_NUMBER:", TWILIO_WHATSAPP_NUMBER);
     return false;
   }
 
+  // Garantir que o número From tenha o prefixo whatsapp:
+  let fromNumber = TWILIO_WHATSAPP_NUMBER;
+  if (!fromNumber.startsWith("whatsapp:")) {
+    fromNumber = `whatsapp:${fromNumber}`;
+  }
+
+  console.log("whatsapp-welcome: Sending message");
+  console.log("whatsapp-welcome: From:", fromNumber);
+  console.log("whatsapp-welcome: To:", `whatsapp:${to}`);
+
   const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
   const params = new URLSearchParams({
-    From: TWILIO_WHATSAPP_NUMBER,
+    From: fromNumber,
     To: `whatsapp:${to}`,
     Body: body,
   });
@@ -79,16 +98,19 @@ async function sendWhatsAppMessage(to: string, body: string): Promise<boolean> {
       body: params.toString(),
     });
 
+    const responseText = await res.text();
+    console.log("whatsapp-welcome: Twilio API response status:", res.status);
+    console.log("whatsapp-welcome: Twilio API response body:", responseText);
+
     if (!res.ok) {
-      const text = await res.text();
-      console.error("Error sending WhatsApp welcome message", res.status, text);
+      console.error("whatsapp-welcome: Error sending WhatsApp message", res.status, responseText);
       return false;
     }
 
-    console.log("WhatsApp welcome message sent successfully to", to);
+    console.log("whatsapp-welcome: Message sent successfully to", to);
     return true;
   } catch (err) {
-    console.error("Exception sending WhatsApp welcome message", err);
+    console.error("whatsapp-welcome: Exception sending message", err);
     return false;
   }
 }
