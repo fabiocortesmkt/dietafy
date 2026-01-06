@@ -30,8 +30,6 @@ verify_jwt = false
 [functions.trial-activated-notification]
 verify_jwt = false
 
-[functions.create-checkout-session]
-verify_jwt = false
 
 [functions.create-customer-portal]
 verify_jwt = false
