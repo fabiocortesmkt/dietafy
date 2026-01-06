@@ -11,6 +11,32 @@ const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID');
 const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN');
 const TWILIO_WHATSAPP_NUMBER = Deno.env.get('TWILIO_WHATSAPP_NUMBER');
 
+async function logEmail(
+  supabase: any,
+  userId: string | null,
+  emailTo: string,
+  emailType: string,
+  subject: string,
+  status: 'sent' | 'failed',
+  providerResponse: any,
+  errorMessage: string | null
+) {
+  try {
+    await supabase.from('email_logs').insert({
+      user_id: userId,
+      email_to: emailTo,
+      email_type: emailType,
+      subject: subject,
+      status: status,
+      provider_response: providerResponse,
+      error_message: errorMessage,
+      function_name: 'trial-started-notification'
+    });
+  } catch (logError) {
+    console.error('Failed to log email:', logError);
+  }
+}
+
 async function sendEmail(to: string, name: string) {
   const firstName = name?.split(' ')[0] || 'você';
   
@@ -187,6 +213,7 @@ serve(async (req) => {
     const results: { email?: any; whatsapp?: any } = {};
 
     // Send email
+    const emailSubject = '🎉 Seu teste grátis de 3 dias começou!';
     if (email) {
       try {
         results.email = await sendEmail(email, name);
@@ -195,9 +222,11 @@ serve(async (req) => {
           notification_type: 'day_0_trial_started',
           channel: 'email',
         });
+        await logEmail(supabase, user_id, email, 'trial_started', emailSubject, 'sent', results.email, null);
         console.log('✅ Day 0 email sent');
-      } catch (err) {
+      } catch (err: any) {
         console.error('❌ Email error:', err);
+        await logEmail(supabase, user_id, email, 'trial_started', emailSubject, 'failed', null, err.message);
       }
     }
 
