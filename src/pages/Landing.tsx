@@ -968,7 +968,7 @@ const Landing = () => {
                 size="lg"
                 onClick={() => {
                   launchConfetti();
-                  window.open("https://buy.stripe.com/4gMdR97Nb9angtKfVj7bW02", "_blank");
+                  navigate("/auth?mode=signup");
                 }}
               >
                 Garantir meu acesso seguro

@@ -172,7 +172,7 @@ const Upgrade = () => {
                 <Button 
                   type="button" 
                   className="w-full mt-2"
-                  onClick={() => window.open("https://buy.stripe.com/4gMdR97Nb9angtKfVj7bW02", "_blank")}
+                  onClick={() => navigate("/auth?mode=signup")}
                 >
                   Assinar Premium
                 </Button>

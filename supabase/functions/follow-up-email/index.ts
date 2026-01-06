@@ -137,7 +137,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <p style="color: white; font-size: 32px; font-weight: 700; margin: 0 0 5px 0;">R$ 29,90/mês</p>
                 <p style="color: rgba(255,255,255,0.85); font-size: 14px; margin: 0 0 20px 0;">Menos de R$ 1 por dia para transformar sua vida!</p>
                 
-                <a href="https://buy.stripe.com/4gMdR97Nb9angtKfVj7bW02" style="display: inline-block; background: white; color: #059669; padding: 16px 45px; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                <a href="https://dietafy.com.br/auth?mode=signup" style="display: inline-block; background: white; color: #059669; padding: 16px 45px; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
                   Quero resultados reais! 🚀
                 </a>
               </div>

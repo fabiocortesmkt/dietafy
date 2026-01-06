@@ -59,7 +59,7 @@ export const UpgradeLimitModal = ({ open, onClose, feature }: UpgradeLimitModalP
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 mt-4">
-          <Button className="w-full" onClick={() => window.open("https://buy.stripe.com/4gMdR97Nb9angtKfVj7bW02", "_blank")}> 
+          <Button className="w-full" onClick={() => window.location.href = "/auth?mode=signup"}> 
             Upgrade por R$ 29,90/mês
           </Button>
           <Button variant="outline" className="w-full" onClick={onClose}>
