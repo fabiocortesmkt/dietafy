@@ -289,7 +289,7 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                   
                   <!-- CTA Premium -->
-                  <a href="https://dietafy.com.br/upgrade" style="display: inline-block; background: linear-gradient(145deg, #059669 0%, #047857 100%); color: white; padding: 18px 50px; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 18px; box-shadow: 0 8px 30px rgba(5, 150, 105, 0.4); transition: all 0.3s;">
+                  <a href="https://pay.kiwify.com.br/4DKAQbY" style="display: inline-block; background: linear-gradient(145deg, #059669 0%, #047857 100%); color: white; padding: 18px 50px; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 18px; box-shadow: 0 8px 30px rgba(5, 150, 105, 0.4); transition: all 0.3s;">
                     Quero ser Premium! 🚀
                   </a>
                 </div>
@@ -355,7 +355,7 @@ const handler = async (req: Request): Promise<Response> => {
               
               <!-- CTA Principal -->
               <div style="padding: 0 40px 50px 40px; background-color: #0f172a; text-align: center;">
-                <a href="https://dietafy.com.br/dashboard" style="display: inline-block; background: linear-gradient(145deg, #10b981 0%, #059669 100%); color: white; padding: 18px 45px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 17px; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35);">
+                <a href="https://dietafy.site/dashboard" style="display: inline-block; background: linear-gradient(145deg, #10b981 0%, #059669 100%); color: white; padding: 18px 45px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 17px; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35);">
                   Acessar Minha Conta →
                 </a>
                 <p style="color: #64748b; font-size: 14px; margin: 20px 0 0 0;">
@@ -383,7 +383,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <p style="color: #334155; font-size: 12px; margin: 0;">
                   © 2026 DietaFY. Todos os direitos reservados.<br>
                   Você recebeu este e-mail porque se cadastrou no DietaFY.<br><br>
-                  <a href="https://dietafy.com.br/privacidade" style="color: #475569; text-decoration: underline;">Política de Privacidade</a>
+                  <a href="https://dietafy.site/privacidade" style="color: #475569; text-decoration: underline;">Política de Privacidade</a>
                 </p>
               </div>
               

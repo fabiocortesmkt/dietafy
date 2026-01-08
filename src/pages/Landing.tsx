@@ -825,16 +825,14 @@ const Landing = () => {
                     {plan.featured && (
                       <div className="mt-6 pt-6 border-t border-border/50">
                         <div className="flex flex-col items-center gap-4">
-                          {/* Premium Stripe Badge */}
-                          <div className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-[#635BFF]/5 via-[#635BFF]/10 to-[#635BFF]/5 border border-[#635BFF]/20 transition-all duration-300 hover:border-[#635BFF]/40 hover:shadow-lg hover:shadow-[#635BFF]/10 group">
-                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#635BFF] to-[#7B73FF] flex items-center justify-center shadow-lg shadow-[#635BFF]/30 group-hover:scale-110 transition-transform">
-                              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z" fill="white"/>
-                              </svg>
+                          {/* Premium Kiwify Badge */}
+                          <div className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-[#00A859]/5 via-[#00A859]/10 to-[#00A859]/5 border border-[#00A859]/20 transition-all duration-300 hover:border-[#00A859]/40 hover:shadow-lg hover:shadow-[#00A859]/10 group">
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#00A859] to-[#00C96B] flex items-center justify-center shadow-lg shadow-[#00A859]/30 group-hover:scale-110 transition-transform">
+                              <ShieldCheck className="h-5 w-5 text-white" />
                             </div>
                             <div className="flex flex-col">
-                              <span className="text-sm font-bold text-[#635BFF]">Pagamento seguro via Stripe</span>
-                              <span className="text-[11px] text-muted-foreground">Usado por Shopify, Amazon e milhões de empresas</span>
+                              <span className="text-sm font-bold text-[#00A859]">Pagamento seguro via Kiwify</span>
+                              <span className="text-[11px] text-muted-foreground">Plataforma brasileira líder em pagamentos</span>
                             </div>
                           </div>
                           
@@ -919,7 +917,7 @@ const Landing = () => {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 {[
                   { icon: Check, text: "Garantia incondicional de 7 dias" },
-                  { icon: Lock, text: "Pagamento seguro via Stripe" },
+                  { icon: Lock, text: "Pagamento seguro via Kiwify" },
                   { icon: Zap, text: "Acesso imediato após confirmação" },
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
@@ -931,14 +929,12 @@ const Landing = () => {
 
               {/* Stripe Badge - Premium Design */}
               <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 pt-4 border-t border-border/50">
-                <div className="group flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#635BFF]/10 to-[#635BFF]/5 border border-[#635BFF]/20 transition-all duration-300 hover:from-[#635BFF]/15 hover:to-[#635BFF]/10 hover:border-[#635BFF]/30 hover:shadow-lg hover:shadow-[#635BFF]/10">
-                  <div className="h-8 w-8 rounded-lg bg-[#635BFF] flex items-center justify-center shadow-md">
-                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z" fill="white"/>
-                    </svg>
+                <div className="group flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#00A859]/10 to-[#00A859]/5 border border-[#00A859]/20 transition-all duration-300 hover:from-[#00A859]/15 hover:to-[#00A859]/10 hover:border-[#00A859]/30 hover:shadow-lg hover:shadow-[#00A859]/10">
+                  <div className="h-8 w-8 rounded-lg bg-[#00A859] flex items-center justify-center shadow-md">
+                    <ShieldCheck className="h-4 w-4 text-white" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xs font-semibold text-[#635BFF]">Powered by Stripe</span>
+                    <span className="text-xs font-semibold text-[#00A859]">Powered by Kiwify</span>
                     <span className="text-[10px] text-muted-foreground">Pagamento 100% seguro</span>
                   </div>
                 </div>
@@ -975,7 +971,7 @@ const Landing = () => {
               </Button>
 
               <p className="text-xs text-muted-foreground text-center">
-                Pagamento seguro via Stripe • 7 dias de garantia • Sem fidelidade
+                Pagamento seguro via Kiwify • 7 dias de garantia • Sem fidelidade
               </p>
             </div>
           </motion.div>

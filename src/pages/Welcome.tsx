@@ -19,16 +19,8 @@ const Welcome = () => {
   const notificationsSentRef = useRef(false);
 
   useEffect(() => {
-    // Dispara evento de Purchase no Meta Pixel para otimização de campanhas
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'Purchase', {
-        value: 29.90,
-        currency: 'BRL',
-        content_name: 'Dietafy Premium Trial',
-        content_type: 'subscription',
-      });
-      console.log('Meta Pixel: Purchase event fired - R$ 29,90');
-    }
+    // Evento de Purchase será disparado pelo webhook Kiwify quando pagamento for confirmado
+    console.log('Welcome page loaded - trial started');
 
     launchConfetti();
     // Second burst for extra celebration

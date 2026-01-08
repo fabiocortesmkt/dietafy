@@ -163,7 +163,7 @@ Eu sou a *Vita*, sua assistente de nutrição e fitness. Estou aqui para te ajud
 ✅ Análises avançadas de nutrição
 ✅ Suporte prioritário
 
-👉 Faça upgrade agora: https://dietafy.com.br/auth?mode=signup
+👉 Faça upgrade agora: https://pay.kiwify.com.br/4DKAQbY
 
 Vamos começar? Me manda sua primeira mensagem! 🚀`;
 

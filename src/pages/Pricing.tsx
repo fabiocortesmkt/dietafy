@@ -121,7 +121,7 @@ const Pricing = () => {
               <li>✓ Planos personalizados e suporte prioritário</li>
               <li>✓ Sem anúncios</li>
             </ul>
-            <Button className="w-full mt-2" onClick={() => window.open("https://buy.stripe.com/4gMdR97Nb9angtKfVj7bW02", "_blank")}>
+            <Button className="w-full mt-2" onClick={() => window.open("https://pay.kiwify.com.br/4DKAQbY", "_blank")}>
                Assinar agora
              </Button>
              <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
@@ -129,9 +129,9 @@ const Pricing = () => {
                  <ShieldCheck className="h-3 w-3 text-primary" />
                  <span>7 dias de garantia</span>
                </span>
-               <span className="inline-flex items-center gap-1">
-                  <Lock className="h-3 w-3 text-primary" />
-                  <span>Pagamento seguro via Stripe</span>
+                <span className="inline-flex items-center gap-1">
+                   <Lock className="h-3 w-3 text-primary" />
+                   <span>Pagamento seguro via Kiwify</span>
                 </span>
                <span className="inline-flex items-center gap-1">
                  <Check className="h-3 w-3 text-primary" />

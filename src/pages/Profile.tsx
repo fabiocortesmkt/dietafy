@@ -1026,7 +1026,7 @@ const Profile = () => {
                   )}
 
                   <p className="text-xs text-muted-foreground text-center">
-                    Pagamento seguro via Stripe. Cancele quando quiser.
+                    Pagamento seguro via Kiwify. Cancele quando quiser.
                   </p>
                 </div>
               </SectionCard>

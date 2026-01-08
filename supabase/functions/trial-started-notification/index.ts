@@ -88,7 +88,7 @@ async function sendEmail(to: string, name: string) {
               </div>
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="https://dietafy.app/dashboard" 
+                <a href="https://dietafy.site/dashboard" 
                    style="display: inline-block; background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(16,185,129,0.4);">
                   Acessar minha conta →
                 </a>
@@ -153,7 +153,7 @@ Seu teste grátis de 3 dias do Dietafy Premium está ativo!
 ✅ Acesso total a todos os recursos Premium
 ✅ Vita, sua nutricionista IA, está pronta para te ajudar
 
-Acesse agora: https://dietafy.app/dashboard
+Acesse agora: https://dietafy.site/dashboard
 
 Qualquer dúvida, é só responder aqui! 💚`;
 
