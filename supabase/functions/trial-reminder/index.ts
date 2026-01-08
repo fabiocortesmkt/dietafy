@@ -13,9 +13,7 @@ const TWILIO_WHATSAPP_NUMBER = Deno.env.get('TWILIO_WHATSAPP_NUMBER');
 
 async function sendReminderEmail(to: string, name: string, stripeCustomerId: string) {
   const firstName = name?.split(' ')[0] || 'você';
-  const cancelUrl = stripeCustomerId 
-    ? `https://billing.stripe.com/p/login/test_xxx` // Will be replaced with actual portal link
-    : 'https://dietafy.app/profile';
+  const cancelUrl = 'https://dietafy.site/profile';
 
   const html = `
 <!DOCTYPE html>
@@ -62,7 +60,7 @@ async function sendReminderEmail(to: string, name: string, stripeCustomerId: str
               </p>
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="https://dietafy.app/dashboard" 
+                <a href="https://dietafy.site/dashboard" 
                    style="display: inline-block; background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 50px; font-weight: 600; font-size: 16px; margin: 5px; box-shadow: 0 4px 14px rgba(16,185,129,0.4);">
                   Continuar usando →
                 </a>
@@ -104,7 +102,7 @@ async function sendReminderEmail(to: string, name: string, stripeCustomerId: str
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'Dietafy <noreply@dietafy.app>',
+      from: 'Dietafy <noreply@dietafy.site>',
       to: [to],
       subject: '⏰ Lembrete: seu teste grátis termina amanhã',
       html,
@@ -132,7 +130,7 @@ Seu teste grátis do Dietafy termina *amanhã*.
 
 Após o término, sua assinatura Premium será ativada automaticamente.
 
-Se não quiser continuar, pode cancelar em 1 clique no app: https://dietafy.app/profile
+Se não quiser continuar, pode cancelar em 1 clique no app: https://dietafy.site/profile
 
 Qualquer dúvida, estamos aqui! 💚`;
 

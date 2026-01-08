@@ -313,34 +313,59 @@ const Onboarding = () => {
 
       if (error) throw error;
 
-      // Dispara evento InitiateCheckout no Meta Pixel antes de ir pro Stripe
+      // Dispara evento CompleteRegistration no Meta Pixel
       if (typeof window !== 'undefined' && (window as any).fbq) {
-        (window as any).fbq('track', 'InitiateCheckout', {
-          value: 29.90,
-          currency: 'BRL',
-          content_name: 'Dietafy Premium Trial',
+        (window as any).fbq('track', 'CompleteRegistration', {
+          content_name: 'Dietafy Free Trial',
           content_type: 'subscription',
         });
-        console.log('Meta Pixel: InitiateCheckout event fired');
+        console.log('Meta Pixel: CompleteRegistration event fired');
       }
 
-      // Store onboarding data in localStorage to use for notifications after Stripe
-      localStorage.setItem('onboarding_data', JSON.stringify({
-        full_name: values.full_name,
-        whatsapp_phone: values.whatsapp_phone,
-        whatsapp_opt_in: values.whatsapp_opt_in,
-        user_id: userId,
-        email: userEmail,
-      }));
+      // Send welcome notifications
+      try {
+        // Send welcome email
+        if (userEmail) {
+          supabase.functions.invoke("notify-new-signup", {
+            body: {
+              type: "INSERT",
+              table: "users",
+              record: {
+                id: userId,
+                email: userEmail,
+                created_at: new Date().toISOString(),
+                raw_user_meta_data: { full_name: values.full_name },
+              },
+            },
+          }).catch((err) => {
+            console.error("Failed to send welcome email:", err);
+          });
+          console.log('Welcome email triggered');
+        }
+
+        // Send WhatsApp welcome message if user opted in
+        if (values.whatsapp_phone && values.whatsapp_opt_in) {
+          supabase.functions.invoke("whatsapp-welcome", {
+            body: {
+              phone: values.whatsapp_phone,
+              name: values.full_name,
+              user_id: userId,
+            },
+          }).catch((err) => {
+            console.error("Failed to send WhatsApp welcome:", err);
+          });
+          console.log('WhatsApp welcome triggered');
+        }
+      } catch (notifError) {
+        console.error("Error sending welcome notifications:", notifError);
+      }
 
       toast({
         title: "Perfil salvo!",
-        description: "Redirecionando para o checkout...",
+        description: "Bem-vindo ao DietaFY! Seu teste grátis de 3 dias começou.",
       });
 
-      // Redirect to Stripe Payment Link with 3-day trial
-      const stripeCheckoutUrl = `https://buy.stripe.com/3cI5kD7NbeuH1yQ6kJ7bW01?prefilled_email=${encodeURIComponent(userEmail || '')}`;
-      window.location.href = stripeCheckoutUrl;
+      navigate("/dashboard");
     } catch (error: any) {
       toast({
         title: "Erro ao salvar",

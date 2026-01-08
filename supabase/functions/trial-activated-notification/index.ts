@@ -88,7 +88,7 @@ async function sendActivatedEmail(to: string, name: string) {
               </div>
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="https://dietafy.app/dashboard" 
+                <a href="https://dietafy.site/dashboard" 
                    style="display: inline-block; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(139,92,246,0.4);">
                   Acessar meu Dietafy Premium →
                 </a>
@@ -155,7 +155,7 @@ Agora você tem acesso ilimitado a:
 📈 Análises avançadas de progresso
 🍽️ Receitas fit exclusivas
 
-Acesse agora: https://dietafy.app/dashboard
+Acesse agora: https://dietafy.site/dashboard
 
 Obrigado por confiar no Dietafy! 💚`;
 
