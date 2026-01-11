@@ -362,10 +362,11 @@ const Onboarding = () => {
 
       toast({
         title: "Perfil salvo!",
-        description: "Bem-vindo ao DietaFY! Seu teste grátis de 3 dias começou.",
+        description: "Redirecionando para o pagamento...",
       });
 
-      navigate("/dashboard");
+      // Redireciona para a página de pagamento Kiwify (plano básico)
+      window.location.href = "https://pay.kiwify.com.br/03h5gkF";
     } catch (error: any) {
       toast({
         title: "Erro ao salvar",
