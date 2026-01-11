@@ -35,58 +35,65 @@ const Landing = () => {
 
   const steps = [
     {
-      title: "Defina seu objetivo de emagrecimento",
-      description: "Informe seu peso, rotina e preferências.",
+      title: "Defina sua meta de emagrecimento",
+      description: "Informe quanto quer perder e sua rotina diária.",
       icon: "🎯",
     },
     {
-      title: "Receba sua orientação personalizada",
-      description: "A Vita cria uma estratégia adaptada à sua realidade.",
+      title: "Receba seu plano personalizado",
+      description: "A Vita cria uma estratégia de jejum e alimentação pra você.",
       icon: "✨",
     },
     {
-      title: "Acompanhamento diário",
-      description: "Você recebe orientações, ajustes e motivação todos os dias.",
+      title: "Acompanhamento diário intensivo",
+      description: "Orientações práticas todo dia para secar mais rápido.",
       icon: "📱",
     },
     {
-      title: "Evolução constante",
-      description: "Acompanhe seu progresso e construa hábitos sustentáveis.",
+      title: "Veja resultados já na primeira semana",
+      description: "Acompanhe seu progresso e veja a barriga diminuindo.",
       icon: "📈",
     },
   ];
 
   const pricingPlans = [
     {
-      name: "Gratuito",
-      price: "R$ 0",
-      subtitle: "Para experimentar",
+      name: "Básico",
+      originalPrice: "R$ 67,00",
+      price: "R$ 9,90",
+      period: "/mês",
+      subtitle: "Para começar sua transformação",
       features: [
-        "Teste o acompanhamento",
-        "5 conversas com a Vita",
-        "Acesso básico à plataforma",
-        "Registro de refeições limitado",
+        "Conversas com a Vita Nutri IA",
+        "Acompanhamento diário",
+        "Dicas de jejum intermitente",
+        "Registro de refeições",
+        "Suporte por email",
       ],
-      cta: "Começar grátis",
+      cta: "Começar por R$ 9,90 →",
       featured: false,
+      link: "https://pay.kiwify.com.br/03h5gkF",
     },
     {
       name: "Premium",
+      originalPrice: "R$ 97,00",
       price: "R$ 29,90",
       period: "/mês",
-      subtitle: "Acompanhamento completo",
-      savings: "Economize R$ 60/mês vs nutricionista",
+      subtitle: "Transformação completa",
+      savings: "Economize R$ 67/mês vs nutricionista",
       features: [
+        "Tudo do Básico +",
         "Conversas ilimitadas com a Vita",
-        "Acompanhamento 24/7 completo",
         "Integração com WhatsApp",
-        "Relatórios de evolução detalhados",
+        "Planos de jejum personalizados",
+        "Relatórios de evolução",
         "Suporte prioritário",
-        "Treinos personalizados",
+        "Treinos para queimar gordura",
         "Análise de fotos de refeições",
       ],
-      cta: "Começar agora →",
+      cta: "Quero o Premium →",
       featured: true,
+      link: "https://pay.kiwify.com.br/4DKAQbY",
     },
   ];
 
@@ -170,7 +177,7 @@ const Landing = () => {
               <span className="text-muted-foreground hidden sm:inline">•</span>
               <span className="flex items-center gap-1">
                 <Users className="h-3.5 w-3.5" />
-                +500 emagrecendo com acompanhamento
+                +500 mulheres emagrecendo com acompanhamento
               </span>
             </motion.div>
 
@@ -178,23 +185,23 @@ const Landing = () => {
               variants={itemVariants}
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-tight"
             >
-              <span className="text-shine">Emagreça com acompanhamento</span>
+              <span className="text-shine">A Melhor Forma de Secar</span>
               <br />
-              <span className="text-gradient">diário e constante</span>
+              <span className="text-gradient">com Resultados Visíveis Já na Primeira Semana</span>
             </motion.h1>
 
             <motion.p
               variants={itemVariants}
               className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-muted-foreground max-w-2xl mx-auto"
             >
-              Tenha um assistente que te orienta todos os dias, com saúde e sem dietas malucas.
+              Perca peso, reduza gordura da barriga e recupere sua autoestima em 2026.
             </motion.p>
 
             <motion.p
               variants={itemVariants}
               className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto"
             >
-              Pare de começar dietas e desistir no meio do caminho. O DietaFY te acompanha diariamente para criar hábitos reais e emagrecer de forma sustentável.
+              Chega de dietas que não funcionam. Com jejum inteligente e acompanhamento diário, você vai secar de verdade — sem passar fome.
             </motion.p>
 
             <motion.div
@@ -207,7 +214,7 @@ const Landing = () => {
                 onClick={handleCTAClick}
               >
                 <span className="relative z-10 flex items-center">
-                  Começar grátis agora
+                  Começar agora →
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Button>
@@ -231,8 +238,8 @@ const Landing = () => {
             >
               {[
                 { icon: ShieldCheck, text: "7 dias de garantia" },
-                { icon: Sparkles, text: "Comece seu 2026 muito mais saudável" },
-                { icon: Check, text: "Sem fidelidade" },
+                { icon: Sparkles, text: "Seque a barriga em 2026" },
+                { icon: Check, text: "Resultados na primeira semana" },
               ].map((item, i) => (
                 <span key={i} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
                   <item.icon className="h-4 w-4 text-primary" />
@@ -258,10 +265,10 @@ const Landing = () => {
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <h2 className="text-2xl md:text-3xl font-bold mb-2 text-gradient">
-              Teste agora seu acompanhamento de emagrecimento
+              Veja como você pode secar a barriga com acompanhamento diário
             </h2>
             <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
-              Converse gratuitamente com a Vita Nutri IA e veja como seria ter um assistente te acompanhando todos os dias.
+              Converse com a Vita Nutri IA e descubra como perder peso de forma saudável, com jejum inteligente e sem passar fome.
             </p>
           </motion.div>
 
@@ -355,7 +362,7 @@ const Landing = () => {
                     disabled={isConnecting}
                   >
                     <Zap className="h-4 w-4 mr-1" />
-                    Testar grátis agora
+                    Testar agora
                   </Button>
 
                   {/* Help Collapsible */}
@@ -422,11 +429,11 @@ const Landing = () => {
             </p>
             <ul className="space-y-3 text-base md:text-lg text-muted-foreground">
               {[
-                "Você até começa motivado, mas perde o ritmo",
-                "Fica sozinho depois que monta a dieta",
-                "Um deslize vira desistência",
-                "Falta constância, não força de vontade",
-                "Apps comuns não te acompanham de verdade",
+                "Você tenta dieta atrás de dieta e nada funciona",
+                "A barriga não some, mesmo se esforçando",
+                "Fica sozinha depois que monta a dieta",
+                "Autoestima lá embaixo por causa do peso",
+                "Falta um método que realmente funcione pra você",
               ].map((item, i) => (
                 <motion.li
                   key={i}
@@ -777,6 +784,14 @@ const Landing = () => {
                     <div className="text-center mb-8">
                       <h3 className="text-2xl md:text-3xl font-bold mb-1">{plan.name}</h3>
                       <p className="text-sm text-muted-foreground mb-4">{plan.subtitle}</p>
+                      {plan.originalPrice && (
+                        <div className="flex flex-col items-center justify-center gap-1 mb-2">
+                          <span className="text-lg text-muted-foreground line-through">
+                            de {plan.originalPrice}
+                          </span>
+                          <span className="text-sm text-primary font-medium">por apenas</span>
+                        </div>
+                      )}
                       <div className="flex items-baseline justify-center gap-1">
                         <span className={`text-5xl md:text-6xl font-bold ${plan.featured ? "text-gradient" : ""}`}>
                           {plan.price}
@@ -813,10 +828,8 @@ const Landing = () => {
                       variant={plan.featured ? "default" : "outline"}
                       size="lg"
                       onClick={() => {
-                        if (plan.featured) {
-                          launchConfetti();
-                        }
-                        navigate("/auth?mode=signup");
+                        launchConfetti();
+                        window.open(plan.link, "_blank");
                       }}
                     >
                       {plan.cta}
@@ -1005,19 +1018,19 @@ const Landing = () => {
               },
               {
                 question: "Preciso fazer dietas radicais?",
-                answer: "Não! Nossa abordagem é focada em hábitos sustentáveis e constância. A Vita te ajuda com pequenos ajustes diários.",
+                answer: "Não! Nossa abordagem é focada em jejum inteligente e hábitos sustentáveis. A Vita te ajuda com pequenos ajustes diários para você secar sem passar fome.",
               },
               {
-                question: "Como funciona o plano gratuito?",
-                answer: "No plano gratuito você tem acesso básico e conversas limitadas com a Vita. Perfeito para testar antes de decidir pelo Premium.",
+                question: "Qual a diferença entre Básico e Premium?",
+                answer: "O Básico (R$ 9,90/mês) inclui acompanhamento diário, conversas com a Vita e dicas de jejum. O Premium (R$ 29,90/mês) adiciona WhatsApp, conversas ilimitadas, treinos para queimar gordura e suporte prioritário.",
               },
               {
                 question: "O que está incluído no Premium?",
-                answer: "Conversas ilimitadas, acompanhamento pelo WhatsApp, relatórios de evolução e suporte prioritário por R$ 29,90/mês.",
+                answer: "Conversas ilimitadas, acompanhamento pelo WhatsApp, planos de jejum personalizados, treinos para queimar gordura, relatórios de evolução e suporte prioritário por R$ 29,90/mês.",
               },
               {
                 question: "Quanto tempo leva para ver resultados?",
-                answer: "Varia de pessoa para pessoa. Com acompanhamento diário, a maioria percebe mudanças nos hábitos nas primeiras semanas.",
+                answer: "Com acompanhamento diário e jejum inteligente, a maioria das mulheres percebe resultados visíveis já na primeira semana. A barriga começa a diminuir e a autoestima sobe!",
               },
               {
                 question: "Como a Vita me acompanha pelo WhatsApp?",
@@ -1069,18 +1082,18 @@ const Landing = () => {
             className="space-y-4 sm:space-y-6"
           >
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">
-              <span>🟢</span>{" "}
-              <span className="text-gradient">Emagreça com acompanhamento diário</span>
+              <span>🔥</span>{" "}
+              <span className="text-gradient">Comece sua transformação hoje</span>
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground">
-              Pare de tentar sozinho. Comece hoje a ter acompanhamento todos os dias.
+              2026 é o ano de você secar a barriga e recuperar sua autoestima. Comece agora por apenas R$ 9,90/mês.
             </p>
             <Button
               size="lg"
               className="text-base sm:text-lg px-6 py-5 sm:px-10 sm:py-7 pulse-glow-cta"
               onClick={handleCTAClick}
             >
-              Começar grátis agora
+              Começar minha transformação →
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
